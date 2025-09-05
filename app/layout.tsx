@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   title: "TalentNest - University Skills Marketplace",
   description:
     "Connect with talented students. Showcase your skills. Build your portfolio. The trusted marketplace for university services.",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

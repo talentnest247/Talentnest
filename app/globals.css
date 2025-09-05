@@ -16,7 +16,8 @@
   --secondary: oklch(0.646 0.222 280.116); /* Purple #8b5cf6 */
   --secondary-foreground: oklch(1 0 0); /* White */
   --muted: oklch(0.556 0 0); /* Medium gray #6b7280 */
-  --muted-foreground: oklch(1 0 0); /* White */
+  /* Use a dark muted foreground for readable body text on muted backgrounds */
+  --muted-foreground: oklch(0.205 0 0); /* Dark gray ~ #1f2937 */
   --accent: oklch(0.646 0.222 280.116); /* Purple #8b5cf6 */
   --accent-foreground: oklch(1 0 0); /* White */
   --destructive: oklch(0.577 0.245 27.325); /* Red #dc2626 */
@@ -119,10 +120,21 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* sensible box-sizing and focus styles; avoid forcing borders on every element */
+  html {
+    box-sizing: border-box;
   }
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Improve keyboard focus visibility using the theme ring color */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }
