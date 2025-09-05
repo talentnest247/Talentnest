@@ -1,7 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Removed unsupported @custom-variant dark (&:is(.dark *)); */
+/* Removed unsupported @theme and @layer at-rules for vanilla CSS compatibility. 
+  If you use Tailwind, keep @layer and @theme as needed for your setup. */
 
 :root {
   /* Updated design tokens for TalentNest professional university marketplace */
@@ -76,8 +78,9 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-@theme inline {
-  /* Updated font variables for Playfair Display and Source Sans Pro */
+/* Moved font and color variables from @theme inline to :root for vanilla CSS compatibility */
+/* Updated font variables for Playfair Display and Source Sans Pro */
+:root {
   --font-sans: var(--font-source-sans);
   --font-serif: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
@@ -129,7 +132,10 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Improve keyboard focus visibility using the theme ring color */

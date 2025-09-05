@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 "use client"
 
 import React, { useState } from "react"
@@ -86,6 +85,11 @@ export default function SignupPage() {
               <form className="space-y-6" onSubmit={onSubmit}>
                 {/* Hidden field for UX convenience when email domain matches Unilorin */}
                 <input type="hidden" name="_university_auto" defaultValue="" />
+                {errors && (
+                  <div className="text-sm text-red-600 dark:text-red-400">
+                    {errors}
+                  </div>
+                )}
                 {/* Personal Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-primary">Personal Information</h3>
@@ -111,9 +115,10 @@ export default function SignupPage() {
                     <Label htmlFor="email">University Email</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
-                      placeholder="john.doe@university.edu"
                       placeholder="20-52hl077@students.unilorin.edu.ng"
+                      className="bg-input border-border"
                       required
                     />
                     <p className="text-xs text-muted-foreground">Use your official university email for verification</p>
@@ -121,6 +126,7 @@ export default function SignupPage() {
                       Use your official university email for verification. For University of Ilorin students the format is
                       like <code className="mx-1">20-52hl077@students.unilorin.edu.ng</code>
                     </p>
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="university">University</Label>
@@ -140,7 +146,6 @@ export default function SignupPage() {
                   </div>
 
                   <div className="space-y-2">
-                  <div className="space-y-2">
                     <Label htmlFor="studentId">Matric / Student ID</Label>
                     <Input
                       id="studentId"
@@ -152,6 +157,7 @@ export default function SignupPage() {
                     />
                     <p className="text-xs text-muted-foreground">Enter your matric number in the format like <code>20-52hl077</code></p>
                   </div>
+
                 </div>
 
                 <Separator />
