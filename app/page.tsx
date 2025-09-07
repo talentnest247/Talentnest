@@ -24,7 +24,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button size="lg" className="text-lg px-8 py-3">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
                 Start Showcasing Your Skills
               </Button>
             </Link>
@@ -120,7 +120,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
+            <div className="text-center p-6 border border-border rounded-lg hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-secondary-foreground">1</span>
               </div>
@@ -130,7 +130,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="text-center">
+            <div className="text-center p-6 border border-border rounded-lg hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-secondary-foreground">2</span>
               </div>
@@ -140,7 +140,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="text-center">
+            <div className="text-center p-6 border border-border rounded-lg hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-secondary-foreground">3</span>
               </div>
@@ -154,7 +154,8 @@ export default function HomePage() {
       </section>
 
       {/* Trust & Safety */}
-      <section className="py-20 bg-card">
+      <section className="py-20 bg-card" >
+      
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -208,10 +209,10 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-20" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">Ready to Join TalentNest?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -220,7 +221,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button size="lg" className="text-lg px-8 py-3">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
                 Create Your Profile
               </Button>
             </Link>
@@ -231,10 +232,10 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Footer */}
-      <Footer />
-    </div>
+      < Footer />
+    </div >
   )
 }

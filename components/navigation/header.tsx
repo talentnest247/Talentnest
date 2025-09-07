@@ -50,10 +50,10 @@ export function Header({ variant = "default" }: HeaderProps) {
           {/* Auth Buttons */}
           <div className="flex items-center space-x-4">
             <Link href="/login" className="hidden sm:inline-block">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="outline">Sign In</Button>
             </Link>
             <Link href="/signup">
-              <Button>Get Started</Button>
+              <Button variant="outline">Get Started</Button>
             </Link>
 
             {/* Mobile Menu */}
@@ -65,7 +65,10 @@ export function Header({ variant = "default" }: HeaderProps) {
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetContent
+                  side="right"
+                  className="w-[300px] sm:w-[400px] bg-white border-l border-border backdrop-blur-none"
+                >
                   <div className="flex flex-col space-y-4 mt-8">
                     <Link href="/" className="text-lg font-serif font-bold text-primary mb-4">
                       TalentNest
@@ -80,19 +83,20 @@ export function Header({ variant = "default" }: HeaderProps) {
                         {link.label}
                       </Link>
                     ))}
-                    <div className="pt-4 border-t">
+                    <div className="pt-4 border-t border-border">
                       <Link href="/login" className="block mb-2">
-                        <Button variant="ghost" className="w-full justify-start">
+                        <Button variant="outline" className="w-full">
                           Sign In
                         </Button>
                       </Link>
                       <Link href="/signup">
-                        <Button className="w-full">Get Started</Button>
+                        <Button variant="outline" className="w-full">Get Started</Button>
                       </Link>
                     </div>
                   </div>
                 </SheetContent>
               </Sheet>
+              
             )}
           </div>
         </div>

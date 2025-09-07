@@ -56,7 +56,7 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button variant="outline" type="submit" className="w-full">
                   Sign In
                 </Button>
               </form>

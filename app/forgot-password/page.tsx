@@ -35,12 +35,12 @@ export default function ForgotPasswordPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your.name@university.edu"
+                    placeholder="20-52hl077@students.unilorin.edu.ng"
                     className="bg-input border-border"
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button variant="outline" type="submit" className="w-full">
                   Send Reset Link
                 </Button>
               </form>

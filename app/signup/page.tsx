@@ -123,18 +123,19 @@ export default function SignupPage() {
                     />
                     <p className="text-xs text-muted-foreground">Use your official university email for verification</p>
                     <p className="text-xs text-muted-foreground">
-                      Use your official university email for verification. For University of Ilorin students the format is
-                      like <code className="mx-1">20-52hl077@students.unilorin.edu.ng</code>
+                      For University of Ilorin students the format is
+                      <code className="mx-1">20-52hl077@students.unilorin.edu.ng</code>
                     </p>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="university">University</Label>
                     <Select>
-                      <SelectTrigger className="bg-input border-border">
+                      <SelectTrigger className="bg-white dark:bg-input border-border !bg-opacity-100">
                         <SelectValue placeholder="Select your university" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white dark:bg-input">
+                        <SelectItem value="university-of-ilorin">University of Ilorin</SelectItem>
                         <SelectItem value="university-of-lagos">University of Lagos</SelectItem>
                         <SelectItem value="obafemi-awolowo">Obafemi Awolowo University</SelectItem>
                         <SelectItem value="university-of-ibadan">University of Ibadan</SelectItem>
@@ -151,11 +152,11 @@ export default function SignupPage() {
                       id="studentId"
                       name="studentId"
                       type="text"
-                      placeholder="20-52hl077"
+                      placeholder="20/52hl077"
                       className="bg-input border-border"
                       required
                     />
-                    <p className="text-xs text-muted-foreground">Enter your matric number in the format like <code>20-52hl077</code></p>
+                    <p className="text-xs text-muted-foreground">Enter your matric number in the format like <code>20/52hl077</code></p>
                   </div>
 
                 </div>
@@ -198,10 +199,10 @@ export default function SignupPage() {
                   <div className="space-y-2">
                     <Label htmlFor="accountType">I want to:</Label>
                     <Select>
-                      <SelectTrigger className="bg-input border-border">
+                      <SelectTrigger className="bg-white dark:bg-input border-border !bg-opacity-100">
                         <SelectValue placeholder="Choose your primary goal" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white dark:bg-input">
                         <SelectItem value="offer-services">Offer my skills and services</SelectItem>
                         <SelectItem value="find-services">Find talented students for projects</SelectItem>
                         <SelectItem value="both">Both offer and find services</SelectItem>
@@ -259,7 +260,7 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
+                <Button variant="outline" type="submit" className="w-full" size="lg">
                   Create My TalentNest Profile
                 </Button>
               </form>
