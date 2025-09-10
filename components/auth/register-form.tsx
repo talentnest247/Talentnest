@@ -15,6 +15,7 @@ import { Footer } from "@/components/navigation/footer"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, User, Users, AlertCircle, Chrome } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 // Types for registration data
 interface RegistrationFormData {
@@ -229,9 +230,20 @@ export default function RegisterForm() {
           {/* Header */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-3xl font-serif font-bold text-primary mb-2">
-                TalentNest
-              </h1>
+              <div className="flex flex-col items-center mb-2">
+                <div className="w-16 h-16 mb-3 relative">
+                  <Image 
+                    src="/unilorin-logo.png" 
+                    alt="University of Ilorin Logo" 
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <h1 className="text-3xl font-serif font-bold text-primary">
+                  TalentNest
+                </h1>
+                <span className="text-sm text-muted-foreground font-medium">University of Ilorin</span>
+              </div>
             </Link>
             <p className="text-muted-foreground">
               Join the University of Ilorin skills marketplace

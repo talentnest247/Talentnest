@@ -200,5 +200,3 @@ For support and questions:
 - Vercel for hosting and deployment
 
 ---
-
-**Built with ❤️ for the University of Ilorin community**

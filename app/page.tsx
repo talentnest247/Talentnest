@@ -7,6 +7,7 @@ import { Star, Users, Shield, MessageCircle, Search, BookOpen } from "lucide-rea
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
 import Link from "next/link"
+import Image from "next/image"
 import { useEffect, useRef } from 'react'
 
 export default function HomePage() {
@@ -95,6 +96,16 @@ export default function HomePage() {
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-600/10 rounded-full blur-xl"></div>
         
         <div className="container mx-auto text-center relative">
+          <div className="hero-animate flex justify-center mb-6">
+            <div className="w-20 h-20 relative opacity-90">
+              <Image 
+                src="/unilorin-logo.png" 
+                alt="University of Ilorin Logo" 
+                fill
+                className="object-contain"
+              />
+            </div>
+          </div>
           <h1 className="hero-animate text-5xl md:text-7xl font-serif font-bold bg-gradient-to-r from-blue-900 via-teal-700 to-blue-800 bg-clip-text text-transparent mb-8 text-balance leading-tight">
             Your University Skills Marketplace
           </h1>

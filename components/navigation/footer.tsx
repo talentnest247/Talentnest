@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 export function Footer() {
   const footerSections = [
@@ -34,9 +35,22 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div>
-            <h3 className="text-lg font-serif font-semibold mb-4 text-card-foreground">TalentNest</h3>
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 mr-3 relative">
+                <Image 
+                  src="/unilorin-logo.png" 
+                  alt="University of Ilorin Logo" 
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div>
+                <h3 className="text-lg font-serif font-semibold text-card-foreground">TalentNest</h3>
+                <span className="text-xs text-muted-foreground">University of Ilorin</span>
+              </div>
+            </div>
             <p className="text-card-foreground/80">
-              Connecting university students through skills, creativity, and collaboration.
+              Connecting university students through skills, creativity, and collaboration within the University of Ilorin community.
             </p>
           </div>
 

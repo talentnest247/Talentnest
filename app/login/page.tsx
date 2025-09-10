@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AlertCircle } from "lucide-react"
+import Image from "next/image"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,7 +51,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -67,7 +68,7 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard")
-    } catch (error) {
+    } catch {
       setErrors({ submit: "Login failed. Please try again." })
     } finally {
       setIsLoading(false)
@@ -82,9 +83,20 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-3xl font-serif font-bold text-primary mb-2">TalentNest</h1>
+              <div className="flex flex-col items-center mb-2">
+                <div className="w-16 h-16 mb-3 relative">
+                  <Image 
+                    src="/unilorin-logo.png" 
+                    alt="University of Ilorin Logo" 
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <h1 className="text-3xl font-serif font-bold text-primary">TalentNest</h1>
+                <span className="text-sm text-muted-foreground font-medium">University of Ilorin</span>
+              </div>
             </Link>
-            <p className="text-muted-foreground">Welcome back to University of Ilorin's skills marketplace</p>
+            <p className="text-muted-foreground">Welcome back to University of Ilorin&apos;s skills marketplace</p>
           </div>
 
           <Card className="border-border">
@@ -149,7 +161,7 @@ export default function LoginPage() {
 
               <div className="text-center space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link href="/signup" className="text-secondary hover:text-secondary/80 underline font-medium">
                     Create your profile
                   </Link>
