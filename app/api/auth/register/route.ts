@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import bcrypt from 'bcryptjs'
+import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 // Validation schemas
@@ -31,10 +30,19 @@ const artisanRegistrationSchema = baseRegistrationSchema.extend({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('Registration attempt:', { email: body.email, role: body.role })
+    console.log('🚀 Registration attempt:', { email: body.email, role: body.role })
 
-    // Create Supabase client
-    const supabase = await createClient()
+    // Create Supabase client with service role for database operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
 
     // Basic validation
     const baseValidation = baseRegistrationSchema.safeParse(body)
@@ -70,138 +78,120 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validationResult?.data || baseValidation.data
 
-    // Check if user already exists
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id, email')
-      .eq('email', validatedData.email)
-      .single()
+    console.log('✅ Validation passed, creating user...')
 
-    if (existingUser) {
-      return NextResponse.json(
-        { 
-          message: 'An account with this email already exists',
-          field: 'email'
-        },
-        { status: 409 }
-      )
-    }
-
-    // Check if student ID already exists (for students)
-    if (validatedData.role === 'student') {
-      const studentData = validatedData as z.infer<typeof studentRegistrationSchema>
-      const { data: existingStudent } = await supabase
-        .from('users')
-        .select('id, student_id')
-        .eq('student_id', studentData.studentId)
-        .single()
-
-      if (existingStudent) {
-        return NextResponse.json(
-          { 
-            message: 'This student ID is already registered',
-            field: 'studentId'
-          },
-          { status: 409 }
-        )
-      }
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12)
-
-    // Prepare user data based on role
-    const baseUserData = {
+    // Create user with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: validatedData.email,
-      full_name: `${validatedData.firstName} ${validatedData.lastName}`,
-      first_name: validatedData.firstName,
-      last_name: validatedData.lastName,
-      phone: validatedData.phone,
-      password_hash: hashedPassword,
-      role: validatedData.role,
-      email_verified: false,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      password: validatedData.password,
+      options: {
+        data: {
+          full_name: `${validatedData.firstName} ${validatedData.lastName}`,
+          role: validatedData.role
+        }
+      }
+    })
+
+    if (authError) {
+      console.error('❌ Auth creation error:', authError)
+      return NextResponse.json(
+        { message: authError.message },
+        { status: 400 }
+      )
     }
 
-    let userData
+    if (!authData.user) {
+      console.error('❌ No user data returned')
+      return NextResponse.json(
+        { message: 'User creation failed' },
+        { status: 400 }
+      )
+    }
+
+    console.log('✅ Auth user created:', authData.user.id)
+
+    // Wait for the database trigger to create the basic profile
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    // Update the user profile with additional data
+    const updateData: Record<string, string | number> = {
+      phone: validatedData.phone,
+      updated_at: new Date().toISOString()
+    }
+
     if (validatedData.role === 'student') {
       const studentData = validatedData as z.infer<typeof studentRegistrationSchema>
-      userData = {
-        ...baseUserData,
-        student_id: studentData.studentId,
-        department: studentData.department,
-        academic_level: studentData.level,
-      }
-    } else {
-      const artisanData = validatedData as z.infer<typeof artisanRegistrationSchema>
-      userData = {
-        ...baseUserData,
-        business_name: artisanData.businessName,
-        specialization: artisanData.specialization,
-        experience_level: artisanData.experience,
-        service_location: artisanData.location,
-      }
+      updateData.matric_number = studentData.studentId
+      updateData.department = studentData.department
+      updateData.level = studentData.level
     }
 
-    // Insert user into database
-    const { data: newUser, error: insertError } = await supabase
+    console.log('📝 Updating user profile with additional data...')
+
+    const { error: updateError } = await supabase
       .from('users')
-      .insert([userData])
-      .select('id, email, full_name, role')
-      .single()
+      .update(updateData)
+      .eq('id', authData.user.id)
 
-    if (insertError) {
-      console.error('Database insert error:', insertError)
+    if (updateError) {
+      console.error('❌ Profile update error:', updateError)
+      // Don't fail the registration if profile update fails
+      console.log('⚠️ Profile update failed, but user was created successfully')
+    } else {
+      console.log('✅ Profile updated successfully')
+    }
+
+    // If it's an artisan, create the artisan profile
+    if (validatedData.role === 'artisan') {
+      const artisanData = validatedData as z.infer<typeof artisanRegistrationSchema>
       
-      // Handle specific database constraints
-      if (insertError.code === '23505') {
-        if (insertError.message.includes('email')) {
-          return NextResponse.json(
-            { 
-              message: 'Email already registered',
-              field: 'email'
-            },
-            { status: 409 }
-          )
-        }
-        if (insertError.message.includes('student_id')) {
-          return NextResponse.json(
-            { 
-              message: 'Student ID already registered',
-              field: 'studentId'
-            },
-            { status: 409 }
-          )
-        }
-      }
+      console.log('👔 Creating artisan profile...')
+      
+      const { error: profileError } = await supabase
+        .from('artisan_profiles')
+        .insert([{
+          user_id: authData.user.id,
+          matric_number: '', // Artisans might not have matric numbers
+          business_name: artisanData.businessName,
+          business_registration_number: '',
+          trade_category: artisanData.specialization,
+          years_of_experience: artisanData.experience,
+          location: artisanData.location,
+          description: '',
+          verification_status: 'pending'
+        }])
 
-      return NextResponse.json(
-        { message: 'Registration failed. Please try again.' },
-        { status: 500 }
-      )
+      if (profileError) {
+        console.error('⚠️ Artisan profile creation error:', profileError)
+        // Note: We don't fail the registration if profile creation fails
+      } else {
+        console.log('✅ Artisan profile created successfully')
+      }
     }
 
     // Log successful registration
-    console.log('User registered successfully:', { id: newUser.id, email: newUser.email, role: newUser.role })
+    console.log('🎉 Registration completed successfully:', { 
+      id: authData.user.id, 
+      email: authData.user.email, 
+      role: validatedData.role 
+    })
 
     // Return success response
     return NextResponse.json(
       {
-        message: 'Registration successful',
+        message: 'Registration successful! Please check your email to verify your account.',
         user: {
-          id: newUser.id,
-          email: newUser.email,
-          fullName: newUser.full_name,
-          role: newUser.role,
+          id: authData.user.id,
+          email: authData.user.email,
+          fullName: `${validatedData.firstName} ${validatedData.lastName}`,
+          role: validatedData.role,
         }
       },
       { status: 201 }
     )
 
   } catch (error) {
-    console.error('Registration error:', error)
+    console.error('💥 Registration error:', error)
     
     // Handle JSON parsing errors
     if (error instanceof SyntaxError) {

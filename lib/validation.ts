@@ -1,23 +1,9 @@
-// Validation utilities for UNILORIN matric numbers and forms
+// Validation utilities for forms
 
 export const validateMatricNumber = (matricNumber: string): boolean => {
-  // Format: XX-XXhlXXX (e.g., 20-52hl077)
+  // Format: XX-XXhlXXX (e.g., 20-52hl077) - kept for UNILORIN students
   const matricRegex = /^\d{2}-\d{2}hl\d{3}$/i
   return matricRegex.test(matricNumber)
-}
-
-export const generateEmailFromMatric = (matricNumber: string): string => {
-  return `${matricNumber.toLowerCase()}@students.unilorin.edu.ng`
-}
-
-export const validateUnilorinEmail = (email: string): boolean => {
-  const emailRegex = /^\d{2}-\d{2}hl\d{3}@students\.unilorin\.edu\.ng$/i
-  return emailRegex.test(email)
-}
-
-export const extractMatricFromEmail = (email: string): string => {
-  const match = email.match(/^(\d{2}-\d{2}hl\d{3})@students\.unilorin\.edu\.ng$/i)
-  return match ? match[1] : ""
 }
 
 export const validatePhoneNumber = (phone: string): boolean => {
@@ -35,6 +21,12 @@ export const formatPhoneNumber = (phone: string): string => {
   return cleaned.startsWith("+234") ? cleaned : "+234" + cleaned
 }
 
+// Email validation - accepts any valid email format
+export const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
 // Form validation schemas
 export const signupValidation = {
   matricNumber: (value: string) => {
@@ -45,7 +37,7 @@ export const signupValidation = {
 
   email: (value: string) => {
     if (!value) return "Email is required"
-    if (!validateUnilorinEmail(value)) return "Must use your UNILORIN student email"
+    if (!validateEmail(value)) return "Please enter a valid email address"
     return null
   },
 

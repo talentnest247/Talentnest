@@ -18,13 +18,13 @@ export const generateId = () => Math.random().toString(36).substr(2, 9)
 export const getCurrentTimestamp = () => new Date().toISOString()
 
 // Generic storage functions
-const getFromStorage = (key: string): any[] => {
+const getFromStorage = <T>(key: string): T[] => {
   if (typeof window === "undefined") return []
   const data = localStorage.getItem(key)
   return data ? JSON.parse(data) : []
 }
 
-const saveToStorage = (key: string, data: any[]) => {
+const saveToStorage = <T>(key: string, data: T[]) => {
   if (typeof window === "undefined") return
   localStorage.setItem(key, JSON.stringify(data))
 }

@@ -1,0 +1,16 @@
+{
+  "name": "talentnest project",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbo",
+    "dev:fast": "next dev --turbo --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --fix",
+    "lint:check": "next lint",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next out node_modules/.cache",
+    "reset": "npm run clean && npm install"
+  }
+}

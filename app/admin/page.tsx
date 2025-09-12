@@ -1,547 +1,383 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Header } from "@/components/navigation/header"
-import { Footer } from "@/components/navigation/footer"
-import { getCurrentUser, getUsers, getServices, getBookings, saveUser, saveService } from "@/lib/storage"
-import type { User, Service, Booking } from "@/lib/types"
-import {
-  Users,
-  ShoppingBag,
-  Calendar,
+import { createClient } from "@/lib/supabase/client"
+import { ArtisanVerificationList } from "@/components/admin/artisan-verification"
+import { 
+  Users, 
+  Shield, 
+  CheckCircle, 
+  XCircle, 
+  UserCheck, 
+  Clock,
   TrendingUp,
-  Shield,
-  CheckCircle,
-  XCircle,
-  Search,
-  Eye,
-  BarChart3,
+  FileText
 } from "lucide-react"
+
+interface User {
+  id: string
+  email: string
+  role: string
+  full_name: string
+  phone?: string
+  is_verified: boolean
+  is_active: boolean
+  created_at: string
+}
+
+interface ArtisanProfile {
+  id: string
+  user_id: string
+  matric_number: string
+  business_name: string
+  trade_category: string
+  verification_status: string
+  created_at: string
+}
 
 export default function AdminPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [users, setUsers] = useState<User[]>([])
-  const [services, setServices] = useState<Service[]>([])
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState("all")
+  const [artisans, setArtisans] = useState<ArtisanProfile[]>([])
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalStudents: 0,
+    totalArtisans: 0,
+    pendingVerifications: 0,
+    approvedArtisans: 0
+  })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const supabase = createClient()
+
+  const loadData = useCallback(async () => {
+    try {
+      // Load all users
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      // Load artisan profiles
+      const { data: artisansData } = await supabase
+        .from('artisan_profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (usersData) {
+        setUsers(usersData)
+        
+        // Calculate stats
+        const totalUsers = usersData.length
+        const totalStudents = usersData.filter(u => u.role === 'student').length
+        const totalArtisans = usersData.filter(u => u.role === 'artisan').length
+        
+        setStats(prev => ({
+          ...prev,
+          totalUsers,
+          totalStudents,
+          totalArtisans
+        }))
+      }
+
+      if (artisansData) {
+        setArtisans(artisansData)
+        
+        const pendingVerifications = artisansData.filter(a => a.verification_status === 'pending').length
+        const approvedArtisans = artisansData.filter(a => a.verification_status === 'approved').length
+        
+        setStats(prev => ({
+          ...prev,
+          pendingVerifications,
+          approvedArtisans
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to load data:', error)
+      setError("Failed to load admin data")
+    }
+  }, [supabase])
+
+  const checkAdminAccess = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push("/login")
+        return
+      }
+
+      // Get user profile to check admin role
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error || !profile || profile.role !== 'admin') {
+        setError("Access denied. Admin privileges required.")
+        return
+      }
+
+      setCurrentUser(profile)
+      await loadData()
+    } catch (error) {
+      console.error('Admin access check failed:', error)
+      setError("Failed to verify admin access")
+    } finally {
+      setLoading(false)
+    }
+  }, [router, supabase, loadData])
 
   useEffect(() => {
-    const user = getCurrentUser()
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    // Simple admin check - in a real app, you'd have proper role management
-    const isAdmin = user.email.includes("admin") || user.matricNumber === "00-00ad000"
-    if (!isAdmin) {
-      router.push("/dashboard")
-      return
-    }
-
-    setCurrentUser(user)
-    setUsers(getUsers())
-    setServices(getServices())
-    setBookings(getBookings())
-    setLoading(false)
-  }, [router])
-
-  const handleUserVerification = (userId: string, verified: boolean) => {
-    const updatedUsers = users.map((user) => {
-      if (user.id === userId) {
-        const updatedUser = { ...user, isVerified: verified, updatedAt: new Date().toISOString() }
-        saveUser(updatedUser)
-        return updatedUser
-      }
-      return user
-    })
-    setUsers(updatedUsers)
-  }
-
-  const handleServiceApproval = (serviceId: string, approved: boolean) => {
-    const updatedServices = services.map((service) => {
-      if (service.id === serviceId) {
-        const updatedService = { ...service, isActive: approved, updatedAt: new Date().toISOString() }
-        saveService(updatedService)
-        return updatedService
-      }
-      return service
-    })
-    setServices(updatedServices)
-  }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800"
-      case "in_progress":
-        return "bg-blue-100 text-blue-800"
-      case "accepted":
-        return "bg-purple-100 text-purple-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "cancelled":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+    checkAdminAccess()
+  }, [checkAdminAccess])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading admin panel...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2">Loading admin panel...</p>
         </div>
       </div>
     )
   }
 
-  if (!currentUser) return null
-
-  const totalUsers = users.length
-  const verifiedUsers = users.filter((u) => u.isVerified).length
-  const activeServices = services.filter((s) => s.isActive).length
-  const pendingServices = services.filter((s) => !s.isActive).length
-  const totalBookings = bookings.length
-  const completedBookings = bookings.filter((b) => b.status === "completed").length
-
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.matricNumber.toLowerCase().includes(searchQuery.toLowerCase())
-
-    if (selectedFilter === "all") return matchesSearch
-    if (selectedFilter === "verified") return matchesSearch && user.isVerified
-    if (selectedFilter === "unverified") return matchesSearch && !user.isVerified
-    return matchesSearch
-  })
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Alert variant="destructive" className="max-w-md">
+          <XCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="min-h-screen bg-gray-50">
+      <div className="border-b bg-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Shield className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-2xl font-bold">TalentNest Admin Panel</h1>
+                <p className="text-gray-600">Welcome, {currentUser?.full_name}</p>
+              </div>
+            </div>
+            <Button onClick={() => router.push("/dashboard")}>
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-primary mb-2">TalentNest Admin Panel</h1>
-          <p className="text-muted-foreground">Manage users, services, and platform operations</p>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold">{stats.totalUsers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <UserCheck className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Students</p>
+                  <p className="text-2xl font-bold">{stats.totalStudents}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <TrendingUp className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Artisans</p>
+                  <p className="text-2xl font-bold">{stats.totalArtisans}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Clock className="h-8 w-8 text-orange-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Pending</p>
+                  <p className="text-2xl font-bold">{stats.pendingVerifications}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Approved</p>
+                  <p className="text-2xl font-bold">{stats.approvedArtisans}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Admin Alert */}
-        <Alert className="mb-6 border-blue-200 bg-blue-50">
-          <Shield className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            You are logged in as an administrator. Handle user data and platform operations responsibly.
-          </AlertDescription>
-        </Alert>
-
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        {/* Main Admin Tabs */}
+        <Tabs defaultValue="verification" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="verification">Artisan Verification</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="overview">System Overview</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Users className="w-8 h-8 text-secondary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{totalUsers}</div>
-                  <div className="text-sm text-muted-foreground">Total Users</div>
-                  <div className="text-xs text-green-600 mt-1">{verifiedUsers} verified</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <ShoppingBag className="w-8 h-8 text-secondary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{activeServices}</div>
-                  <div className="text-sm text-muted-foreground">Active Services</div>
-                  <div className="text-xs text-yellow-600 mt-1">{pendingServices} pending</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Calendar className="w-8 h-8 text-secondary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{totalBookings}</div>
-                  <div className="text-sm text-muted-foreground">Total Bookings</div>
-                  <div className="text-xs text-green-600 mt-1">{completedBookings} completed</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <TrendingUp className="w-8 h-8 text-secondary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">
-                    {totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">Recent Users</CardTitle>
-                  <CardDescription>Latest user registrations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {users
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .slice(0, 5)
-                      .map((user) => (
-                        <div key={user.id} className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={user.profileImageUrl || "/placeholder.svg"} />
-                              <AvatarFallback className="text-xs">{getInitials(user.fullName)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-medium">{user.fullName}</p>
-                              <p className="text-xs text-muted-foreground">{user.faculty}</p>
-                            </div>
-                          </div>
-                          <Badge variant={user.isVerified ? "default" : "secondary"}>
-                            {user.isVerified ? "Verified" : "Pending"}
-                          </Badge>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">Recent Services</CardTitle>
-                  <CardDescription>Latest service submissions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {services
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .slice(0, 5)
-                      .map((service) => (
-                        <div key={service.id} className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium line-clamp-1">{service.title}</p>
-                            <p className="text-xs text-muted-foreground">{service.category}</p>
-                          </div>
-                          <Badge variant={service.isActive ? "default" : "secondary"}>
-                            {service.isActive ? "Active" : "Pending"}
-                          </Badge>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="verification" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Artisan Verification Panel
+                </CardTitle>
+                <CardDescription>
+                  Review and verify artisan applications with document validation
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ArtisanVerificationList />
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold">User Management</h3>
-              <div className="flex gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-64"
-                  />
+            <Card>
+              <CardHeader>
+                <CardTitle>All Users</CardTitle>
+                <CardDescription>
+                  Manage registered users on the platform
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2">Name</th>
+                        <th className="text-left p-2">Email</th>
+                        <th className="text-left p-2">Role</th>
+                        <th className="text-left p-2">Status</th>
+                        <th className="text-left p-2">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className="border-b">
+                          <td className="p-2">{user.full_name || 'N/A'}</td>
+                          <td className="p-2">{user.email}</td>
+                          <td className="p-2">
+                            <Badge variant={user.role === 'admin' ? 'default' : user.role === 'artisan' ? 'secondary' : 'outline'}>
+                              {user.role}
+                            </Badge>
+                          </td>
+                          <td className="p-2">
+                            <div className="flex gap-1">
+                              {user.is_verified && (
+                                <Badge variant="outline" className="text-green-600">
+                                  Verified
+                                </Badge>
+                              )}
+                              {user.is_active && (
+                                <Badge variant="outline" className="text-blue-600">
+                                  Active
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-2">{new Date(user.created_at).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Users</SelectItem>
-                    <SelectItem value="verified">Verified</SelectItem>
-                    <SelectItem value="unverified">Unverified</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <div className="grid gap-4">
-              {filteredUsers.map((user) => (
-                <Card key={user.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="w-12 h-12">
-                          <AvatarImage src={user.profileImageUrl || "/placeholder.svg"} />
-                          <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
-                        </Avatar>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Artisan Applications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {artisans.slice(0, 5).map((artisan) => (
+                      <div key={artisan.id} className="flex items-center justify-between p-3 border rounded">
                         <div>
-                          <h4 className="font-semibold">{user.fullName}</h4>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.matricNumber} • {user.faculty} • {user.level}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant={user.isVerified ? "default" : "secondary"}>
-                              {user.isVerified ? "Verified" : "Unverified"}
-                            </Badge>
-                            <Badge variant="outline">{user.skills.length} skills</Badge>
-                          </div>
+                          <p className="font-medium">{artisan.business_name}</p>
+                          <p className="text-sm text-gray-600">{artisan.trade_category}</p>
+                          <p className="text-xs text-gray-500">Matric: {artisan.matric_number}</p>
                         </div>
+                        <Badge 
+                          variant={
+                            artisan.verification_status === 'approved' ? 'default' :
+                            artisan.verification_status === 'pending' ? 'secondary' : 'destructive'
+                          }
+                        >
+                          {artisan.verification_status}
+                        </Badge>
                       </div>
-                      <div className="flex gap-2">
-                        {!user.isVerified ? (
-                          <Button
-                            size="sm"
-                            onClick={() => handleUserVerification(user.id, true)}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Verify
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUserVerification(user.id, false)}
-                            className="bg-transparent"
-                          >
-                            <XCircle className="w-4 h-4 mr-2" />
-                            Unverify
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline" className="bg-transparent">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Services Tab */}
-          <TabsContent value="services" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold">Service Management</h3>
-              <div className="text-sm text-muted-foreground">
-                {activeServices} active • {pendingServices} pending approval
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              {services.map((service) => {
-                const serviceUser = users.find((u) => u.id === service.userId)
-                return (
-                  <Card key={service.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold">{service.title}</h4>
-                            <Badge variant="secondary">{service.category}</Badge>
-                            <Badge variant={service.isActive ? "default" : "secondary"}>
-                              {service.isActive ? "Active" : "Pending"}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{service.description}</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>By {serviceUser?.fullName || "Unknown User"}</span>
-                            <span>{service.priceRange}</span>
-                            <span>{service.viewsCount} views</span>
-                            <span>{service.ordersCount} orders</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {!service.isActive ? (
-                            <Button
-                              size="sm"
-                              onClick={() => handleServiceApproval(service.id, true)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Approve
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleServiceApproval(service.id, false)}
-                              className="bg-transparent"
-                            >
-                              <XCircle className="w-4 h-4 mr-2" />
-                              Suspend
-                            </Button>
-                          )}
-                          <Button size="sm" variant="outline" className="bg-transparent">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </TabsContent>
-
-          {/* Bookings Tab */}
-          <TabsContent value="bookings" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold">Booking Management</h3>
-              <div className="text-sm text-muted-foreground">{totalBookings} total bookings</div>
-            </div>
-
-            <div className="grid gap-4">
-              {bookings
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .map((booking) => {
-                  const client = users.find((u) => u.id === booking.clientId)
-                  const provider = users.find((u) => u.id === booking.providerId)
-                  const service = services.find((s) => s.id === booking.serviceId)
-                  return (
-                    <Card key={booking.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold">{booking.title}</h4>
-                              <Badge className={getStatusColor(booking.status)}>
-                                {booking.status.replace("_", " ")}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">{booking.description}</p>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>Client: {client?.fullName || "Unknown"}</span>
-                              <span>Provider: {provider?.fullName || "Unknown"}</span>
-                              <span>Service: {service?.title || "Unknown"}</span>
-                              {booking.agreedPrice && <span>Price: {booking.agreedPrice}</span>}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Created {new Date(booking.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="bg-transparent">
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Details
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-            </div>
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold">Platform Analytics</h3>
-              <Button size="sm" variant="outline" className="bg-transparent">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">User Growth</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold mb-2">{totalUsers}</div>
-                  <p className="text-sm text-muted-foreground">Total registered users</p>
-                  <div className="mt-4">
-                    <div className="text-sm text-green-600">↗ Growing steadily</div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-serif">Service Categories</CardTitle>
+                  <CardTitle>Platform Stats</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-sm">Digital</span>
-                      <span className="text-sm font-medium">
-                        {services.filter((s) => s.category === "digital").length}
-                      </span>
+                      <span>Total Registrations:</span>
+                      <span className="font-semibold">{stats.totalUsers}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Artisan</span>
-                      <span className="text-sm font-medium">
-                        {services.filter((s) => s.category === "artisan").length}
-                      </span>
+                      <span>Student Accounts:</span>
+                      <span className="font-semibold">{stats.totalStudents}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Tutoring</span>
-                      <span className="text-sm font-medium">
-                        {services.filter((s) => s.category === "tutoring").length}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">Booking Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Completed</span>
-                      <span className="text-sm font-medium text-green-600">
-                        {bookings.filter((b) => b.status === "completed").length}
-                      </span>
+                      <span>Artisan Accounts:</span>
+                      <span className="font-semibold">{stats.totalArtisans}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">In Progress</span>
-                      <span className="text-sm font-medium text-blue-600">
-                        {bookings.filter((b) => b.status === "in_progress").length}
-                      </span>
+                      <span>Pending Verifications:</span>
+                      <span className="font-semibold text-orange-600">{stats.pendingVerifications}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Pending</span>
-                      <span className="text-sm font-medium text-yellow-600">
-                        {bookings.filter((b) => b.status === "pending").length}
-                      </span>
+                      <span>Approved Artisans:</span>
+                      <span className="font-semibold text-green-600">{stats.approvedArtisans}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -550,8 +386,6 @@ export default function AdminPage() {
           </TabsContent>
         </Tabs>
       </div>
-
-      <Footer />
     </div>
   )
 }
