@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createClient } from "@/lib/supabase/client"
 import { ArtisanVerificationList } from "@/components/admin/artisan-verification"
+import { toast } from 'sonner'
 import { 
   Users, 
   Shield, 
@@ -17,7 +18,8 @@ import {
   UserCheck, 
   Clock,
   TrendingUp,
-  FileText
+  FileText,
+  LogOut
 } from "lucide-react"
 
 interface User {
@@ -110,7 +112,7 @@ export default function AdminPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        router.push("/login")
+        router.push("/admin/login")
         return
       }
 
@@ -123,6 +125,7 @@ export default function AdminPage() {
 
       if (error || !profile || profile.role !== 'admin') {
         setError("Access denied. Admin privileges required.")
+        router.push("/admin/login")
         return
       }
 
@@ -131,10 +134,22 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Admin access check failed:', error)
       setError("Failed to verify admin access")
+      router.push("/admin/login")
     } finally {
       setLoading(false)
     }
   }, [router, supabase, loadData])
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      toast.success('Logged out successfully')
+      router.push('/admin/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Failed to logout')
+    }
+  }
 
   useEffect(() => {
     checkAdminAccess()
@@ -174,9 +189,15 @@ export default function AdminPage() {
                 <p className="text-gray-600">Welcome, {currentUser?.full_name}</p>
               </div>
             </div>
-            <Button onClick={() => router.push("/dashboard")}>
-              Back to Dashboard
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button variant="outline" onClick={() => router.push("/")}>
+                Back to Site
+              </Button>
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>

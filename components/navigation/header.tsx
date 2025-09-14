@@ -26,7 +26,7 @@ interface HeaderProps {
 interface UserProfile {
   id: string
   full_name: string
-  is_admin?: boolean
+  role?: string
 }
 
 export function Header({ variant = "default", showAdminAccess = false }: HeaderProps) {
