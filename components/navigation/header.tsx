@@ -47,7 +47,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
       if (user) {
         const { data: profile } = await supabase
           .from("users")
-          .select("id, full_name, is_admin")
+          .select("id, full_name, role")
           .eq("id", user.id)
           .single()
 
@@ -186,6 +186,14 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                         My Bookings
                       </Link>
                     </DropdownMenuItem>
+                    {userProfile.role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -238,7 +246,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                             <p className="font-medium">{userProfile.full_name}</p>
                             <p className="text-sm text-muted-foreground">{user.email}</p>
                           </div>
-                          {(showAdminAccess || userProfile.is_admin) && (
+                          {(showAdminAccess || userProfile.role === 'admin') && (
                             <Link href="/admin" className="block mb-2">
                               <Button variant="outline" className="w-full justify-start bg-transparent">
                                 <Settings className="h-4 w-4 mr-2" />
