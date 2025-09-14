@@ -8,7 +8,7 @@ export default function AuthSignupRedirect() {
   
   useEffect(() => {
     // Immediately redirect to the correct signup page
-    router.replace('/signup')
+    router.replace('/register')
   }, [router])
 
   return (
