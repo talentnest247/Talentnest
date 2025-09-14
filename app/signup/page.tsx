@@ -1,17 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { StudentRegisterForm } from "@/components/auth/student-register-form"
-import { ArtisanRegisterForm } from "@/components/auth/artisan-register-form"
-import { Users, Briefcase, ArrowLeft, GraduationCap, Award, Shield, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
-  const [selectedRole, setSelectedRole] = useState<'student' | 'artisan' | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Redirect to the new register page
+    router.replace('/register')
+  }, [router])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Redirecting to registration...</p>
+      </div>
+    </div>
+  )
+}
 
   if (selectedRole === 'student') {
     return (
