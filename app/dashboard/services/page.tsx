@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   DropdownMenu, 
@@ -30,6 +29,7 @@ import {
   Package
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function ServicesPage() {
   const router = useRouter()
@@ -219,9 +219,11 @@ export default function ServicesPage() {
                 <div className="flex">
                   {/* Service Image */}
                   <div className="w-48 h-32 flex-shrink-0">
-                    <img
+                    <Image
                       src={service.images[0] || "/placeholder.svg"}
                       alt={service.title}
+                      width={192}
+                      height={128}
                       className="w-full h-full object-cover"
                     />
                   </div>

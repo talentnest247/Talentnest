@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
         const data = await response.json()
         setError(data.error || 'Login failed')
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred during login')
     } finally {
       setIsLoading(false)

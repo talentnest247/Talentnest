@@ -91,7 +91,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const bookingId = params.id
 
     // Update booking status to cancelled instead of deleting
-    const { data: booking, error } = await supabase
+    const { error } = await supabase
       .from("bookings")
       .update({
         status: "cancelled",

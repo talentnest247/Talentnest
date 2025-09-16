@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Users, Shield, MessageCircle, Search, BookOpen, GraduationCap, Award, Zap } from "lucide-react"
+import { Search, Users, BookOpen, Star, GraduationCap, Award, Zap, Shield, MessageCircle } from "lucide-react"
+import Image from "next/image"
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
 import Link from "next/link"
@@ -340,9 +341,11 @@ export default function HomePage() {
 
             <div className="relative animate-scale-in" style={{ animationDelay: "0.3s" }}>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl hover-lift">
-                <img
+                <Image
                   src="/university-of-ilorin-students-collaborating-on-cre.jpg"
                   alt="UNILORIN students collaborating on projects"
+                  width={600}
+                  height={400}
                   className="w-full h-auto"
                 />
                 <div className="absolute inset-0 bg-unilorin-gradient-light"></div>
@@ -372,7 +375,7 @@ export default function HomePage() {
               className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in"
               style={{ animationDelay: "0.3s" }}
             >
-              Whether you're looking to showcase your skills or find talented UNILORIN students for your projects,
+              Whether you&apos;re looking to showcase your skills or find talented UNILORIN students for your projects,
               TalentNest is your gateway to the University of Ilorin creative community.
             </p>
             <div

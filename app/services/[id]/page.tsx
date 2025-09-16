@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -26,10 +26,10 @@ import {
   AlertCircle,
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function ServiceDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const [service, setService] = useState<Service | null>(null)
   const [provider, setProvider] = useState<User | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -49,9 +49,7 @@ export default function ServiceDetailPage() {
       const serviceProvider = allUsers.find((u) => u.id === foundService.userId)
       setProvider(serviceProvider || null)
 
-      // Increment view count (in a real app, this would be done server-side)
-      const updatedService = { ...foundService, viewsCount: foundService.viewsCount + 1 }
-      // saveService(updatedService) // Uncomment if you want to track views
+      // Note: View count increment would be handled server-side in production
     }
 
     setCurrentUser(user)
@@ -121,7 +119,7 @@ export default function ServiceDetailPage() {
             <CardContent className="text-center py-12">
               <h3 className="text-lg font-semibold mb-2">Service not found</h3>
               <p className="text-muted-foreground mb-4">
-                The service you're looking for doesn't exist or has been removed.
+                The service you&apos;re looking for doesn&apos;t exist or has been removed.
               </p>
               <Link href="/marketplace">
                 <Button>Browse Other Services</Button>
@@ -156,7 +154,7 @@ export default function ServiceDetailPage() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <MessageCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              Booking request sent! You'll be redirected to WhatsApp to chat with {provider.fullName}.
+              Booking request sent! You&apos;ll be redirected to WhatsApp to chat with {provider.fullName}.
             </AlertDescription>
           </Alert>
         )}
@@ -168,9 +166,11 @@ export default function ServiceDetailPage() {
             {service.images.length > 0 && (
               <Card>
                 <CardContent className="p-0">
-                  <img
-                    src={service.images[0] || "/placeholder.svg?height=400&width=600"}
+                  <Image
+                    src={service.images[0] || "/placeholder.svg"}
                     alt={service.title}
+                    width={600}
+                    height={400}
                     className="w-full h-64 md:h-80 object-cover rounded-t-lg"
                   />
                 </CardContent>

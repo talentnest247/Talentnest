@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
 import { getCurrentUser, getBookings, getServices, getUsers, saveBooking } from "@/lib/storage"
-import type { User, Booking, Service } from "@/lib/types"
+import type { User, Booking } from "@/lib/types"
 import {
   ArrowLeft,
   MessageCircle,
@@ -31,8 +31,6 @@ export default function BookingsPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [services, setServices] = useState<Service[]>([])
-  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -61,15 +59,17 @@ export default function BookingsPage() {
 
     setUser(currentUser)
     setBookings(enrichedBookings)
-    setServices(allServices)
-    setUsers(allUsers)
     setLoading(false)
   }, [router])
 
   const handleStatusUpdate = (bookingId: string, newStatus: string) => {
     const updatedBookings = bookings.map((booking) => {
       if (booking.id === bookingId) {
-        const updatedBooking = { ...booking, status: newStatus as any, updatedAt: new Date().toISOString() }
+        const updatedBooking = { 
+          ...booking, 
+          status: newStatus as "pending" | "accepted" | "completed" | "cancelled", 
+          updatedAt: new Date().toISOString() 
+        }
         saveBooking(updatedBooking)
         return updatedBooking
       }
@@ -176,7 +176,7 @@ export default function BookingsPage() {
           {/* My Bookings Tab */}
           <TabsContent value="my-bookings" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold">Services I've Booked</h3>
+              <h3 className="text-lg font-serif font-semibold">Services I&apos;ve Booked</h3>
               <Link href="/marketplace">
                 <Button size="sm">Browse More Services</Button>
               </Link>

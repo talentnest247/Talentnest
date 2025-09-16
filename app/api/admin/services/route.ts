@@ -28,14 +28,14 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ services: filteredServices })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch services" }, { status: 500 })
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { serviceId, status, action } = await request.json()
+    const { serviceId, status } = await request.json()
 
     // In a real app, verify admin authentication here
 
@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ message: "Service status updated successfully" })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update service status" }, { status: 500 })
   }
 }

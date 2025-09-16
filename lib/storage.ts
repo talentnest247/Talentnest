@@ -104,7 +104,7 @@ export const getServicesByCategory = (category: string): Service[] => {
 }
 
 // Booking storage functions
-export const getBookings = (): Booking[] => getFromStorage(STORAGE_KEYS.BOOKINGS)
+export const getBookings = (): Booking[] => getFromStorage(STORAGE_KEYS.BOOKINGS) as Booking[]
 
 export const saveBooking = (booking: Booking) => {
   const bookings = getBookings()

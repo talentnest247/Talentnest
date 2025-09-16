@@ -105,7 +105,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -144,7 +144,7 @@ export default function SignupPage() {
 
       // Redirect to success page
       router.push("/auth/sign-up-success")
-    } catch (error) {
+    } catch {
       setErrors({ submit: "Registration failed. Please try again." })
     } finally {
       setIsLoading(false)
@@ -500,7 +500,7 @@ export default function SignupPage() {
                         onCheckedChange={(checked) => setUpdatesAccepted(checked as boolean)}
                       />
                       <Label htmlFor="updates" className="text-base font-normal cursor-pointer leading-relaxed">
-                        I'd like to receive updates about new features and community highlights
+                        I&apos;d like to receive updates about new features and community highlights
                       </Label>
                     </div>
                   </div>

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { userId, status, action } = await request.json()
+    const { userId, status } = await request.json()
 
     // In a real app, verify admin authentication here
 
@@ -63,7 +63,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ message: "User status updated successfully" })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update user status" }, { status: 500 })
   }
 }

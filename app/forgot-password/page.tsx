@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-serif text-center">Forgot Password</CardTitle>
               <CardDescription className="text-center">
-                Enter your university email and we'll send you a reset link
+                Enter your university email and we&apos;ll send you a reset link
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
