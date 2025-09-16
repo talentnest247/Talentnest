@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Menu, Settings, LogOut, User, Calendar } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -26,7 +25,7 @@ interface HeaderProps {
 interface UserProfile {
   id: string
   full_name: string
-  role?: string
+  is_admin?: boolean
 }
 
 export function Header({ variant = "default", showAdminAccess = false }: HeaderProps) {
@@ -47,7 +46,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
       if (user) {
         const { data: profile } = await supabase
           .from("users")
-          .select("id, full_name, role")
+          .select("id, full_name, is_admin")
           .eq("id", user.id)
           .single()
 
@@ -89,6 +88,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
 
   const navigationLinks = [
     { href: "/marketplace", label: "Browse Services" },
+    { href: "/skills", label: "Skills Catalog" },
     { href: "#how-it-works", label: "How It Works" },
     { href: "#about", label: "About" },
   ]
@@ -100,22 +100,12 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center group">
-              <div className="w-12 h-12 mr-3 group-hover:opacity-80 transition-opacity relative">
-                <Image 
-                  src="/unilorin-logo.png" 
-                  alt="University of Ilorin Logo" 
-                  fill
-                  className="object-contain"
-                />
+              <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center mr-3 group-hover:bg-secondary/80 transition-colors">
+                <span className="text-secondary-foreground font-bold text-lg">T</span>
               </div>
-              <div className="flex flex-col">
-                <h1 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
-                  TalentNest
-                </h1>
-                <span className="text-xs text-muted-foreground font-medium">
-                  University of Ilorin
-                </span>
-              </div>
+              <h1 className="text-2xl font-bold text-foreground group-hover:text-secondary transition-colors">
+                TalentNest
+              </h1>
             </Link>
           </div>
 
@@ -186,14 +176,6 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                         My Bookings
                       </Link>
                     </DropdownMenuItem>
-                    {userProfile.role === 'admin' && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Admin Panel
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -246,7 +228,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                             <p className="font-medium">{userProfile.full_name}</p>
                             <p className="text-sm text-muted-foreground">{user.email}</p>
                           </div>
-                          {(showAdminAccess || userProfile.role === 'admin') && (
+                          {(showAdminAccess || userProfile.is_admin) && (
                             <Link href="/admin" className="block mb-2">
                               <Button variant="outline" className="w-full justify-start bg-transparent">
                                 <Settings className="h-4 w-4 mr-2" />

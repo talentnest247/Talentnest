@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
+import { WhatsAppButton } from "@/components/whatsapp-button"
 import { getServices, getUsers, getCurrentUser, saveBooking, generateId, getCurrentTimestamp } from "@/lib/storage"
 import type { Service, User, Booking } from "@/lib/types"
 import {
@@ -341,15 +342,15 @@ export default function ServiceDetailPage() {
                       <h4 className="font-medium text-sm">Contact Provider</h4>
 
                       {provider.whatsappNumber && (
-                        <a
-                          href={`https://wa.me/${provider.whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi! I'm interested in your service: ${service.title}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-green-600 hover:underline"
+                        <WhatsAppButton
+                          phoneNumber={provider.whatsappNumber}
+                          message={`Hi ${provider.fullName}! I'm interested in your service: "${service.title}". Can we discuss the details?`}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start"
                         >
-                          <MessageCircle className="w-4 h-4" />
-                          WhatsApp
-                        </a>
+                          Contact via WhatsApp
+                        </WhatsAppButton>
                       )}
 
                       {provider.phoneNumber && (

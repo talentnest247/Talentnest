@@ -6,7 +6,6 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 const playfair = Playfair_Display({
@@ -81,7 +80,6 @@ export default function RootLayout({
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
         </ErrorBoundary>
-        <Toaster />
         <Analytics />
       </body>
     </html>

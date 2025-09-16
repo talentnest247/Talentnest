@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
+import { WhatsAppButton } from "@/components/whatsapp-button"
 import { getCurrentUser, saveUser, setCurrentUser } from "@/lib/storage"
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation"
 import type { User } from "@/lib/types"
@@ -143,6 +144,7 @@ export default function ProfilePage() {
 
       setTimeout(() => setIsSaved(false), 3000)
     } catch (error) {
+      console.error('Failed to update profile:', error)
       setErrors({ submit: "Failed to update profile. Please try again." })
     } finally {
       setIsLoading(false)
@@ -311,13 +313,25 @@ export default function ProfilePage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
-                        <Input
-                          id="whatsappNumber"
-                          value={formData.whatsappNumber}
-                          onChange={(e) => handleInputChange("whatsappNumber", e.target.value)}
-                          placeholder="Same as phone if different"
-                          className={errors.whatsappNumber ? "border-destructive" : ""}
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="whatsappNumber"
+                            value={formData.whatsappNumber}
+                            onChange={(e) => handleInputChange("whatsappNumber", e.target.value)}
+                            placeholder="Same as phone if different"
+                            className={errors.whatsappNumber ? "border-destructive" : ""}
+                          />
+                          {formData.whatsappNumber && (
+                            <WhatsAppButton
+                              phoneNumber={formData.whatsappNumber}
+                              message="Hi! This is a test message from TalentNest profile."
+                              variant="outline"
+                              size="sm"
+                            >
+                              Test
+                            </WhatsAppButton>
+                          )}
+                        </div>
                         {errors.whatsappNumber && <p className="text-sm text-destructive">{errors.whatsappNumber}</p>}
                       </div>
                     </div>
@@ -413,6 +427,7 @@ export default function ProfilePage() {
                               type="button"
                               onClick={() => removeSkill(skill)}
                               className="ml-1 hover:text-destructive"
+                              aria-label={`Remove ${skill} skill`}
                             >
                               <X className="w-3 h-3" />
                             </button>

@@ -6,256 +6,484 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { FileUpload } from '@/components/upload/enhanced-file-upload'
-import { toast } from 'sonner'
-import { Eye, EyeOff, AlertCircle, FileText, Award, User } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import { Eye, EyeOff, AlertCircle, Briefcase, Plus, X, Upload } from 'lucide-react'
 import { ArtisanSignupFormData } from '@/lib/types'
+import { validateEmail, validatePhoneNumber } from '@/lib/validation'
 
-const TRADE_CATEGORIES = [
-  'Carpentry',
-  'Plumbing',
+const SKILL_CATEGORIES = [
+  'Carpentry & Woodwork',
+  'Plumbing & Water Systems',
   'Electrical Work',
   'Masonry & Construction',
   'Painting & Decoration',
   'Welding & Metal Work',
-  'Tailoring & Fashion',
+  'Tailoring & Fashion Design',
   'Hair Styling & Beauty',
   'Auto Repair & Mechanics',
   'Electronics Repair',
   'Phone & Computer Repair',
   'Catering & Food Services',
   'Photography & Videography',
-  'Graphic Design',
-  'Web Development',
+  'Graphic Design & Branding',
+  'Web Development & Tech',
   'Tutoring & Education',
-  'Cleaning Services',
-  'Event Planning',
+  'Cleaning & Maintenance',
+  'Event Planning & Management',
   'Agriculture & Farming',
+  'Handicrafts & Arts',
+  'Music & Entertainment',
+  'Fitness & Sports Training',
   'Other'
 ]
 
 export function ArtisanRegisterForm() {
   const [formData, setFormData] = useState<ArtisanSignupFormData>({
     email: '',
+    fullName: '',
+    phoneNumber: '',
+    whatsappNumber: '',
+    bio: '',
+    experience: '',
+    skills: [],
+    portfolioLinks: [],
+    certificates: [],
     password: '',
-    confirmPassword: '',
-    full_name: '',
-    matric_number: '',
-    phone: '',
-    business_name: '',
-    business_registration_number: '',
-    trade_category: '',
-    years_of_experience: 0,
-    location: '',
-    description: '',
-    documents: [],
-    certificate: null,
-    bio_document: null
+    confirmPassword: ''
   })
+  
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [errors, setErrors] = useState<string[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [skillInput, setSkillInput] = useState('')
+  const [portfolioInput, setPortfolioInput] = useState('')
   const router = useRouter()
 
-  const validateForm = (): boolean => {
-    const newErrors: string[] = []
+  const validateField = (name: string, value: string | string[] | File[] | undefined) => {
+    if (!value) return 'This field is required'
+    
+    switch (name) {
+      case 'email':
+        return validateEmail(value as string) ? '' : 'Please enter a valid email address'
+      case 'fullName':
+        return (value as string).length >= 2 ? '' : 'Full name must be at least 2 characters'
+      case 'phoneNumber':
+      case 'whatsappNumber':
+        return validatePhoneNumber(value as string) ? '' : 'Invalid Nigerian phone number'
+      case 'bio':
+        return (value as string).length >= 50 ? '' : 'Bio must be at least 50 characters'
+      case 'experience':
+        return (value as string).length >= 30 ? '' : 'Experience description must be at least 30 characters'
+      case 'skills':
+        return (value as string[]).length > 0 ? '' : 'At least one skill is required'
+      case 'password':
+        return (value as string).length >= 8 ? '' : 'Password must be at least 8 characters'
+      case 'confirmPassword':
+        return (value as string) === formData.password ? '' : 'Passwords do not match'
+      default:
+        return ''
+    }
+  }
 
-    if (!formData.email) newErrors.push('Email is required')
-    if (!formData.full_name) newErrors.push('Full name is required')
-    if (!formData.matric_number) newErrors.push('Matric number is required')
-    if (!formData.password) newErrors.push('Password is required')
-    if (formData.password.length < 8) newErrors.push('Password must be at least 8 characters')
-    if (formData.password !== formData.confirmPassword) newErrors.push('Passwords do not match')
-    if (!formData.phone) newErrors.push('Phone number is required')
-    if (!formData.business_name) newErrors.push('Business name is required')
-    if (!formData.trade_category) newErrors.push('Trade category is required')
-    if (!formData.years_of_experience || formData.years_of_experience < 0) newErrors.push('Years of experience is required')
-    if (!formData.location) newErrors.push('Location is required')
-    if (!formData.description) newErrors.push('Business description is required')
-    if (formData.documents.length === 0) newErrors.push('At least one supporting document is required')
-    if (!formData.certificate) newErrors.push('Certificate is required')
-    if (!formData.bio_document) newErrors.push('Bio document is required')
+  const handleInputChange = (name: string, value: string | string[] | File[]) => {
+    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
 
-    setErrors(newErrors)
-    return newErrors.length === 0
+  const addSkill = () => {
+    if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
+      const newSkills = [...formData.skills, skillInput.trim()]
+      handleInputChange('skills', newSkills)
+      setSkillInput('')
+    }
+  }
+
+  const removeSkill = (skillToRemove: string) => {
+    const newSkills = formData.skills.filter(skill => skill !== skillToRemove)
+    handleInputChange('skills', newSkills)
+  }
+
+  const addPortfolioLink = () => {
+    if (portfolioInput.trim() && !formData.portfolioLinks.includes(portfolioInput.trim())) {
+      const newLinks = [...formData.portfolioLinks, portfolioInput.trim()]
+      handleInputChange('portfolioLinks', newLinks)
+      setPortfolioInput('')
+    }
+  }
+
+  const removePortfolioLink = (linkToRemove: string) => {
+    const newLinks = formData.portfolioLinks.filter(link => link !== linkToRemove)
+    handleInputChange('portfolioLinks', newLinks)
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    handleInputChange('certificates', files)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    // Validate all fields
+    const newErrors: Record<string, string> = {}
+    
+    // Validate individual fields
+    Object.keys(formData).forEach(key => {
+      const value = formData[key as keyof ArtisanSignupFormData]
+      const error = validateField(key, value)
+      if (error) newErrors[key] = error
+    })
+
+    if (!termsAccepted) {
+      newErrors.terms = 'Please accept the terms and conditions'
+    }
+
+    setErrors(newErrors)
+    
+    if (Object.keys(newErrors).length > 0) return
 
     setLoading(true)
 
     try {
-      // Prepare data for API
-      const registrationData = {
-        firstName: formData.full_name.split(' ')[0] || formData.full_name,
-        lastName: formData.full_name.split(' ').slice(1).join(' ') || '',
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
-        role: 'artisan',
-        businessName: formData.business_name,
-        specialization: formData.trade_category,
-        experience: formData.years_of_experience,
-        location: formData.location
-      }
-
-      console.log('Artisan registration data being sent:', registrationData)
-
-      // Call the registration API
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData)
+      // Create FormData for file upload
+      const submitData = new FormData()
+      
+      // Add text fields
+      submitData.append('email', formData.email)
+      submitData.append('fullName', formData.fullName)
+      submitData.append('phoneNumber', formData.phoneNumber)
+      submitData.append('whatsappNumber', formData.whatsappNumber)
+      submitData.append('bio', formData.bio)
+      submitData.append('experience', formData.experience)
+      submitData.append('skills', JSON.stringify(formData.skills))
+      submitData.append('portfolioLinks', JSON.stringify(formData.portfolioLinks))
+      submitData.append('password', formData.password)
+      submitData.append('accountType', 'artisan')
+      
+      // Add certificate files
+      formData.certificates.forEach((file, index) => {
+        submitData.append(`certificate_${index}`, file)
       })
 
-      const result = await response.json()
-      console.log('Artisan registration API response:', { response: response.status, result })
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        body: submitData,
+      })
+
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.message || 'Registration failed')
+        throw new Error(data.error || 'Registration failed')
       }
 
-      toast.success('Registration successful! You can now log in.')
-      router.push('/login?message=Registration successful - you can now log in')
+      // Success - redirect to verification pending page
+      router.push('/auth/sign-up-success?type=artisan&message=Your registration has been submitted! Please wait for admin verification.')
     } catch (error) {
-      console.error('Registration error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed'
-      toast.error(errorMessage)
+      setErrors({ submit: error instanceof Error ? error.message : 'Registration failed. Please try again.' })
     } finally {
       setLoading(false)
     }
   }
 
-  const handleFileChange = (files: File[]) => {
-    setFormData(prev => ({ ...prev, documents: files }))
-  }
-
-  const handleCertificateChange = (files: File[]) => {
-    if (files.length > 0) {
-      setFormData(prev => ({ ...prev, certificate: files[0] }))
-    }
-  }
-
-  const handleBioDocumentChange = (files: File[]) => {
-    if (files.length > 0) {
-      setFormData(prev => ({ ...prev, bio_document: files[0] }))
-    }
-  }
-
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Artisan Registration</CardTitle>
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
+          <Briefcase className="h-8 w-8 text-green-600" />
+        </div>
+        <CardTitle className="text-2xl">Artisan Registration</CardTitle>
         <CardDescription>
-          Register as an artisan student to offer your skills and services to the university community
+          Join TalentNest as a verified artisan and showcase your skills to students
         </CardDescription>
       </CardHeader>
+      
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {errors.length > 0 && (
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {errors.submit && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <ul className="list-disc list-inside">
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
+              <AlertDescription>{errors.submit}</AlertDescription>
             </Alert>
           )}
 
           {/* Personal Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Personal Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name *</Label>
+                <Label htmlFor="fullName">Full Name *</Label>
                 <Input
-                  id="full_name"
+                  id="fullName"
                   type="text"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                   placeholder="Enter your full name"
-                  required
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  className={errors.fullName ? 'border-red-500' : ''}
                 />
+                {errors.fullName && <p className="text-sm text-red-500">{errors.fullName}</p>}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="matric_number">Matric Number *</Label>
-                <Input
-                  id="matric_number"
-                  type="text"
-                  value={formData.matric_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, matric_number: e.target.value }))}
-                  placeholder="e.g., 19/55HA001"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address *</Label>
                 <Input
                   id="email"
                   type="email"
+                  placeholder="your.email@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter any email address"
-                  required
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={errors.email ? 'border-red-500' : ''}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="Enter your phone number"
-                  required
-                />
+                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number *</Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="+234 xxx xxx xxxx"
+                  value={formData.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                  className={errors.phoneNumber ? 'border-red-500' : ''}
+                />
+                {errors.phoneNumber && <p className="text-sm text-red-500">{errors.phoneNumber}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsappNumber">WhatsApp Number *</Label>
+                <Input
+                  id="whatsappNumber"
+                  type="tel"
+                  placeholder="+234 xxx xxx xxxx"
+                  value={formData.whatsappNumber}
+                  onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
+                  className={errors.whatsappNumber ? 'border-red-500' : ''}
+                />
+                {errors.whatsappNumber && <p className="text-sm text-red-500">{errors.whatsappNumber}</p>}
+                <p className="text-sm text-gray-500">Students will contact you via WhatsApp</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Professional Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bio">Professional Bio *</Label>
+              <Textarea
+                id="bio"
+                placeholder="Tell students about yourself, your background, and what makes you unique..."
+                value={formData.bio}
+                onChange={(e) => handleInputChange('bio', e.target.value)}
+                className={`min-h-[100px] ${errors.bio ? 'border-red-500' : ''}`}
+              />
+              {errors.bio && <p className="text-sm text-red-500">{errors.bio}</p>}
+              <p className="text-sm text-gray-500">Minimum 50 characters. This will be shown on your profile.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="experience">Experience & Expertise *</Label>
+              <Textarea
+                id="experience"
+                placeholder="Describe your professional experience, previous projects, achievements, and what you specialize in..."
+                value={formData.experience}
+                onChange={(e) => handleInputChange('experience', e.target.value)}
+                className={`min-h-[120px] ${errors.experience ? 'border-red-500' : ''}`}
+              />
+              {errors.experience && <p className="text-sm text-red-500">{errors.experience}</p>}
+              <p className="text-sm text-gray-500">Minimum 30 characters. Include years of experience and notable projects.</p>
+            </div>
+          </div>
+
+          {/* Skills & Services */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Skills & Services</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="skills">Your Skills *</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="skills"
+                  type="text"
+                  placeholder="Add a skill (e.g., Carpentry, Web Design)"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                  className={errors.skills ? 'border-red-500' : ''}
+                />
+                <Button type="button" onClick={addSkill} variant="outline">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {formData.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(skill)}
+                        className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                        aria-label={`Remove ${skill}`}
+                        title={`Remove ${skill}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {errors.skills && <p className="text-sm text-red-500">{errors.skills}</p>}
+              
+              <div className="mt-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">Popular Categories:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SKILL_CATEGORIES.slice(0, 8).map((category) => (
+                    <Button
+                      key={category}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!formData.skills.includes(category)) {
+                          handleInputChange('skills', [...formData.skills, category])
+                        }
+                      }}
+                      className="text-xs"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="portfolioLinks">Portfolio Links (Optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="portfolioLinks"
+                  type="url"
+                  placeholder="Add portfolio URL (e.g., website, Instagram, etc.)"
+                  value={portfolioInput}
+                  onChange={(e) => setPortfolioInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPortfolioLink())}
+                />
+                <Button type="button" onClick={addPortfolioLink} variant="outline">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {formData.portfolioLinks.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {formData.portfolioLinks.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <span className="text-sm text-blue-600 truncate flex-1">{link}</span>
+                      <button
+                        type="button"
+                        onClick={() => removePortfolioLink(link)}
+                        className="text-red-500 hover:bg-red-100 rounded p-1"
+                        aria-label={`Remove ${link}`}
+                        title={`Remove ${link}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <p className="text-sm text-gray-500">Add links to showcase your work (website, social media, etc.)</p>
+            </div>
+          </div>
+
+          {/* Certificates & Documents */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Certificates & Verification</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="certificates">Upload Certificates *</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <div className="space-y-2">
+                  <Label htmlFor="certificateUpload" className="cursor-pointer text-blue-600 hover:text-blue-500">
+                    Choose certificate files
+                  </Label>
+                  <input
+                    id="certificateUpload"
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    aria-label="Upload certificate files"
+                    title="Upload certificate files"
+                  />
+                  <p className="text-sm text-gray-500">Upload certificates, licenses, or other credentials</p>
+                  <p className="text-xs text-gray-400">Supported: JPG, PNG, PDF (Max 5MB each)</p>
+                </div>
+              </div>
+              
+              {formData.certificates.length > 0 && (
+                <div className="space-y-2 mt-3">
+                  <p className="text-sm font-medium">Uploaded Files:</p>
+                  {Array.from(formData.certificates).map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-green-50 rounded">
+                      <span className="text-sm text-green-700 flex-1">{file.name}</span>
+                      <span className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {errors.certificates && <p className="text-sm text-red-500">{errors.certificates}</p>}
+              <p className="text-sm text-gray-500">These documents will be reviewed by our admin team for verification</p>
+            </div>
+          </div>
+
+          {/* Security */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Security</h3>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Password *</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
                     value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter password"
-                    required
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className={errors.password ? 'border-red-500' : ''}
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
+                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
               </div>
 
               <div className="space-y-2">
@@ -263,199 +491,78 @@ export function ArtisanRegisterForm() {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    placeholder="Confirm password"
-                    required
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className={errors.confirmPassword ? 'border-red-500' : ''}
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
+                {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
               </div>
             </div>
           </div>
 
-          {/* Business Information */}
+          {/* Verification Notice */}
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Verification Process:</strong> Your account will be reviewed by our admin team within 2-3 business days. 
+              You&apos;ll receive an email notification once your application is approved or if additional information is needed.
+            </AlertDescription>
+          </Alert>
+
+          {/* Terms and Conditions */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Business Information</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="business_name">Business Name *</Label>
-                <Input
-                  id="business_name"
-                  type="text"
-                  value={formData.business_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, business_name: e.target.value }))}
-                  placeholder="Enter your business name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="business_registration_number">Business Registration Number</Label>
-                <Input
-                  id="business_registration_number"
-                  type="text"
-                  value={formData.business_registration_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, business_registration_number: e.target.value }))}
-                  placeholder="Enter registration number (if applicable)"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="trade_category">Trade Category *</Label>
-                <Select 
-                  value={formData.trade_category} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, trade_category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your trade category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TRADE_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="years_of_experience">Years of Experience *</Label>
-                <Input
-                  id="years_of_experience"
-                  type="number"
-                  min="0"
-                  value={formData.years_of_experience}
-                  onChange={(e) => setFormData(prev => ({ ...prev, years_of_experience: parseInt(e.target.value) || 0 }))}
-                  placeholder="Enter years of experience"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">Location *</Label>
-              <Input
-                id="location"
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Enter your business location"
-                required
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(!!checked)}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Business Description *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe your business and services..."
-                rows={4}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Document Upload Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Required Documents</h3>
-            
-            {/* Certificate Upload */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                Certificate *
+              <Label htmlFor="terms" className="text-sm">
+                I agree to the{' '}
+                <button type="button" className="text-blue-600 hover:underline">
+                  Terms of Service
+                </button>{' '}
+                and{' '}
+                <button type="button" className="text-blue-600 hover:underline">
+                  Privacy Policy
+                </button>
+                {' '}and understand that my application will be reviewed for verification
               </Label>
-              <p className="text-sm text-muted-foreground">
-                Upload your professional certificate or qualification document
-              </p>
-              <FileUpload
-                files={formData.certificate ? [formData.certificate] : []}
-                onFilesChange={handleCertificateChange}
-                maxFiles={1}
-                maxSize={5 * 1024 * 1024}
-                acceptedTypes={['application/pdf', 'image/png', 'image/jpg', 'image/jpeg']}
-              />
-              {formData.certificate && (
-                <p className="text-sm text-green-600">
-                  Certificate uploaded: {formData.certificate.name}
-                </p>
-              )}
             </div>
-
-            {/* Bio Document Upload */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Bio Document *
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Upload a document containing your professional biography and portfolio
-              </p>
-              <FileUpload
-                files={formData.bio_document ? [formData.bio_document] : []}
-                onFilesChange={handleBioDocumentChange}
-                maxFiles={1}
-                maxSize={5 * 1024 * 1024}
-                acceptedTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
-              />
-              {formData.bio_document && (
-                <p className="text-sm text-green-600">
-                  Bio document uploaded: {formData.bio_document.name}
-                </p>
-              )}
-            </div>
-
-            {/* Supporting Documents Upload */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Supporting Documents *
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Upload additional supporting documents (ID card, work samples, references, etc.)
-              </p>
-              <FileUpload
-                files={formData.documents}
-                onFilesChange={handleFileChange}
-                maxFiles={5}
-                maxSize={5 * 1024 * 1024}
-                acceptedTypes={['application/pdf', 'image/png', 'image/jpg', 'image/jpeg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
-              />
-              {formData.documents.length > 0 && (
-                <div className="text-sm text-green-600">
-                  {formData.documents.length} supporting document(s) uploaded
-                </div>
-              )}
-            </div>
+            {errors.terms && <p className="text-sm text-red-500">{errors.terms}</p>}
           </div>
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full h-12 text-lg" 
             disabled={loading}
           >
-            {loading ? 'Registering...' : 'Register as Artisan'}
+            {loading ? 'Submitting Application...' : 'Submit Artisan Application'}
           </Button>
+
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{' '}
+            <button 
+              type="button"
+              onClick={() => router.push('/login')}
+              className="text-blue-600 hover:underline"
+            >
+              Sign in here
+            </button>
+          </p>
         </form>
       </CardContent>
     </Card>

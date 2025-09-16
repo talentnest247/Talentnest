@@ -1,280 +1,185 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "sonner"
-import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2, Shield } from "lucide-react"
+import { Header } from "@/components/navigation/header"
+import { Footer } from "@/components/navigation/footer"
+import { validateUnilorinEmail } from "@/lib/validation"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
-import Image from "next/image"
-
-const loginSchema = z.object({
-  email: z.string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().default(false)
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
+import { useRouter } from "next/navigation"
+import { AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
+  const supabase = createClient()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema)
-  })
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
 
-  const rememberMe = watch("rememberMe")
+    if (!email) {
+      newErrors.email = "Email is required"
+    } else if (!validateUnilorinEmail(email)) {
+      newErrors.email = "Please use your UNILORIN student email"
+    }
 
-  const onSubmit = async (data: LoginFormData) => {
+    if (!password) {
+      newErrors.password = "Password is required"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) return
+
     setIsLoading(true)
-    setError("")
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        setError(result.error || 'Login failed')
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          setErrors({ submit: "Invalid email or password" })
+        } else if (error.message.includes("Email not confirmed")) {
+          setErrors({ submit: "Please check your email and confirm your account first" })
+        } else {
+          setErrors({ submit: error.message })
+        }
         return
       }
 
-      const profile = result.user
-
-      // Check if account is active
-      if (!profile.is_active) {
-        setError("Your account has been deactivated. Please contact support.")
-        return
-      }
-
-      // Check if student matriculation number is verified
-      if (profile.role === 'student' && !profile.matric_number) {
-        toast.error("Profile incomplete", {
-          description: "Please complete your profile with matriculation number."
-        })
-        router.push('/register/student')
-        return
-      }
-
-      toast.success("Welcome back!", {
-        description: `Successfully signed in as ${profile.role}`,
-        duration: 3000
-      })
-
-      // Redirect based on role
-      if (profile.role === 'admin') {
-        router.push('/admin')
-      } else if (profile.role === 'artisan') {
-        // For now, just redirect to dashboard
-        // TODO: Add artisan profile verification check
-        router.push('/dashboard')
-      } else {
-        router.push('/dashboard')
-      }
+      router.push("/dashboard")
     } catch (error) {
-      console.error('Login error:', error)
-      setError("An unexpected error occurred. Please try again.")
+      setErrors({ submit: "Login failed. Please try again." })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 relative">
-                <Image 
-                  src="/unilorin-logo.png" 
-                  alt="University of Ilorin Logo" 
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  TalentNest
-                </h1>
-                <p className="text-sm text-gray-600">Student Services Platform</p>
-              </div>
-            </Link>
-            <Button variant="outline" onClick={() => router.push('/signup')}>
-              Sign Up
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header variant="minimal" />
 
-      <div className="flex items-center justify-center px-4 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
-            <CardHeader className="text-center pb-8">
-              <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl w-16 h-16 flex items-center justify-center">
-                <Lock className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
-              <CardDescription className="text-gray-600">
-                Sign in to your TalentNest account
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block">
+              <h1 className="text-3xl font-serif font-bold text-primary mb-2">TalentNest</h1>
+            </Link>
+            <p className="text-muted-foreground">Welcome back to University of Ilorin's skills marketplace</p>
+          </div>
+
+          <Card className="border-border">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-serif text-center">Sign In</CardTitle>
+              <CardDescription className="text-center">
+                Enter your UNILORIN student email to access your account
               </CardDescription>
             </CardHeader>
-
-            <CardContent className="space-y-6">
-              {error && (
-                <Alert variant="destructive" className="border-red-200 bg-red-50">
+            <CardContent className="space-y-4">
+              {errors.submit && (
+                <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>{errors.submit}</AlertDescription>
                 </Alert>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      className={`pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-                      }`}
-                      {...register("email")}
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="text-sm text-red-600">{errors.email.message}</p>
-                  )}
+                  <Label htmlFor="email">UNILORIN Student Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="20-52hl077@students.unilorin.edu.ng"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: "" }))
+                    }}
+                    className={`bg-input border-border ${errors.email ? "border-destructive" : ""}`}
+                    required
+                  />
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
-
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                      Password
-                    </Label>
-                    <Link 
-                      href="/forgot-password" 
-                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                    >
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/forgot-password" className="text-sm text-secondary hover:text-secondary/80 underline">
                       Forgot password?
                     </Link>
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className={`pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-                      }`}
-                      {...register("password")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-sm text-red-600">{errors.password.message}</p>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setValue("rememberMe", !!checked)}
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: "" }))
+                    }}
+                    className={`bg-input border-border ${errors.password ? "border-destructive" : ""}`}
+                    required
                   />
-                  <Label
-                    htmlFor="rememberMe"
-                    className="text-sm text-gray-600 cursor-pointer"
-                  >
-                    Remember me on this device
-                  </Label>
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium transition-all duration-200 disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Signing In..." : "Sign In"}
                 </Button>
               </form>
 
-              <div className="text-center pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/signup"
-                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
-                  >
-                    Sign up here
+              <Separator />
+
+              <div className="text-center space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Link href="/signup" className="text-secondary hover:text-secondary/80 underline font-medium">
+                    Create your profile
                   </Link>
                 </p>
+
+                <div className="text-xs text-muted-foreground">
+                  <p>By signing in, you agree to our</p>
+                  <div className="flex justify-center space-x-4 mt-1">
+                    <Link href="/terms" className="hover:text-primary underline">
+                      Terms of Service
+                    </Link>
+                    <span>•</span>
+                    <Link href="/privacy" className="hover:text-primary underline">
+                      Privacy Policy
+                    </Link>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Security Notice */}
-          <div className="mt-8 text-center">
-            <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-              <Shield className="h-4 w-4" />
-              <span>Secure login protected by industry-standard encryption</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              TalentNest - Student Services Platform
-            </p>
+          <div className="text-center mt-6">
+            <Link href="/" className="text-sm text-muted-foreground hover:text-primary underline">
+              ← Back to TalentNest
+            </Link>
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }

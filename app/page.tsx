@@ -1,204 +1,200 @@
-'use client'
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Users, Shield, MessageCircle, Search, BookOpen } from "lucide-react"
+import { Star, Users, Shield, MessageCircle, Search, BookOpen, GraduationCap, Award, Zap } from "lucide-react"
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
 import Link from "next/link"
-import Image from "next/image"
-import { useEffect, useRef } from 'react'
 
 export default function HomePage() {
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  
-  useEffect(() => {
-    // Create intersection observer for scroll animations
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-in')
-          }
-        })
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      }
-    )
-    
-    // Observe all elements with scroll-animate class
-    const animateElements = document.querySelectorAll('.scroll-animate')
-    animateElements.forEach((el) => {
-      if (observerRef.current) {
-        observerRef.current.observe(el)
-      }
-    })
-    
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [])
-  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <style jsx global>{`
-        .scroll-animate {
-          opacity: 0;
-          transform: translateY(30px);
-          transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .scroll-animate.animate-in {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        
-        .scroll-animate-delay-1 {
-          transition-delay: 0.1s;
-        }
-        
-        .scroll-animate-delay-2 {
-          transition-delay: 0.2s;
-        }
-        
-        .scroll-animate-delay-3 {
-          transition-delay: 0.3s;
-        }
-        
-        .hero-animate {
-          animation: heroFadeIn 1.2s ease-out forwards;
-        }
-        
-        @keyframes heroFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <Header />
 
-      {/* Hero Section with University Branding */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/5 via-transparent to-teal-900/5"></div>
-        <div className="absolute top-20 left-10 w-32 h-32 bg-orange-400/10 rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-600/10 rounded-full blur-xl"></div>
-        
-        <div className="container mx-auto text-center relative">
-          <div className="hero-animate flex justify-center mb-6">
-            <div className="w-20 h-20 relative opacity-90">
-              <Image 
-                src="/unilorin-logo.png" 
-                alt="University of Ilorin Logo" 
-                fill
-                className="object-contain"
-              />
-            </div>
+      {/* Hero Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-unilorin-gradient-light relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full animate-float"></div>
+          <div
+            className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/5 rounded-full animate-float"
+            style={{ animationDelay: "2s" }}
+          ></div>
+        </div>
+
+        <div className="container mx-auto text-center max-w-5xl relative z-10">
+          <div className="inline-flex items-center px-6 py-3 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in hover-lift">
+            <GraduationCap className="w-4 h-4 mr-2" />
+            <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
+            Trusted by 500+ UNILORIN Students
           </div>
-          <h1 className="hero-animate text-5xl md:text-7xl font-serif font-bold bg-gradient-to-r from-blue-900 via-teal-700 to-blue-800 bg-clip-text text-transparent mb-8 text-balance leading-tight">
-            Your University Skills Marketplace
+
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 text-balance leading-tight animate-slide-up">
+            <span className="text-unilorin-gradient">University of Ilorin</span>
+            <span className="text-secondary block animate-bounce-gentle">Skills Marketplace</span>
           </h1>
-          
-          <p className="hero-animate text-xl text-gray-600 mb-12 max-w-4xl mx-auto text-pretty leading-relaxed">
-            Connect with talented University of Ilorin students, showcase your skills, and build your portfolio. 
-            The trusted platform where our university community offers and discovers professional services.
+
+          <p
+            className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto text-pretty leading-relaxed animate-fade-in"
+            style={{ animationDelay: "0.3s" }}
+          >
+            Connect with talented UNILORIN students, showcase your skills, and build your portfolio. The trusted
+            platform where University of Ilorin students offer and discover professional services within our campus
+            community.
           </p>
-          
-          <div className="hero-animate flex flex-col sm:flex-row gap-6 justify-center">
+
+          <div
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-scale-in"
+            style={{ animationDelay: "0.6s" }}
+          >
             <Link href="/signup">
-              <Button size="lg" className="text-lg px-10 py-4 bg-gradient-to-r from-blue-900 to-blue-700 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <Button
+                size="lg"
+                className="text-lg px-10 py-4 h-auto font-semibold shadow-lg hover:shadow-xl transition-all hover-lift bg-unilorin-gradient hover:bg-unilorin-gradient"
+              >
+                <Award className="w-5 h-5 mr-2" />
                 Start Showcasing Your Skills
               </Button>
             </Link>
-            <Link href="/marketplace">
-              <Button variant="outline" size="lg" className="text-lg px-10 py-4 border-2 border-teal-700 text-teal-800 hover:bg-teal-700 hover:text-white transition-all duration-300 transform hover:-translate-y-1">
+            <Link href="#services">
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-10 py-4 h-auto font-semibold border-2 border-primary hover:bg-primary/5 bg-transparent hover-lift"
+              >
+                <Search className="w-5 h-5 mr-2" />
                 Browse Student Services
               </Button>
             </Link>
           </div>
+
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 pt-8 border-t border-border/50">
+            <div className="text-center animate-fade-in hover-lift" style={{ animationDelay: "0.9s" }}>
+              <div className="text-3xl font-bold text-primary">500+</div>
+              <div className="text-sm text-muted-foreground">Active Students</div>
+            </div>
+            <div className="text-center animate-fade-in hover-lift" style={{ animationDelay: "1.1s" }}>
+              <div className="text-3xl font-bold text-primary">1,200+</div>
+              <div className="text-sm text-muted-foreground">Services Listed</div>
+            </div>
+            <div className="text-center animate-fade-in hover-lift" style={{ animationDelay: "1.3s" }}>
+              <div className="text-3xl font-bold text-secondary">4.8★</div>
+              <div className="text-sm text-muted-foreground">Average Rating</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Features Section with Enhanced Cards */}
-      <section id="services" className="py-24 bg-gradient-to-br from-teal-50 to-cyan-50">
+      {/* Features Section */}
+      <section id="services" className="py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="scroll-animate text-4xl md:text-5xl font-serif font-bold text-blue-900 mb-6">
-              Discover Amazing Student Talent
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-6 animate-fade-in">
+              <Zap className="w-4 h-4 mr-2" />
+              Popular Categories
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 animate-slide-up">
+              Discover Amazing <span className="text-unilorin-gradient">UNILORIN</span> Student Talent
             </h2>
-            <p className="scroll-animate text-xl text-gray-600 max-w-3xl mx-auto">
-              From digital design to artisan crafts, find skilled University of Ilorin students ready to help with your projects
+            <p
+              className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              From digital design to artisan crafts, find skilled University of Ilorin students ready to help with your
+              projects
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-            <Card className="scroll-animate border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card
+              className="border-2 border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 group hover-lift animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <CardHeader className="pb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                  <Search className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors group-hover:animate-pulse">
+                  <Search className="w-7 h-7 text-primary" />
                 </div>
-                <CardTitle className="font-serif text-2xl text-blue-900">Digital Services</CardTitle>
-                <CardDescription className="text-gray-600 text-lg">
-                  Web development, graphic design, content creation, and more digital skills from tech-savvy students
+                <CardTitle className="text-xl font-bold mb-3 text-primary">Digital Services</CardTitle>
+                <CardDescription className="text-base leading-relaxed">
+                  Web development, graphic design, content creation, and more digital skills
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 hover:from-blue-200 hover:to-blue-300 border-0 px-4 py-2">Web Design</Badge>
-                  <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 hover:from-blue-200 hover:to-blue-300 border-0 px-4 py-2">Photography</Badge>
-                  <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 hover:from-blue-200 hover:to-blue-300 border-0 px-4 py-2">Writing</Badge>
-                  <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 hover:from-blue-200 hover:to-blue-300 border-0 px-4 py-2">Coding</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Web Design
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Photography
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Writing
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Coding
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="scroll-animate scroll-animate-delay-1 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+            <Card
+              className="border-2 border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 group hover-lift animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
               <CardHeader className="pb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-600 to-teal-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                  <Users className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors group-hover:animate-pulse">
+                  <Users className="w-7 h-7 text-primary" />
                 </div>
-                <CardTitle className="font-serif text-2xl text-blue-900">Artisan Crafts</CardTitle>
-                <CardDescription className="text-gray-600 text-lg">
-                  Handmade items, tailoring, jewelry making, and traditional crafts from creative students
+                <CardTitle className="text-xl font-bold mb-3 text-primary">Artisan Crafts</CardTitle>
+                <CardDescription className="text-base leading-relaxed">
+                  Handmade items, tailoring, jewelry making, and traditional crafts
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Badge className="bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300 border-0 px-4 py-2">Tailoring</Badge>
-                  <Badge className="bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300 border-0 px-4 py-2">Jewelry</Badge>
-                  <Badge className="bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300 border-0 px-4 py-2">Art</Badge>
-                  <Badge className="bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300 border-0 px-4 py-2">Crafts</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Tailoring
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Jewelry
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Art
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Crafts
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="scroll-animate scroll-animate-delay-2 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+            <Card
+              className="border-2 border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 group hover-lift animate-fade-in"
+              style={{ animationDelay: "0.5s" }}
+            >
               <CardHeader className="pb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                  <BookOpen className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors group-hover:animate-pulse">
+                  <BookOpen className="w-7 h-7 text-primary" />
                 </div>
-                <CardTitle className="font-serif text-2xl text-blue-900">Learning & Tutoring</CardTitle>
-                <CardDescription className="text-gray-600 text-lg">
-                  Peer-to-peer learning, skill workshops, and academic tutoring from top-performing students
+                <CardTitle className="text-xl font-bold mb-3 text-primary">Learning & Tutoring</CardTitle>
+                <CardDescription className="text-base leading-relaxed">
+                  Peer-to-peer learning, skill workshops, and academic tutoring
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Badge className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300 border-0 px-4 py-2">Tutoring</Badge>
-                  <Badge className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300 border-0 px-4 py-2">Workshops</Badge>
-                  <Badge className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300 border-0 px-4 py-2">Mentoring</Badge>
-                  <Badge className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300 border-0 px-4 py-2">Training</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Tutoring
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Workshops
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Mentoring
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 hover-lift">
+                    Training
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -206,110 +202,135 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works - Enhanced with University Colors */}
-      <section id="how-it-works" className="py-24 bg-white">
+      {/* How It Works */}
+      <section id="how-it-works" className="py-24 bg-card/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="scroll-animate text-4xl md:text-5xl font-serif font-bold text-blue-900 mb-6">How TalentNest Works</h2>
-            <p className="scroll-animate text-xl text-gray-600 max-w-3xl mx-auto">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-6 animate-fade-in">
+              Simple Process
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 animate-slide-up">How TalentNest Works</h2>
+            <p
+              className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
               Simple steps to connect, collaborate, and grow within the University of Ilorin community
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12">
-            <div className="scroll-animate text-center group">
+            <div className="text-center group animate-fade-in" style={{ animationDelay: "0.1s" }}>
               <div className="relative mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110">
+                <div className="w-20 h-20 bg-unilorin-gradient rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all hover-lift animate-glow">
                   <span className="text-3xl font-bold text-white">1</span>
                 </div>
-                <div className="absolute -inset-4 bg-blue-100 rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-secondary/20 rounded-full animate-pulse"></div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 border border-blue-100">
-                <h3 className="text-2xl font-serif font-semibold mb-4 text-blue-900">Create Your Profile</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Showcase your skills, upload your portfolio, and set your availability for services or learning within the UNILORIN community
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-primary">Register with Your Matric Number</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Sign up using your UNILORIN matric number, showcase your skills, and set your availability for services
+              </p>
             </div>
 
-            <div className="scroll-animate scroll-animate-delay-1 text-center group">
+            <div className="text-center group animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <div className="relative mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-teal-600 to-teal-800 rounded-full flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110">
+                <div
+                  className="w-20 h-20 bg-unilorin-gradient rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all hover-lift animate-glow"
+                  style={{ animationDelay: "0.5s" }}
+                >
                   <span className="text-3xl font-bold text-white">2</span>
                 </div>
-                <div className="absolute -inset-4 bg-teal-100 rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-secondary/20 rounded-full animate-pulse"
+                  style={{ animationDelay: "0.5s" }}
+                ></div>
               </div>
-              <div className="bg-gradient-to-br from-teal-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 border border-teal-100">
-                <h3 className="text-2xl font-serif font-semibold mb-4 text-teal-800">Connect & Collaborate</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Browse services, contact fellow students via WhatsApp, and start working on your projects together
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-primary">Connect & Collaborate</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Browse services, contact providers via WhatsApp, and start working on your projects together
+              </p>
             </div>
 
-            <div className="scroll-animate scroll-animate-delay-2 text-center group">
+            <div className="text-center group animate-fade-in" style={{ animationDelay: "0.5s" }}>
               <div className="relative mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110">
+                <div
+                  className="w-20 h-20 bg-unilorin-gradient rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all hover-lift animate-glow"
+                  style={{ animationDelay: "1s" }}
+                >
                   <span className="text-3xl font-bold text-white">3</span>
                 </div>
-                <div className="absolute -inset-4 bg-orange-100 rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-secondary/20 rounded-full animate-pulse"
+                  style={{ animationDelay: "1s" }}
+                ></div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 border border-orange-100">
-                <h3 className="text-2xl font-serif font-semibold mb-4 text-orange-800">Build Trust & Grow</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Rate experiences, earn verification badges, and build your reputation within the university community
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-primary">Build Trust & Grow</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Rate experiences, earn verification badges, and build your reputation within the UNILORIN community
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trust & Safety - Enhanced Design */}
-      <section className="py-24 bg-gradient-to-br from-blue-900 to-teal-900 text-white">
+      {/* Trust & Safety */}
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="scroll-animate text-4xl md:text-5xl font-serif font-bold mb-8">
-                Built for University of Ilorin Students
+            <div className="animate-fade-in">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-6">
+                <Shield className="w-4 h-4 mr-2" />
+                Trusted & Secure
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-8">
+                Built for <span className="text-unilorin-gradient">University of Ilorin</span> Students
               </h2>
-              <p className="scroll-animate text-xl text-blue-100 mb-12 leading-relaxed">
+              <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
                 TalentNest is designed specifically for the UNILORIN community, ensuring a safe, trusted environment
-                where students can confidently share their skills and collaborate.
+                where students can confidently share their skills and collaborate within our campus.
               </p>
 
               <div className="space-y-8">
-                <div className="scroll-animate flex items-start space-x-6 group">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
-                    <Shield className="w-6 h-6 text-orange-400" />
+                <div
+                  className="flex items-start space-x-6 hover-lift animate-fade-in"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 hover:bg-primary/20 transition-colors">
+                    <Shield className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-orange-400">Verified Student Community</h3>
-                    <p className="text-blue-100 leading-relaxed">
-                      All users are verified University of Ilorin students, creating a trusted network of peers
+                    <h3 className="text-xl font-bold mb-3 text-primary">Verified UNILORIN Student Community</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
+                      All users are verified University of Ilorin students using their matric number
                     </p>
                   </div>
                 </div>
 
-                <div className="scroll-animate scroll-animate-delay-1 flex items-start space-x-6 group">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
-                    <Star className="w-6 h-6 text-orange-400" />
+                <div
+                  className="flex items-start space-x-6 hover-lift animate-fade-in"
+                  style={{ animationDelay: "0.4s" }}
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 hover:bg-primary/20 transition-colors">
+                    <Star className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-orange-400">Rating & Review System</h3>
-                    <p className="text-blue-100 leading-relaxed">
-                      Build trust through transparent ratings and reviews from fellow UNILORIN students
+                    <h3 className="text-xl font-bold mb-3 text-primary">Rating & Review System</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
+                      Build trust through transparent ratings and reviews from fellow students
                     </p>
                   </div>
                 </div>
 
-                <div className="scroll-animate scroll-animate-delay-2 flex items-start space-x-6 group">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
-                    <MessageCircle className="w-6 h-6 text-orange-400" />
+                <div
+                  className="flex items-start space-x-6 hover-lift animate-fade-in"
+                  style={{ animationDelay: "0.6s" }}
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 hover:bg-primary/20 transition-colors">
+                    <MessageCircle className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-orange-400">Direct Communication</h3>
-                    <p className="text-blue-100 leading-relaxed">
+                    <h3 className="text-xl font-bold mb-3 text-primary">Direct Communication</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
                       Connect instantly via WhatsApp for quick project discussions and bookings
                     </p>
                   </div>
@@ -317,40 +338,63 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="scroll-animate relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-orange-400/20 to-blue-400/20 rounded-3xl blur-xl"></div>
-              <div className="relative rounded-2xl shadow-2xl border-4 border-white/20 bg-white/10 backdrop-blur-sm p-8 h-96 flex items-center justify-center">
-                <div className="text-center text-white/80">
-                  <Users className="w-24 h-24 mx-auto mb-4 text-orange-400" />
-                  <h3 className="text-2xl font-semibold mb-2">University Students</h3>
-                  <p>Collaborating on Creative Projects</p>
-                </div>
+            <div className="relative animate-scale-in" style={{ animationDelay: "0.3s" }}>
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl hover-lift">
+                <img
+                  src="/university-of-ilorin-students-collaborating-on-cre.jpg"
+                  alt="UNILORIN students collaborating on projects"
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-unilorin-gradient-light"></div>
               </div>
+              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-secondary/10 rounded-2xl animate-float"></div>
+              <div
+                className="absolute -top-6 -right-6 w-16 h-16 bg-primary/20 rounded-xl animate-float"
+                style={{ animationDelay: "2s" }}
+              ></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section - University Themed */}
-      <section className="py-24 bg-gradient-to-br from-orange-50 to-blue-50">
+      {/* CTA Section */}
+      <section className="py-24 bg-unilorin-gradient-light">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-4xl mx-auto">
-            <h2 className="scroll-animate text-4xl md:text-5xl font-serif font-bold text-blue-900 mb-8">
-              Ready to Join the UNILORIN TalentNest Community?
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-8 animate-fade-in">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Join the Community
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold mb-8 animate-slide-up">
+              Ready to Join <span className="text-unilorin-gradient">TalentNest</span>?
             </h2>
-            <p className="scroll-animate text-xl text-gray-600 mb-12 leading-relaxed">
-              Whether you&apos;re looking to showcase your skills or find talented University of Ilorin students for your projects, 
-              TalentNest is your gateway to our vibrant university creative community.
+            <p
+              className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              Whether you're looking to showcase your skills or find talented UNILORIN students for your projects,
+              TalentNest is your gateway to the University of Ilorin creative community.
             </p>
-            
-            <div className="scroll-animate flex flex-col sm:flex-row gap-6 justify-center">
+            <div
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-scale-in"
+              style={{ animationDelay: "0.6s" }}
+            >
               <Link href="/signup">
-                <Button size="lg" className="text-lg px-12 py-4 bg-gradient-to-r from-blue-900 to-blue-700 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <Button
+                  size="lg"
+                  className="text-lg px-10 py-4 h-auto font-semibold shadow-lg hover:shadow-xl transition-all hover-lift bg-unilorin-gradient hover:bg-unilorin-gradient"
+                >
+                  <Award className="w-5 h-5 mr-2" />
                   Create Your Profile
                 </Button>
               </Link>
               <Link href="/login">
-                <Button variant="outline" size="lg" className="text-lg px-12 py-4 border-2 border-teal-700 text-teal-800 hover:bg-teal-700 hover:text-white transition-all duration-300 transform hover:-translate-y-1">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-10 py-4 h-auto font-semibold border-2 border-primary hover:bg-primary/5 bg-transparent hover-lift"
+                >
+                  <Users className="w-5 h-5 mr-2" />
                   Sign In to Browse
                 </Button>
               </Link>

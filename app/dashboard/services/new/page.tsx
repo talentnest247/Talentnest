@@ -32,7 +32,6 @@ export default function NewServicePage() {
   })
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
-  const [images, setImages] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
 
@@ -113,11 +112,14 @@ export default function NewServicePage() {
         subcategory: formData.subcategory || undefined,
         priceRange: formData.priceRange.trim(),
         deliveryTime: formData.deliveryTime.trim(),
-        images,
+        images: [],
         tags,
         isActive: true,
+        status: "pending",
         viewsCount: 0,
         ordersCount: 0,
+        rating: 0,
+        totalReviews: 0,
         createdAt: getCurrentTimestamp(),
         updatedAt: getCurrentTimestamp(),
       }
@@ -125,6 +127,7 @@ export default function NewServicePage() {
       saveService(newService)
       router.push("/dashboard?tab=services")
     } catch (error) {
+      console.error('Failed to create service:', error)
       setErrors({ submit: "Failed to create service. Please try again." })
     } finally {
       setIsLoading(false)
@@ -347,7 +350,12 @@ export default function NewServicePage() {
                       {tags.map((tag, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-1">
                           {tag}
-                          <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+                          <button 
+                            type="button" 
+                            onClick={() => removeTag(tag)} 
+                            className="ml-1 hover:text-destructive"
+                            aria-label={`Remove ${tag} tag`}
+                          >
                             <X className="w-3 h-3" />
                           </button>
                         </Badge>

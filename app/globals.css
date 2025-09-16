@@ -4,85 +4,85 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to professional design tokens with DM Sans typography and refined color palette */
+  /* Updated to University of Ilorin branding colors and professional design tokens */
   --background: #ffffff; /* Pure white background */
-  --foreground: #374151; /* Professional gray-700 for main text */
-  --card: #f8fafc; /* Light slate background for cards */
-  --card-foreground: #374151; /* Consistent text on cards */
+  --foreground: #475569; /* Professional dark gray for main text */
+  --card: #f1f5f9; /* Light slate background for cards */
+  --card-foreground: #005eb8; /* UNILORIN blue for card text */
   --popover: #ffffff; /* White popover background */
-  --popover-foreground: #374151; /* Dark text on popovers */
-  --primary: #374151; /* Professional gray for primary actions */
+  --popover-foreground: #475569; /* Dark text on popovers */
+  --primary: #005eb8; /* University of Ilorin Blue - primary brand color */
   --primary-foreground: #ffffff; /* White text on primary */
-  --secondary: #6366f1; /* Modern indigo for secondary actions */
-  --secondary-foreground: #ffffff; /* White text on secondary */
-  --muted: #f8fafc; /* Light muted background */
-  --muted-foreground: #4b5563; /* Medium gray for muted text */
-  --accent: #6366f1; /* Indigo accent color */
-  --accent-foreground: #ffffff; /* White text on accent */
-  --destructive: #ea580c; /* Orange for destructive actions */
+  --secondary: #ffc107; /* Amber accent color */
+  --secondary-foreground: #000000; /* Black text on secondary */
+  --muted: #f1f5f9; /* Light muted background */
+  --muted-foreground: #475569; /* Medium gray for muted text */
+  --accent: #ffc107; /* Amber accent color */
+  --accent-foreground: #000000; /* Black text on accent */
+  --destructive: #ef4444; /* Red for destructive actions */
   --destructive-foreground: #ffffff; /* White text on destructive */
   --border: #e5e7eb; /* Light gray borders */
-  --input: #f8fafc; /* Light input backgrounds */
-  --ring: #6366f1; /* Indigo focus rings */
-  --chart-1: #6366f1; /* Professional chart colors */
-  --chart-2: #4b5563;
-  --chart-3: #a16207;
-  --chart-4: #ea580c;
-  --chart-5: #374151;
+  --input: #f1f5f9; /* Light input backgrounds */
+  --ring: rgba(0, 94, 184, 0.5); /* UNILORIN blue focus rings */
+  --chart-1: #005eb8; /* UNILORIN blue for charts */
+  --chart-2: #ffc107; /* Amber for charts */
+  --chart-3: #475569; /* Dark gray for charts */
+  --chart-4: #e5e7eb; /* Light gray for charts */
+  --chart-5: #f1f5f9; /* Very light gray for charts */
   --radius: 0.5rem; /* Consistent border radius */
   --sidebar: #ffffff; /* White sidebar */
-  --sidebar-foreground: #374151; /* Dark sidebar text */
-  --sidebar-primary: #f8fafc; /* Light sidebar primary */
-  --sidebar-primary-foreground: #374151; /* Dark text on sidebar primary */
-  --sidebar-accent: #6366f1; /* Indigo sidebar accent */
-  --sidebar-accent-foreground: #ffffff; /* White text on sidebar accent */
+  --sidebar-foreground: #475569; /* Dark sidebar text */
+  --sidebar-primary: #005eb8; /* UNILORIN blue sidebar primary */
+  --sidebar-primary-foreground: #ffffff; /* White text on sidebar primary */
+  --sidebar-accent: #ffc107; /* Amber sidebar accent */
+  --sidebar-accent-foreground: #000000; /* Black text on sidebar accent */
   --sidebar-border: #e5e7eb; /* Light sidebar borders */
-  --sidebar-ring: #6366f1; /* Indigo sidebar focus ring */
+  --sidebar-ring: rgba(0, 94, 184, 0.5); /* UNILORIN blue sidebar focus ring */
 }
 
 .dark {
-  /* Updated dark mode tokens to maintain professional aesthetic */
+  /* Updated dark mode tokens maintaining UNILORIN branding */
   --background: #0f172a; /* Dark slate background */
   --foreground: #f1f5f9; /* Light text */
   --card: #1e293b; /* Dark card background */
   --card-foreground: #f1f5f9; /* Light card text */
   --popover: #1e293b; /* Dark popover */
   --popover-foreground: #f1f5f9; /* Light popover text */
-  --primary: #f1f5f9; /* Light primary in dark mode */
-  --primary-foreground: #0f172a; /* Dark text on light primary */
-  --secondary: #6366f1; /* Consistent indigo */
-  --secondary-foreground: #ffffff; /* White text */
+  --primary: #005eb8; /* Consistent UNILORIN blue */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #ffc107; /* Consistent amber */
+  --secondary-foreground: #000000; /* Black text on secondary */
   --muted: #334155; /* Dark muted background */
   --muted-foreground: #94a3b8; /* Light muted text */
-  --accent: #6366f1; /* Consistent indigo accent */
-  --accent-foreground: #ffffff; /* White accent text */
-  --destructive: #ea580c; /* Consistent orange */
+  --accent: #ffc107; /* Consistent amber accent */
+  --accent-foreground: #000000; /* Black accent text */
+  --destructive: #ef4444; /* Consistent red */
   --destructive-foreground: #ffffff; /* White destructive text */
   --border: #334155; /* Dark borders */
   --input: #334155; /* Dark input backgrounds */
-  --ring: #6366f1; /* Consistent indigo ring */
-  --chart-1: #6366f1; /* Consistent chart colors */
-  --chart-2: #94a3b8;
-  --chart-3: #fbbf24;
-  --chart-4: #ea580c;
+  --ring: rgba(0, 94, 184, 0.5); /* Consistent UNILORIN blue ring */
+  --chart-1: #005eb8; /* Consistent chart colors */
+  --chart-2: #ffc107;
+  --chart-3: #94a3b8;
+  --chart-4: #475569;
   --chart-5: #f1f5f9;
   --sidebar: #1e293b; /* Dark sidebar */
   --sidebar-foreground: #f1f5f9; /* Light sidebar text */
-  --sidebar-primary: #334155; /* Dark sidebar primary */
-  --sidebar-primary-foreground: #f1f5f9; /* Light text on sidebar primary */
-  --sidebar-accent: #6366f1; /* Consistent indigo */
-  --sidebar-accent-foreground: #ffffff; /* White accent text */
+  --sidebar-primary: #005eb8; /* Consistent UNILORIN blue */
+  --sidebar-primary-foreground: #ffffff; /* White text on sidebar primary */
+  --sidebar-accent: #ffc107; /* Consistent amber */
+  --sidebar-accent-foreground: #000000; /* Black accent text */
   --sidebar-border: #334155; /* Dark sidebar borders */
-  --sidebar-ring: #6366f1; /* Consistent indigo ring */
+  --sidebar-ring: rgba(0, 94, 184, 0.5); /* Consistent UNILORIN blue ring */
 }
 
 @theme inline {
-  /* Updated font variables for DM Sans professional typography */
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Updated font variables for modern typography */
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Manrope", ui-serif, Georgia, serif;
   --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
 
-  /* Updated color mappings to use new professional tokens */
+  /* Updated color mappings to use UNILORIN branding tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -129,7 +129,7 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
-  /* Added professional typography styles */
+  /* Enhanced typography styles for better readability */
   h1,
   h2,
   h3,
@@ -142,4 +142,133 @@
   p {
     @apply text-pretty leading-relaxed;
   }
+}
+
+/* Added custom animations for enhanced user experience */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceGentle {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(0, 94, 184, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(0, 94, 184, 0.6);
+  }
+}
+
+/* Added hover effects for interactive elements */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 94, 184, 0.4);
+}
+
+/* Added gradient backgrounds for UNILORIN branding */
+.bg-unilorin-gradient {
+  background: linear-gradient(135deg, #005eb8 0%, #0066cc 100%);
+}
+
+.bg-unilorin-gradient-light {
+  background: linear-gradient(135deg, rgba(0, 94, 184, 0.1) 0%, rgba(0, 102, 204, 0.05) 100%);
+}
+
+.text-unilorin-gradient {
+  background: linear-gradient(135deg, #005eb8 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

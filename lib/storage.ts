@@ -18,19 +18,19 @@ export const generateId = () => Math.random().toString(36).substr(2, 9)
 export const getCurrentTimestamp = () => new Date().toISOString()
 
 // Generic storage functions
-const getFromStorage = <T>(key: string): T[] => {
+const getFromStorage = (key: string): unknown[] => {
   if (typeof window === "undefined") return []
   const data = localStorage.getItem(key)
   return data ? JSON.parse(data) : []
 }
 
-const saveToStorage = <T>(key: string, data: T[]) => {
+const saveToStorage = (key: string, data: unknown[]) => {
   if (typeof window === "undefined") return
   localStorage.setItem(key, JSON.stringify(data))
 }
 
 // User storage functions
-export const getUsers = (): User[] => getFromStorage(STORAGE_KEYS.USERS)
+export const getUsers = (): User[] => getFromStorage(STORAGE_KEYS.USERS) as User[]
 
 export const saveUser = (user: User) => {
   const users = getUsers()
@@ -72,7 +72,7 @@ export const setCurrentUser = (user: User | null) => {
 }
 
 // Service storage functions
-export const getServices = (): Service[] => getFromStorage(STORAGE_KEYS.SERVICES)
+export const getServices = (): Service[] => getFromStorage(STORAGE_KEYS.SERVICES) as Service[]
 
 export const saveService = (service: Service) => {
   const services = getServices()
@@ -85,6 +85,12 @@ export const saveService = (service: Service) => {
   }
 
   saveToStorage(STORAGE_KEYS.SERVICES, services)
+}
+
+export const deleteService = (serviceId: string) => {
+  const services = getServices()
+  const filteredServices = services.filter(s => s.id !== serviceId)
+  saveToStorage(STORAGE_KEYS.SERVICES, filteredServices)
 }
 
 export const getServicesByUserId = (userId: string): Service[] => {

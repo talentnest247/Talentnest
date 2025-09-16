@@ -19,7 +19,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { status, agreedPrice, whatsappChatInitiated } = body
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     }
 

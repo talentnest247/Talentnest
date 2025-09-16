@@ -1,71 +1,31 @@
 // Database types for TalentNest
 
-export type UserRole = 'student' | 'artisan' | 'admin'
-export type VerificationStatus = 'pending' | 'approved' | 'rejected'
-
 export interface User {
   id: string
   email: string
-  role: UserRole
-  full_name: string
-  phone?: string
-  created_at: string
-  updated_at: string
-  // Student specific fields
-  matric_number?: string
+  fullName: string
+  matricNumber?: string // Optional for artisans
+  phoneNumber?: string
+  whatsappNumber?: string
   faculty?: string
   department?: string
   level?: string
-  field_of_study?: string
-  year_of_study?: number
-  school?: string
-  // Common fields
-  profile_image_url?: string
+  profileImageUrl?: string
   bio?: string
-  skills?: string[]
-  portfolio_links?: string[]
-  is_verified: boolean
-  is_active: boolean
+  experience?: string
+  skills: string[]
+  portfolioLinks: string[]
+  certificates: string[] // Certificate upload URLs
+  accountType: "student" | "artisan"
+  isVerified: boolean
+  isActive: boolean
+  verificationStatus: "pending" | "verified" | "rejected"
+  verificationNotes?: string // Admin feedback for verification
   rating: number
-  total_reviews: number
-}
-
-export interface ArtisanProfile {
-  id: string
-  user_id: string
-  matric_number: string
-  business_name: string
-  business_registration_number?: string
-  trade_category: string
-  years_of_experience: number
-  location: string
-  description: string
-  verification_status: VerificationStatus
-  verification_notes?: string
-  verified_at?: string
-  verified_by?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface ArtisanDocument {
-  id: string
-  artisan_id: string
-  document_type: 'business_certificate' | 'id_document' | 'trade_certificate' | 'portfolio' | 'other'
-  file_url: string
-  file_name: string
-  file_size: number
-  uploaded_at: string
-}
-
-export interface Student extends User {
-  role: 'student'
-}
-
-export interface Artisan extends User {
-  role: 'artisan'
-  profile?: ArtisanProfile
-  documents?: ArtisanDocument[]
+  totalReviews: number
+  status: "active" | "pending" | "verified" | "suspended"
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Service {
@@ -73,15 +33,19 @@ export interface Service {
   userId: string
   title: string
   description: string
-  category: "digital" | "artisan" | "tutoring"
+  category: string
   subcategory?: string
   priceRange: string
   deliveryTime: string
   images: string[]
   tags: string[]
   isActive: boolean
+  status: "active" | "pending" | "rejected" | "flagged"
   viewsCount: number
   ordersCount: number
+  rating: number
+  totalReviews: number
+  whatsappNumber?: string // For direct contact
   createdAt: string
   updatedAt: string
   user?: User // Populated user data
@@ -127,35 +91,42 @@ export interface Category {
 // Form types
 export interface StudentSignupFormData {
   email: string
+  fullName: string
+  matricNumber: string
+  phoneNumber: string
+  whatsappNumber: string
+  faculty: string
+  department: string
+  level: string
+  state: string
   password: string
   confirmPassword: string
-  full_name: string
-  phone: string
-  matric_number?: string
-  faculty?: string
-  department?: string
-  level?: string
-  field_of_study?: string
-  year_of_study?: number
-  school?: string
 }
 
 export interface ArtisanSignupFormData {
   email: string
+  fullName: string
+  phoneNumber: string
+  whatsappNumber: string
+  bio: string
+  experience: string
+  skills: string[]
+  portfolioLinks: string[]
+  certificates: File[]
   password: string
   confirmPassword: string
-  full_name: string
-  matric_number: string
-  phone: string
-  business_name: string
-  business_registration_number?: string
-  trade_category: string
-  years_of_experience: number
-  location: string
-  description: string
-  documents: File[]
-  certificate: File | null
-  bio_document: File | null
+}
+
+export interface SignupFormData {
+  matricNumber: string
+  email: string
+  fullName: string
+  phoneNumber: string
+  whatsappNumber: string
+  faculty: string
+  department: string
+  level: string
+  password: string
 }
 
 export interface LoginFormData {
@@ -172,3 +143,20 @@ export interface ServiceFormData {
   deliveryTime: string
   tags: string[]
 }
+
+// Artisan registration form data
+export interface ArtisanSignupFormData {
+  email: string
+  fullName: string
+  phoneNumber: string
+  whatsappNumber: string
+  bio: string
+  experience: string
+  skills: string[]
+  portfolioLinks: string[]
+  certificates: File[]
+  password: string
+  confirmPassword: string
+}
+
+
