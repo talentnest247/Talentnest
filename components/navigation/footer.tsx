@@ -6,7 +6,7 @@ export function Footer() {
       title: "Platform",
       links: [
         { href: "#services", label: "Browse Services" },
-        { href: "/signup", label: "Create Profile" },
+        { href: "/register", label: "Create Profile" },
         { href: "#how-it-works", label: "How It Works" },
       ],
     },

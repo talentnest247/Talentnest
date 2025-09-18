@@ -25,6 +25,7 @@ import {
   Mail,
   BookOpen,
   Calendar,
+  Search,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -84,54 +85,88 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser()
 
-      if (error || !user) {
-        router.push("/login")
-        return
+        if (authError) {
+          console.error('Auth error:', authError)
+          router.push("/login")
+          return
+        }
+
+        if (!user) {
+          router.push("/login")
+          return
+        }
+
+        setUser(user)
+
+        // Fetch user profile with retry logic
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .single()
+
+          if (profileError) {
+            console.warn('Profile fetch error:', profileError)
+          } else if (profile) {
+            setUserProfile(profile)
+          }
+        } catch (error) {
+          console.warn('Failed to fetch profile:', error)
+        }
+
+        // Fetch user's services with error handling
+        try {
+          const { data: userServices, error: servicesError } = await supabase
+            .from("services")
+            .select(`
+              *,
+              category:service_categories(name)
+            `)
+            .eq("provider_id", user.id)
+            .eq("status", "active")
+
+          if (servicesError) {
+            console.warn('Services fetch error:', servicesError)
+          } else if (userServices) {
+            setServices(userServices)
+          }
+        } catch (error) {
+          console.warn('Failed to fetch services:', error)
+        }
+
+        // Fetch user's bookings with error handling
+        try {
+          const { data: userBookings, error: bookingsError } = await supabase
+            .from("bookings")
+            .select(`
+              *,
+              service:services(title)
+            `)
+            .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`)
+            .order("created_at", { ascending: false })
+
+          if (bookingsError) {
+            console.warn('Bookings fetch error:', bookingsError)
+          } else if (userBookings) {
+            setBookings(userBookings)
+          }
+        } catch (error) {
+          console.warn('Failed to fetch bookings:', error)
+        }
+
+      } catch (error) {
+        console.error('Dashboard initialization error:', error)
+        // Still allow dashboard to load even if there are connection issues
+      } finally {
+        setLoading(false)
       }
-
-      setUser(user)
-
-      // Fetch user profile
-      const { data: profile } = await supabase.from("users").select("*").eq("id", user.id).single()
-
-      if (profile) {
-        setUserProfile(profile)
-      }
-
-      // Fetch user's services
-      const { data: userServices } = await supabase
-        .from("services")
-        .select(`
-          *,
-          category:service_categories(name)
-        `)
-        .eq("provider_id", user.id)
-        .eq("status", "active")
-
-      if (userServices) {
-        setServices(userServices)
-      }
-
-      // Fetch user's bookings
-      const { data: userBookings } = await supabase
-        .from("bookings")
-        .select(`
-          *,
-          service:services(title)
-        `)
-        .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`)
-        .order("created_at", { ascending: false })
-
-      if (userBookings) {
-        setBookings(userBookings)
-      }
-
-      setLoading(false)
     }
 
     checkAuth()
@@ -180,25 +215,31 @@ export default function DashboardPage() {
   const myBookingsAsProvider = bookings.filter((b) => b.provider_id === user.id)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-primary mb-2">
-            Welcome back, {userProfile.full_name.split(" ")[0]}!
+        <div className="mb-8 text-center lg:text-left">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-green-100 text-sm font-medium mb-4">
+            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+            Dashboard Active
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-4">
+            Welcome back, {userProfile.full_name.split(" ")[0]}! 👋
           </h1>
-          <p className="text-muted-foreground">Manage your services, bookings, and profile on TalentNest</p>
+          <p className="text-xl text-gray-600 max-w-2xl">
+            Manage your services, bookings, and profile on the UNILORIN TalentNest platform
+          </p>
         </div>
 
         {/* Profile Verification Alert */}
         {!userProfile.is_verified && (
-          <Alert className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Your profile is not yet verified. Complete your profile to increase trust with other students.
-              <Link href="/dashboard/profile" className="ml-2 text-secondary hover:underline">
+          <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Profile Not Verified:</strong> Complete your profile to increase trust with other students and unlock all features.
+              <Link href="/dashboard/profile" className="ml-2 text-blue-600 hover:text-blue-700 font-semibold underline">
                 Complete Profile →
               </Link>
             </AlertDescription>
@@ -206,76 +247,76 @@ export default function DashboardPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Summary */}
+          {/* Left Column - Enhanced Profile Summary */}
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader className="text-center">
-                <Avatar className="w-20 h-20 mx-auto mb-4">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="text-lg">{getInitials(userProfile.full_name)}</AvatarFallback>
-                </Avatar>
-                <CardTitle className="font-serif">{userProfile.full_name}</CardTitle>
-                <CardDescription>
-                  {userProfile.faculty} • {userProfile.level}
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+              <CardHeader className="text-center pb-4">
+                <div className="relative">
+                  <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-blue-100">
+                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarFallback className="text-xl bg-gradient-to-br from-blue-500 to-green-500 text-white">
+                      {getInitials(userProfile.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {userProfile.is_verified && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+                      <div className="bg-green-500 text-white rounded-full p-1">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <CardTitle className="text-xl font-bold text-gray-800">{userProfile.full_name}</CardTitle>
+                <CardDescription className="text-base text-gray-600">
+                  {userProfile.faculty} • Level {userProfile.level}
                 </CardDescription>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium">
-                    {userProfile.total_rating.toFixed(1)} ({userProfile.total_reviews} reviews)
+                <div className="flex items-center justify-center gap-2 mt-3 bg-yellow-50 rounded-lg p-2">
+                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-semibold text-gray-700">
+                    {userProfile.total_rating.toFixed(1)} rating ({userProfile.total_reviews} reviews)
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="w-4 h-4" />
-                    <span>{user.email}</span>
+              <CardContent className="space-y-6">`
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1">Contact Information</h4>
+                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
+                    <Mail className="w-4 h-4 text-blue-500" />
+                    <span className="truncate">{user.email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4" />
+                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
+                    <Phone className="w-4 h-4 text-green-500" />
                     <span>{userProfile.phone_number}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <BookOpen className="w-4 h-4" />
-                    <span>{userProfile.department}</span>
+                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
+                    <BookOpen className="w-4 h-4 text-purple-500" />
+                    <span className="truncate">{userProfile.department}</span>
                   </div>
                 </div>
 
                 {userProfile.skills.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Skills</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {userProfile.skills.slice(0, 6).map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
+                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1 mb-3">Your Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {userProfile.skills.slice(0, 8).map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-green-100 text-blue-700 border-0 text-xs px-2 py-1">
                           {skill}
                         </Badge>
                       ))}
-                      {userProfile.skills.length > 6 && (
+                      {userProfile.skills.length > 8 && (
                         <Badge variant="outline" className="text-xs">
-                          +{userProfile.skills.length - 6} more
+                          +{userProfile.skills.length - 8} more
                         </Badge>
                       )}
                     </div>
                   </div>
                 )}
 
-                <div className="pt-4 space-y-2">
+                <div className="pt-4 border-t border-gray-200">
                   <Link href="/dashboard/profile">
-                    <Button variant="outline" className="w-full bg-transparent" size="sm">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
                       <Settings className="w-4 h-4 mr-2" />
                       Edit Profile
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard/bookings">
-                    <Button variant="outline" className="w-full bg-transparent" size="sm">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      Manage Bookings
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard/services/new">
-                    <Button className="w-full" size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Service
                     </Button>
                   </Link>
                 </div>
@@ -297,58 +338,88 @@ export default function DashboardPage() {
               <TabsContent value="overview" className="space-y-6">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <ShoppingBag className="w-8 h-8 text-secondary mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{services.length}</div>
-                      <div className="text-xs text-muted-foreground">Services</div>
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+                    <CardContent className="p-6 text-center">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <ShoppingBag className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-3xl font-bold text-blue-700 mb-1">{services.length}</div>
+                      <div className="text-sm text-blue-600 font-medium">Services</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Eye className="w-8 h-8 text-secondary mx-auto mb-2" />
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-xs text-muted-foreground">Total Views</div>
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+                    <CardContent className="p-6 text-center">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Eye className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-3xl font-bold text-green-700 mb-1">0</div>
+                      <div className="text-sm text-green-600 font-medium">Total Views</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Clock className="w-8 h-8 text-secondary mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{myBookingsAsClient.length}</div>
-                      <div className="text-xs text-muted-foreground">My Bookings</div>
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+                    <CardContent className="p-6 text-center">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Clock className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-3xl font-bold text-purple-700 mb-1">{myBookingsAsClient.length}</div>
+                      <div className="text-sm text-purple-600 font-medium">My Bookings</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <CheckCircle className="w-8 h-8 text-secondary mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{myBookingsAsProvider.length}</div>
-                      <div className="text-xs text-muted-foreground">Orders Received</div>
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+                    <CardContent className="p-6 text-center">
+                      <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <CheckCircle className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-3xl font-bold text-orange-700 mb-1">{myBookingsAsProvider.length}</div>
+                      <div className="text-sm text-orange-600 font-medium">Orders Received</div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Recent Activity */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-serif">Recent Activity</CardTitle>
-                    <CardDescription>Your latest bookings and service updates</CardDescription>
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50 rounded-t-lg">
+                    <CardTitle className="font-serif text-gray-800 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-blue-600" />
+                      Recent Activity
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">Your latest bookings and service updates</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     {bookings.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No recent activity</p>
-                        <p className="text-sm">Start by browsing services or adding your own!</p>
+                      <div className="text-center py-12">
+                        <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Clock className="w-10 h-10 text-blue-500" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-700 mb-2">No recent activity</h4>
+                        <p className="text-gray-500 mb-4">Start by browsing services or adding your own!</p>
+                        <div className="flex gap-3 justify-center">
+                          <Link href="/marketplace">
+                            <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
+                              Browse Services
+                            </Button>
+                          </Link>
+                          <Link href="/dashboard/services/new">
+                            <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                              Add Service
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {bookings.slice(0, 5).map((booking) => (
-                          <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{booking.title}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {booking.client_id === user.id ? "Your booking" : "Order received"}
-                              </p>
+                          <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                                <ShoppingBag className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-800">{booking.title}</p>
+                                <p className="text-sm text-gray-500">
+                                  {booking.client_id === user.id ? "Your booking" : "Order received"}
+                                </p>
+                              </div>
                             </div>
                             <Badge className={getStatusColor(booking.status)}>{booking.status.replace("_", " ")}</Badge>
                           </div>
@@ -361,10 +432,16 @@ export default function DashboardPage() {
 
               {/* Services Tab */}
               <TabsContent value="services" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-serif font-semibold">My Services</h3>
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border">
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
+                      <ShoppingBag className="w-6 h-6 text-blue-600" />
+                      My Services
+                    </h3>
+                    <p className="text-gray-600 mt-1">Manage and showcase your skills</p>
+                  </div>
                   <Link href="/dashboard/services/new">
-                    <Button size="sm">
+                    <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Service
                     </Button>
@@ -372,43 +449,61 @@ export default function DashboardPage() {
                 </div>
 
                 {services.length === 0 ? (
-                  <Card>
-                    <CardContent className="text-center py-12">
-                      <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2">No services yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Start showcasing your skills by adding your first service
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
+                    <CardContent className="text-center py-16">
+                      <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <ShoppingBag className="w-12 h-12 text-blue-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No services yet</h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Start showcasing your skills and talents by adding your first service. Let other students discover what you have to offer!
                       </p>
                       <Link href="/dashboard/services/new">
-                        <Button>
-                          <Plus className="w-4 h-4 mr-2" />
+                        <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-3">
+                          <Plus className="w-5 h-5 mr-2" />
                           Add Your First Service
                         </Button>
                       </Link>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid gap-4">
+                  <div className="grid gap-6">
                     {services.map((service) => (
-                      <Card key={service.id}>
-                        <CardContent className="p-4">
+                      <Card key={service.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 group">
+                        <CardContent className="p-6">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h4 className="font-semibold mb-1">{service.title}</h4>
-                              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{service.description}</p>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Eye className="w-4 h-4" />0 views
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <ShoppingBag className="w-4 h-4" />0 orders
-                                </span>
-                                <Badge variant="secondary">{service.category?.name}</Badge>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                                  <ShoppingBag className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{service.title}</h4>
+                                  <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-green-100 text-blue-700 border-0">
+                                    {service.category?.name}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">{service.description}</p>
+                              <div className="flex items-center gap-6 text-sm">
+                                <div className="flex items-center gap-2 text-blue-600">
+                                  <Eye className="w-4 h-4" />
+                                  <span className="font-medium">0 views</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-green-600">
+                                  <ShoppingBag className="w-4 h-4" />
+                                  <span className="font-medium">0 orders</span>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-secondary">₦{service.price}</p>
-                              <p className="text-xs text-muted-foreground">{service.delivery_time}</p>
+                            <div className="text-right ml-6">
+                              <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3 mb-3">
+                                <p className="text-2xl font-bold text-gray-800">₦{service.price}</p>
+                                <p className="text-sm text-gray-600">{service.delivery_time}</p>
+                              </div>
+                              <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                                Edit Service
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
@@ -420,39 +515,70 @@ export default function DashboardPage() {
 
               {/* Bookings Tab */}
               <TabsContent value="bookings" className="space-y-6">
-                <h3 className="text-lg font-serif font-semibold">My Bookings</h3>
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border">
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
+                      <Clock className="w-6 h-6 text-purple-600" />
+                      My Bookings
+                    </h3>
+                    <p className="text-gray-600 mt-1">Track your service bookings and requests</p>
+                  </div>
+                  <Link href="/marketplace">
+                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                      <Search className="w-4 h-4 mr-2" />
+                      Browse Services
+                    </Button>
+                  </Link>
+                </div>
 
                 {myBookingsAsClient.length === 0 ? (
-                  <Card>
-                    <CardContent className="text-center py-12">
-                      <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2">No bookings yet</h3>
-                      <p className="text-muted-foreground mb-4">Browse services and make your first booking</p>
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
+                    <CardContent className="text-center py-16">
+                      <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Clock className="w-12 h-12 text-purple-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No bookings yet</h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Discover amazing services from talented students and make your first booking to get started!
+                      </p>
                       <Link href="/marketplace">
-                        <Button>Browse Services</Button>
+                        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3">
+                          <Search className="w-5 h-5 mr-2" />
+                          Browse Services
+                        </Button>
                       </Link>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {myBookingsAsClient.map((booking) => (
-                      <Card key={booking.id}>
-                        <CardContent className="p-4">
+                      <Card key={booking.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50">
+                        <CardContent className="p-6">
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold mb-1">{booking.title}</h4>
-                              <p className="text-sm text-muted-foreground mb-2">{booking.description}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Created {new Date(booking.created_at).toLocaleDateString()}
-                              </p>
+                            <div className="flex items-start gap-4 flex-1">
+                              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-bold text-gray-800 text-lg mb-2">{booking.title}</h4>
+                                <p className="text-gray-600 mb-3 leading-relaxed">{booking.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Created {new Date(booking.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                  {booking.agreed_price && (
+                                    <div className="flex items-center gap-1 text-green-600 font-medium">
+                                      <span>₦{booking.agreed_price}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <Badge className={getStatusColor(booking.status)}>
+                            <div className="text-right ml-6">
+                              <Badge className={`${getStatusColor(booking.status)} px-3 py-1`}>
                                 {booking.status.replace("_", " ")}
                               </Badge>
-                              {booking.agreed_price && (
-                                <p className="text-sm font-semibold mt-1">₦{booking.agreed_price}</p>
-                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -464,41 +590,75 @@ export default function DashboardPage() {
 
               {/* Orders Tab */}
               <TabsContent value="orders" className="space-y-6">
-                <h3 className="text-lg font-serif font-semibold">Orders Received</h3>
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border">
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
+                      <CheckCircle className="w-6 h-6 text-orange-600" />
+                      Orders Received
+                    </h3>
+                    <p className="text-gray-600 mt-1">Manage incoming orders from other students</p>
+                  </div>
+                  <Link href="/dashboard/services/new">
+                    <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Service
+                    </Button>
+                  </Link>
+                </div>
 
                 {myBookingsAsProvider.length === 0 ? (
-                  <Card>
-                    <CardContent className="text-center py-12">
-                      <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2">No orders yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Add services to start receiving orders from other students
+                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
+                    <CardContent className="text-center py-16">
+                      <div className="w-24 h-24 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle className="w-12 h-12 text-orange-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No orders yet</h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Add services to start receiving orders from other students. Showcase your skills and talents!
                       </p>
                       <Link href="/dashboard/services/new">
-                        <Button>Add a Service</Button>
+                        <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-3">
+                          <Plus className="w-5 h-5 mr-2" />
+                          Add a Service
+                        </Button>
                       </Link>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {myBookingsAsProvider.map((booking) => (
-                      <Card key={booking.id}>
-                        <CardContent className="p-4">
+                      <Card key={booking.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50">
+                        <CardContent className="p-6">
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold mb-1">{booking.title}</h4>
-                              <p className="text-sm text-muted-foreground mb-2">{booking.description}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Received {new Date(booking.created_at).toLocaleDateString()}
-                              </p>
+                            <div className="flex items-start gap-4 flex-1">
+                              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                                <CheckCircle className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-bold text-gray-800 text-lg mb-2">{booking.title}</h4>
+                                <p className="text-gray-600 mb-3 leading-relaxed">{booking.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Received {new Date(booking.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                  {booking.agreed_price && (
+                                    <div className="flex items-center gap-1 text-green-600 font-medium">
+                                      <span>₦{booking.agreed_price}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <Badge className={getStatusColor(booking.status)}>
+                            <div className="text-right ml-6">
+                              <Badge className={`${getStatusColor(booking.status)} px-3 py-1`}>
                                 {booking.status.replace("_", " ")}
                               </Badge>
-                              {booking.agreed_price && (
-                                <p className="text-sm font-semibold mt-1">₦{booking.agreed_price}</p>
-                              )}
+                              <div className="mt-3">
+                                <Button variant="outline" size="sm" className="border-orange-200 text-orange-600 hover:bg-orange-50">
+                                  Manage Order
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </CardContent>

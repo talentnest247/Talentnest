@@ -38,7 +38,7 @@ export default function AuthErrorPage({
 
               <div className="space-y-3">
                 <Button asChild className="w-full">
-                  <Link href="/signup">Try Signing Up Again</Link>
+                  <Link href="/register">Try Signing Up Again</Link>
                 </Button>
 
                 <Button variant="outline" asChild className="w-full bg-transparent">

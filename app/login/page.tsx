@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Header } from "@/components/navigation/header"
 import { Footer } from "@/components/navigation/footer"
-import { validateUnilorinEmail } from "@/lib/validation"
+import { validateEmail } from "@/lib/validation"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -30,8 +30,8 @@ export default function LoginPage() {
 
     if (!email) {
       newErrors.email = "Email is required"
-    } else if (!validateUnilorinEmail(email)) {
-      newErrors.email = "Please use your UNILORIN student email"
+    } else if (!validateEmail(email)) {
+      newErrors.email = "Please enter a valid email address"
     }
 
     if (!password) {
@@ -91,7 +91,7 @@ export default function LoginPage() {
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-serif text-center">Sign In</CardTitle>
               <CardDescription className="text-center">
-                Enter your UNILORIN student email to access your account
+                Enter your email address to access your account
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -104,11 +104,11 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">UNILORIN Student Email</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="20-52hl077@students.unilorin.edu.ng"
+                    placeholder="Enter your email (e.g., name@gmail.com)"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value)
@@ -150,7 +150,7 @@ export default function LoginPage() {
               <div className="text-center space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
-                  <Link href="/signup" className="text-secondary hover:text-secondary/80 underline font-medium">
+                  <Link href="/register" className="text-secondary hover:text-secondary/80 underline font-medium">
                     Create your profile
                   </Link>
                 </p>

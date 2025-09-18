@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getUserByEmail } from "@/lib/storage"
-import { validateUnilorinEmail } from "@/lib/validation"
+import { validateEmail } from "@/lib/validation"
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    if (!validateUnilorinEmail(email)) {
-      return NextResponse.json({ error: "Invalid UNILORIN email format" }, { status: 400 })
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
     }
 
     // Check if user exists

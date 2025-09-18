@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { saveUser, getUserByEmail, getUserByMatricNumber, generateId, getCurrentTimestamp } from "@/lib/storage"
-import { validateMatricNumber, validateUnilorinEmail, validatePhoneNumber, formatPhoneNumber } from "@/lib/validation"
+import { validateMatricNumber, validateEmail, validatePhoneNumber, formatPhoneNumber } from "@/lib/validation"
 import type { User } from "@/lib/types"
 
 export async function POST(request: NextRequest) {
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    if (!validateUnilorinEmail(email)) {
-      return NextResponse.json({ error: "Invalid UNILORIN email format" }, { status: 400 })
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
     }
 
     // Validate phone number

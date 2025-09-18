@@ -191,7 +191,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/register">
                   <Button className="font-semibold shadow-md hover:shadow-lg transition-all">Get Started</Button>
                 </Link>
               </>
@@ -264,7 +264,7 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
                               Sign In
                             </Button>
                           </Link>
-                          <Link href="/signup">
+                          <Link href="/register">
                             <Button className="w-full">Get Started</Button>
                           </Link>
                         </>
