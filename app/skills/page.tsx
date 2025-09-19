@@ -1,422 +1,297 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { SkillCard } from "@/components/skills/skill-card"
+import { SearchFilters, type FilterState } from "@/components/marketplace/search-filters"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Header } from "@/components/navigation/header"
-import { Footer } from "@/components/navigation/footer"
-import { WhatsAppButton } from "@/components/whatsapp-button"
-import { getUsers } from "@/lib/storage"
-import type { User } from "@/lib/types"
-import { Search, Star, Users, Filter } from "lucide-react"
-
-// Comprehensive skills categories
-const SKILL_CATEGORIES = {
-  "Design & Creative": [
-    "Graphic Design", "UI/UX Design", "Logo Design", "Brand Identity", "Typography",
-    "Print Design", "Digital Art", "Illustration", "Photo Editing", "Video Editing",
-    "Animation", "3D Modeling", "Web Design", "Mobile App Design", "Fashion Design"
-  ],
-  "Technology & Programming": [
-    "Web Development", "Mobile App Development", "Python Programming", "JavaScript",
-    "React.js", "Node.js", "Database Management", "API Development", "DevOps",
-    "Machine Learning", "Data Science", "Cybersecurity", "Game Development",
-    "WordPress Development", "E-commerce Development"
-  ],
-  "Content & Writing": [
-    "Content Writing", "Copywriting", "Technical Writing", "Creative Writing",
-    "Blog Writing", "Social Media Content", "SEO Writing", "Academic Writing",
-    "Proofreading", "Translation", "Voice Over", "Podcast Production", "Scriptwriting"
-  ],
-  "Marketing & Business": [
-    "Digital Marketing", "Social Media Marketing", "SEO", "Content Marketing",
-    "Email Marketing", "Market Research", "Business Planning", "Financial Analysis",
-    "Project Management", "Sales", "Customer Service", "Brand Strategy", "PPC Advertising"
-  ],
-  "Photography & Video": [
-    "Portrait Photography", "Event Photography", "Product Photography", "Drone Photography",
-    "Video Production", "Video Editing", "Live Streaming", "Documentary Making",
-    "Commercial Photography", "Wedding Photography", "Food Photography"
-  ],
-  "Music & Audio": [
-    "Music Production", "Audio Editing", "Sound Design", "Mixing & Mastering",
-    "Voiceover", "Podcast Editing", "Jingle Creation", "Beat Making", "Live Sound",
-    "Music Composition"
-  ],
-  "Education & Training": [
-    "Tutoring", "Online Teaching", "Course Creation", "Curriculum Development",
-    "Language Teaching", "Math Tutoring", "Science Tutoring", "Test Preparation",
-    "Skill Training", "Workshop Facilitation"
-  ],
-  "Personal Services": [
-    "Event Planning", "Personal Shopping", "Virtual Assistant", "Data Entry",
-    "Research Services", "Administrative Support", "Customer Support", "Consulting",
-    "Life Coaching", "Fitness Training"
-  ]
-}
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { mockDatabase } from "@/lib/mock-data"
+import type { Skill, Artisan, Category } from "@/lib/types"
+import { Grid, List, BookOpen, Users, Award, Clock, TrendingUp, Star } from "lucide-react"
 
 export default function SkillsPage() {
-  const router = useRouter()
-  const [allArtisans, setAllArtisans] = useState<User[]>([])
-  const [filteredArtisans, setFilteredArtisans] = useState<User[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedSkill, setSelectedSkill] = useState("all")
-  const [sortBy, setSortBy] = useState("rating")
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [filteredSkills, setFilteredSkills] = useState<Skill[]>([])
+  const [artisans, setArtisans] = useState<Artisan[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [isLoading, setIsLoading] = useState(true)
+  const [stats, setStats] = useState({
+    totalSkills: 0,
+    totalCategories: 0,
+    avgPrice: 0,
+    popularSkills: 0
+  })
 
   useEffect(() => {
-    // Get all verified artisans
-    const users = getUsers()
-    const verifiedArtisans = users.filter(
-      user => user.accountType === "artisan" && user.verificationStatus === "verified"
-    )
-    setAllArtisans(verifiedArtisans)
-    setFilteredArtisans(verifiedArtisans)
-  }, [])
-
-  useEffect(() => {
-    const filterArtisans = () => {
-      let filtered = [...allArtisans]
-
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        filtered = filtered.filter(artisan =>
-          artisan.fullName.toLowerCase().includes(query) ||
-          artisan.skills.some(skill => skill.toLowerCase().includes(query)) ||
-          artisan.bio?.toLowerCase().includes(query)
-        )
+    const loadData = async () => {
+      try {
+        const [skillsData, artisansData, categoriesData] = await Promise.all([
+          mockDatabase.getSkills(),
+          mockDatabase.getArtisans(),
+          mockDatabase.getCategories(),
+        ])
+        setSkills(skillsData)
+        setFilteredSkills(skillsData)
+        setArtisans(artisansData)
+        setCategories(categoriesData)
+        
+        // Calculate stats
+        setStats({
+          totalSkills: skillsData.length,
+          totalCategories: categoriesData.length,
+          avgPrice: skillsData.reduce((acc, skill) => acc + skill.price, 0) / skillsData.length,
+          popularSkills: skillsData.filter(skill => skill.currentStudents > 10).length
+        })
+      } catch (error) {
+        console.error("Failed to load skills data:", error)
+      } finally {
+        setIsLoading(false)
       }
-
-      // Category filter
-      if (selectedCategory !== "all") {
-        const categorySkills = SKILL_CATEGORIES[selectedCategory as keyof typeof SKILL_CATEGORIES]
-        filtered = filtered.filter(artisan =>
-          artisan.skills.some(skill => 
-            categorySkills.some(catSkill => 
-              skill.toLowerCase().includes(catSkill.toLowerCase()) ||
-              catSkill.toLowerCase().includes(skill.toLowerCase())
-            )
-          )
-        )
-      }
-
-      // Specific skill filter
-      if (selectedSkill !== "all") {
-        filtered = filtered.filter(artisan =>
-          artisan.skills.some(skill => 
-            skill.toLowerCase().includes(selectedSkill.toLowerCase()) ||
-            selectedSkill.toLowerCase().includes(skill.toLowerCase())
-          )
-        )
-      }
-
-      // Sort
-      filtered.sort((a, b) => {
-        switch (sortBy) {
-          case "rating":
-            return b.rating - a.rating
-          case "reviews":
-            return b.totalReviews - a.totalReviews
-          case "name":
-            return a.fullName.localeCompare(b.fullName)
-          default:
-            return 0
-        }
-      })
-
-      setFilteredArtisans(filtered)
     }
 
-    filterArtisans()
-  }, [searchQuery, selectedCategory, selectedSkill, sortBy, allArtisans])
+    loadData()
+  }, [])
 
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase()
+  const handleFiltersChange = (filters: FilterState) => {
+    let filtered = [...skills]
+
+    // Handle search
+    if (filters.search && filters.search.trim()) {
+      filtered = filtered.filter(
+        (skill) =>
+          skill.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          skill.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+          skill.category.toLowerCase().includes(filters.search.toLowerCase()),
+      )
+    }
+
+    // Handle category filter
+    if (filters.category && filters.category !== "All Categories") {
+      filtered = filtered.filter((skill) => skill.category === filters.category)
+    }
+
+    // Handle location filter
+    if (filters.location && filters.location !== "All Locations") {
+      // For skills, we can filter by the artisan's location
+      filtered = filtered.filter((skill) => {
+        const artisan = getArtisanById(skill.artisanId)
+        return artisan?.location === filters.location
+      })
+    }
+
+    // Handle rating filter
+    if (filters.minRating > 0) {
+      filtered = filtered.filter((skill) => skill.instructor.rating >= filters.minRating)
+    }
+
+    // Handle experience filter
+    if (filters.experience && filters.experience !== "All Experience") {
+      // Filter by difficulty level as a proxy for experience requirement
+      const difficultyMap: { [key: string]: string[] } = {
+        "Beginner": ["beginner"],
+        "Intermediate": ["beginner", "intermediate"],
+        "Advanced": ["intermediate", "advanced"],
+      }
+
+      if (difficultyMap[filters.experience]) {
+        filtered = filtered.filter((skill) => difficultyMap[filters.experience].includes(skill.difficulty))
+      }
+    }
+
+    // Handle availability filter
+    if (filters.availability && filters.availability !== "All") {
+      // For skills, filter by current availability status
+      if (filters.availability === "Available") {
+        filtered = filtered.filter((skill) => skill.currentStudents < skill.maxStudents)
+      } else if (filters.availability === "Full") {
+        filtered = filtered.filter((skill) => skill.currentStudents >= skill.maxStudents)
+      }
+    }
+
+    setFilteredSkills(filtered)
   }
 
-  const getCategorySkills = () => {
-    if (selectedCategory === "all") return []
-    return SKILL_CATEGORIES[selectedCategory as keyof typeof SKILL_CATEGORIES] || []
-  }
+  const getArtisanById = (artisanId: string) => artisans.find((a) => a.id === artisanId)
 
-  const getAllSkills = () => {
-    return Object.values(SKILL_CATEGORIES).flat().sort()
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+        <Header />
+        <div className="flex-1 container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[600px]">
+            <div className="text-center space-y-6">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto"></div>
+                <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-secondary animate-spin [animation-delay:0.5s] mx-auto"></div>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold animate-pulse">Loading Skills</h2>
+                <p className="text-muted-foreground animate-pulse">Discovering amazing learning opportunities...</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <Skeleton className="h-32 w-full mb-4 rounded-lg" />
+                      <Skeleton className="h-4 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
       <Header />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-4">Skills Catalog</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Browse our talented artisans by skills and expertise. Find the perfect person for your project.
-          </p>
-        </div>
-
-        {/* Search and Filters */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, skills, or expertise..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {Object.keys(SKILL_CATEGORIES).map(category => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Specific Skill</label>
-                  <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Skills" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Skills</SelectItem>
-                      {selectedCategory !== "all" ? (
-                        getCategorySkills().map(skill => (
-                          <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                        ))
-                      ) : (
-                        getAllSkills().map(skill => (
-                          <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Sort By</label>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort By" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                      <SelectItem value="reviews">Most Reviews</SelectItem>
-                      <SelectItem value="name">Name (A-Z)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-end">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery("")
-                      setSelectedCategory("all")
-                      setSelectedSkill("all")
-                      setSortBy("rating")
-                    }}
-                    className="w-full"
-                  >
-                    <Filter className="w-4 h-4 mr-2" />
-                    Clear Filters
-                  </Button>
-                </div>
+      <main className="flex-1">
+        {/* Hero Section with Stats */}
+        <section className="relative overflow-hidden bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 py-16">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="container mx-auto px-4 relative">
+            <div className="text-center mb-12 animate-in slide-in-from-bottom duration-1000">
+              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                Skills Marketplace
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+                Learn from expert artisans and master new skills. Start your learning journey today.
+              </p>
+              
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <Card className="glass-card hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom delay-200">
+                  <CardContent className="p-6 text-center">
+                    <BookOpen className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                    <div className="text-2xl font-bold text-primary">{stats.totalSkills}</div>
+                    <div className="text-sm text-muted-foreground">Available Skills</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-card hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom delay-300">
+                  <CardContent className="p-6 text-center">
+                    <Award className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                    <div className="text-2xl font-bold text-primary">{stats.totalCategories}</div>
+                    <div className="text-sm text-muted-foreground">Categories</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-card hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom delay-400">
+                  <CardContent className="p-6 text-center">
+                    <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                    <div className="text-2xl font-bold text-primary">₦{stats.avgPrice.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Avg Price</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-card hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom delay-500">
+                  <CardContent className="p-6 text-center">
+                    <Star className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                    <div className="text-2xl font-bold text-primary">{stats.popularSkills}</div>
+                    <div className="text-sm text-muted-foreground">Popular Skills</div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        {/* Results Summary */}
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground">
-            <Users className="w-4 h-4 inline mr-1" />
-            Showing {filteredArtisans.length} of {allArtisans.length} verified artisans
-          </p>
-        </div>
+        {/* Main Content */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="space-y-8">
+            <div className="bg-white/50 dark:bg-muted/50 backdrop-blur rounded-xl p-6 border border-white/20 animate-in fade-in slide-in-from-bottom duration-700">
+              <SearchFilters onFiltersChange={handleFiltersChange} />
+            </div>
 
-        {/* Artisans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredArtisans.map((artisan) => (
-            <Card key={artisan.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={artisan.profileImageUrl || "/placeholder.svg"} />
-                    <AvatarFallback>{getInitials(artisan.fullName)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{artisan.fullName}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {artisan.faculty} • {artisan.level}
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">
-                        {artisan.rating.toFixed(1)} ({artisan.totalReviews})
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Bio */}
-                {artisan.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {artisan.bio}
-                  </p>
-                )}
-
-                {/* Skills */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Skills</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {artisan.skills.slice(0, 4).map((skill, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {skill}
-                      </Badge>
-                    ))}
-                    {artisan.skills.length > 4 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{artisan.skills.length - 4} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Experience */}
-                {artisan.experience && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Experience</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {artisan.experience}
-                    </p>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/marketplace?artisan=${artisan.id}`)}
-                    className="flex-1"
-                  >
-                    View Services
-                  </Button>
-                  
-                  {artisan.whatsappNumber && (
-                    <WhatsAppButton
-                      phoneNumber={artisan.whatsappNumber}
-                      message={`Hi ${artisan.fullName}! I found your profile on TalentNest and I'm interested in your services. Can we discuss my project requirements?`}
-                      variant="default"
-                      size="sm"
-                    >
-                      Chat
-                    </WhatsAppButton>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* No Results */}
-        {filteredArtisans.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="space-y-4">
-                <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                  <Search className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">No artisans found</h3>
-                  <p className="text-muted-foreground">
-                    Try adjusting your search criteria or browse all categories.
-                  </p>
-                </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/30 dark:bg-muted/30 backdrop-blur rounded-lg p-4 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
+              <div className="flex items-center space-x-4">
+                <Badge {...({ variant: "secondary" } as any)} className="bg-primary/10 text-primary">
+                  {filteredSkills.length} skills found
+                </Badge>
+                <p className="text-sm text-muted-foreground">
+                  from {skills.length} total
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
                 <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("")
-                    setSelectedCategory("all")
-                    setSelectedSkill("all")
-                  }}
+                  {...({ variant: viewMode === "grid" ? "default" : "outline", size: "sm" } as any)}
+                  onClick={() => setViewMode("grid")}
+                  className="transition-all duration-200 hover:scale-105"
                 >
-                  Clear Search
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  {...({ variant: viewMode === "list" ? "default" : "outline", size: "sm" } as any)}
+                  onClick={() => setViewMode("list")}
+                  className="transition-all duration-200 hover:scale-105"
+                >
+                  <List className="h-4 w-4" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Skills Categories Overview */}
-        <Card className="mt-12">
-          <CardHeader>
-            <CardTitle>Skills Categories</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Explore different skill categories to find the right expertise for your project.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(SKILL_CATEGORIES).map(([category, skills]) => (
-                <div key={category} className="space-y-2">
-                  <h4 className="font-medium text-sm">{category}</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {skills.slice(0, 3).map(skill => (
-                      <Badge
-                        key={skill}
-                        variant="outline"
-                        className="text-xs cursor-pointer hover:bg-secondary"
-                        onClick={() => {
-                          setSelectedCategory(category)
-                          setSelectedSkill(skill)
-                        }}
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                    {skills.length > 3 && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs cursor-pointer"
-                        onClick={() => setSelectedCategory(category)}
-                      >
-                        +{skills.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
+            {filteredSkills.length === 0 ? (
+              <div className="text-center py-16 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+                <div className="max-w-md mx-auto space-y-6">
+                  <div className="w-24 h-24 mx-auto rounded-full bg-muted/50 flex items-center justify-center">
+                    <BookOpen className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold">No skills found</h3>
+                    <p className="text-muted-foreground">Try adjusting your search criteria to find more skills</p>
+                  </div>
+                  <Button
+                    {...({ variant: "outline" } as any)}
+                    onClick={() => {
+                      setFilteredSkills(skills)
+                      // Reset filters by calling handleFiltersChange with default filters
+                      handleFiltersChange({
+                        search: "",
+                        category: "All Categories",
+                        location: "All Locations",
+                        minRating: 0,
+                        experience: "All Experience",
+                        availability: "All"
+                      })
+                    }}
+                    className="hover:scale-105 transition-all duration-200"
+                  >
+                    Clear all filters
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className={
+                viewMode === "grid" 
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                  : "space-y-4"
+              }>
+                {filteredSkills.map((skill, index) => {
+                  const artisan = getArtisanById(skill.artisanId)
+                  return (
+                    <div 
+                      key={skill.id}
+                      className={`animate-in fade-in slide-in-from-bottom duration-500 ${
+                        index < 3 ? 'delay-100' :
+                        index < 6 ? 'delay-200' :
+                        index < 9 ? 'delay-300' : 'delay-500'
+                      }`}
+                    >
+                      <SkillCard skill={skill} artisan={artisan} showArtisan={true} />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
       <Footer />
     </div>
   )

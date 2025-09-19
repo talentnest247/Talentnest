@@ -1,176 +1,157 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Header } from "@/components/navigation/header"
-import { Footer } from "@/components/navigation/footer"
-import { createClient } from "@/lib/supabase/client"
-import type { User } from "@supabase/supabase-js"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Header } from "@/components/navigation/header";
+import { Footer } from "@/components/navigation/footer";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import {
-  Settings,
-  Plus,
-  Star,
-  Eye,
-  ShoppingBag,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Phone,
-  Mail,
-  BookOpen,
-  Calendar,
   Search,
-} from "lucide-react"
-import Link from "next/link"
+  Star,
+  Clock,
+  Users,
+  Award,
+  BookOpen,
+  Plus,
+  Eye,
+  MessageSquare,
+  Filter,
+  Settings
+} from "lucide-react";
+import Link from "next/link";
 
 interface UserProfile {
-  id: string
-  full_name: string
-  matric_number: string
-  faculty: string
-  department: string
-  level: string
-  bio: string
-  skills: string[]
-  phone_number: string
-  whatsapp_number: string
-  total_rating: number
-  total_reviews: number
-  is_verified: boolean
-  created_at: string
+  id: string;
+  email: string;
+  full_name: string;
+  phone_number: string;
+  whatsapp_number: string;
+  faculty?: string;
+  department?: string;
+  level?: string;
+  matric_number?: string;
+  bio: string;
+  skills: string[];
+  account_type: string;
+  is_verified: boolean;
+  total_rating: number;
+  total_reviews: number;
 }
 
 interface Service {
-  id: string
-  title: string
-  description: string
-  price: number
-  price_type: string
-  delivery_time: string
-  status: string
-  created_at: string
-  category: {
-    name: string
-  }
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  delivery_time: string;
+  status: string;
+  user_id: string;
+  created_at: string;
+  category?: string;
 }
 
 interface Booking {
-  id: string
-  title: string
-  description: string
-  status: string
-  agreed_price: number
-  created_at: string
-  client_id: string
-  provider_id: string
-  service: {
-    title: string
-  }
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  agreed_price: number;
+  created_at: string;
+  client_id: string;
+  provider_id: string;
 }
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const supabase = createClient()
-  const [user, setUser] = useState<User | null>(null)
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [services, setServices] = useState<Service[]>([])
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter();
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [artisans, setArtisans] = useState<UserProfile[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        if (authError) {
-          console.error('Auth error:', authError)
-          router.push("/login")
-          return
+        if (authError || !user) {
+          router.push("/login");
+          return;
         }
 
-        if (!user) {
-          router.push("/login")
-          return
+        setUser(user);
+
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          setUserProfile(profile);
         }
 
-        setUser(user)
-
-        // Fetch user profile with retry logic
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", user.id)
-            .single()
-
-          if (profileError) {
-            console.warn('Profile fetch error:', profileError)
-          } else if (profile) {
-            setUserProfile(profile)
-          }
-        } catch (error) {
-          console.warn('Failed to fetch profile:', error)
-        }
-
-        // Fetch user's services with error handling
-        try {
-          const { data: userServices, error: servicesError } = await supabase
-            .from("services")
-            .select(`
-              *,
-              category:service_categories(name)
-            `)
-            .eq("provider_id", user.id)
-            .eq("status", "active")
-
-          if (servicesError) {
-            console.warn('Services fetch error:', servicesError)
-          } else if (userServices) {
-            setServices(userServices)
-          }
-        } catch (error) {
-          console.warn('Failed to fetch services:', error)
-        }
-
-        // Fetch user's bookings with error handling
-        try {
-          const { data: userBookings, error: bookingsError } = await supabase
-            .from("bookings")
-            .select(`
-              *,
-              service:services(title)
-            `)
-            .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`)
-            .order("created_at", { ascending: false })
-
-          if (bookingsError) {
-            console.warn('Bookings fetch error:', bookingsError)
-          } else if (userBookings) {
-            setBookings(userBookings)
-          }
-        } catch (error) {
-          console.warn('Failed to fetch bookings:', error)
-        }
-
+        setLoading(false);
       } catch (error) {
-        console.error('Dashboard initialization error:', error)
-        // Still allow dashboard to load even if there are connection issues
-      } finally {
-        setLoading(false)
+        console.error("Auth check failed:", error);
+        router.push("/login");
       }
-    }
+    };
 
-    checkAuth()
-  }, [router, supabase])
+    checkAuth();
+  }, [router, supabase]);
+
+  // Fetch marketplace data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !userProfile) return;
+
+      try {
+        // Fetch all active services
+        const { data: servicesData } = await supabase
+          .from("services")
+          .select("*")
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
+
+        if (servicesData) setServices(servicesData);
+
+        // Fetch verified artisans
+        const { data: artisansData } = await supabase
+          .from("users")
+          .select("*")
+          .eq("account_type", "artisan")
+          .eq("is_verified", true)
+          .order("total_rating", { ascending: false });
+
+        if (artisansData) setArtisans(artisansData);
+
+        // Fetch user's bookings
+        const { data: bookingsData } = await supabase
+          .from("bookings")
+          .select("*")
+          .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`)
+          .order("created_at", { ascending: false });
+
+        if (bookingsData) setBookings(bookingsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [user, userProfile, supabase]);
 
   if (loading) {
     return (
@@ -180,329 +161,346 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  if (!user || !userProfile) return null
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+  if (!user || !userProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Profile Not Found</h2>
+            <p className="text-gray-600 mb-4">Please try logging out and back in.</p>
+            <Button onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}>
+              Sign Out & Retry
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800"
-      case "in_progress":
-        return "bg-blue-100 text-blue-800"
-      case "accepted":
-        return "bg-purple-100 text-purple-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "cancelled":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "completed": return "bg-green-100 text-green-800";
+      case "in_progress": return "bg-blue-100 text-blue-800";
+      case "pending": return "bg-purple-100 text-purple-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
-  const myBookingsAsClient = bookings.filter((b) => b.client_id === user.id)
-  const myBookingsAsProvider = bookings.filter((b) => b.provider_id === user.id)
+  const filteredServices = services.filter(service => 
+    !searchTerm || 
+    service.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    service.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredArtisans = artisans.filter(artisan =>
+    !searchTerm || 
+    artisan.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    artisan.bio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    artisan.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const myServices = services.filter(s => s.user_id === user.id);
+  const myBookingsAsClient = bookings.filter(b => b.client_id === user.id);
+  const myBookingsAsProvider = bookings.filter(b => b.provider_id === user.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Header */}
-        <div className="mb-8 text-center lg:text-left">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-green-100 text-sm font-medium mb-4">
-            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-            Dashboard Active
+        <div className="mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-orange-600 bg-clip-text text-transparent mb-2">
+                Welcome back, {userProfile.full_name.split(" ")[0]}!
+              </h1>
+              <p className="text-xl text-gray-600">
+                {userProfile.account_type === "student" 
+                  ? "Discover skills and connect with talented artisans" 
+                  : "Showcase your skills and connect with students"}
+              </p>
+            </div>
+            <div className="text-right">
+              <Badge variant={userProfile.is_verified ? "default" : "secondary"} className="mb-2">
+                {userProfile.is_verified ? "✓ Verified" : "Pending Verification"}
+              </Badge>
+              <div className="text-sm text-gray-500 capitalize">
+                {userProfile.account_type} Account
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-4">
-            Welcome back, {userProfile.full_name.split(" ")[0]}! 👋
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl">
-            Manage your services, bookings, and profile on the UNILORIN TalentNest platform
-          </p>
         </div>
 
-        {/* Profile Verification Alert */}
-        {!userProfile.is_verified && (
-          <Alert className="mb-6 border-amber-200 bg-amber-50">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800">
-              <strong>Profile Not Verified:</strong> Complete your profile to increase trust with other students and unlock all features.
-              <Link href="/dashboard/profile" className="ml-2 text-blue-600 hover:text-blue-700 font-semibold underline">
-                Complete Profile →
-              </Link>
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <BookOpen className="h-8 w-8 mr-4" />
+                <div>
+                  <p className="text-blue-100">Total Bookings</p>
+                  <p className="text-2xl font-bold">{bookings.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Enhanced Profile Summary */}
-          <div className="lg:col-span-1">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
-              <CardHeader className="text-center pb-4">
-                <div className="relative">
-                  <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-blue-100">
-                    <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback className="text-xl bg-gradient-to-br from-blue-500 to-green-500 text-white">
-                      {getInitials(userProfile.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {userProfile.is_verified && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                      <div className="bg-green-500 text-white rounded-full p-1">
-                        <CheckCircle className="w-4 h-4" />
-                      </div>
-                    </div>
-                  )}
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Star className="h-8 w-8 mr-4" />
+                <div>
+                  <p className="text-green-100">Rating</p>
+                  <p className="text-2xl font-bold">{userProfile.total_rating.toFixed(1)}</p>
                 </div>
-                <CardTitle className="text-xl font-bold text-gray-800">{userProfile.full_name}</CardTitle>
-                <CardDescription className="text-base text-gray-600">
-                  {userProfile.faculty} • Level {userProfile.level}
-                </CardDescription>
-                <div className="flex items-center justify-center gap-2 mt-3 bg-yellow-50 rounded-lg p-2">
-                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-gray-700">
-                    {userProfile.total_rating.toFixed(1)} rating ({userProfile.total_reviews} reviews)
-                  </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 mr-4" />
+                <div>
+                  <p className="text-purple-100">Reviews</p>
+                  <p className="text-2xl font-bold">{userProfile.total_reviews}</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Award className="h-8 w-8 mr-4" />
+                <div>
+                  <p className="text-orange-100">Skills</p>
+                  <p className="text-2xl font-bold">{userProfile.skills.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Dashboard Content */}
+        <Tabs defaultValue="marketplace" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+            <TabsTrigger value="services">My Services</TabsTrigger>
+            <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
+
+          {/* Marketplace Tab */}
+          <TabsContent value="marketplace" className="space-y-6">
+            {/* Search Bar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Search className="w-5 h-5 mr-2" />
+                  {userProfile.account_type === "student" ? "Discover Services & Artisans" : "Marketplace Overview"}
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">`
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1">Contact Information</h4>
-                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
-                    <Mail className="w-4 h-4 text-blue-500" />
-                    <span className="truncate">{user.email}</span>
+              <CardContent>
+                <div className="flex gap-4 mb-6">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Search for services, skills, or artisans..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
-                    <Phone className="w-4 h-4 text-green-500" />
-                    <span>{userProfile.phone_number}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
-                    <BookOpen className="w-4 h-4 text-purple-500" />
-                    <span className="truncate">{userProfile.department}</span>
-                  </div>
+                  <Button variant="outline">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filter
+                  </Button>
                 </div>
-
-                {userProfile.skills.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1 mb-3">Your Skills</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {userProfile.skills.slice(0, 8).map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-green-100 text-blue-700 border-0 text-xs px-2 py-1">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {userProfile.skills.length > 8 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{userProfile.skills.length - 8} more
-                        </Badge>
-                      )}
-                    </div>
+                
+                {/* Popular Skills */}
+                <div className="mb-4">
+                  <h4 className="font-semibold mb-2">Popular Skills</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {["Web Design", "Graphics Design", "Content Writing", "Photography", "Tutoring", "Programming"].map((skill) => (
+                      <Badge 
+                        key={skill} 
+                        variant="outline" 
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                        onClick={() => setSearchTerm(skill)}
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
                   </div>
-                )}
-
-                <div className="pt-4 border-t border-gray-200">
-                  <Link href="/dashboard/profile">
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right Column - Dashboard Content */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="services">My Services</TabsTrigger>
-                <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                <TabsTrigger value="orders">Orders</TabsTrigger>
-              </TabsList>
-
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
-                    <CardContent className="p-6 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <ShoppingBag className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-3xl font-bold text-blue-700 mb-1">{services.length}</div>
-                      <div className="text-sm text-blue-600 font-medium">Services</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
-                    <CardContent className="p-6 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Eye className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-3xl font-bold text-green-700 mb-1">0</div>
-                      <div className="text-sm text-green-600 font-medium">Total Views</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
-                    <CardContent className="p-6 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Clock className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-3xl font-bold text-purple-700 mb-1">{myBookingsAsClient.length}</div>
-                      <div className="text-sm text-purple-600 font-medium">My Bookings</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
-                    <CardContent className="p-6 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <CheckCircle className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-3xl font-bold text-orange-700 mb-1">{myBookingsAsProvider.length}</div>
-                      <div className="text-sm text-orange-600 font-medium">Orders Received</div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Recent Activity */}
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50 rounded-t-lg">
-                    <CardTitle className="font-serif text-gray-800 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-blue-600" />
-                      Recent Activity
-                    </CardTitle>
-                    <CardDescription className="text-gray-600">Your latest bookings and service updates</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {bookings.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Clock className="w-10 h-10 text-blue-500" />
-                        </div>
-                        <h4 className="text-lg font-semibold text-gray-700 mb-2">No recent activity</h4>
-                        <p className="text-gray-500 mb-4">Start by browsing services or adding your own!</p>
-                        <div className="flex gap-3 justify-center">
-                          <Link href="/marketplace">
-                            <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
-                              Browse Services
-                            </Button>
-                          </Link>
-                          <Link href="/dashboard/services/new">
-                            <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                              Add Service
-                            </Button>
-                          </Link>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Available Services */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Services ({filteredServices.length})</CardTitle>
+                  <CardDescription>Browse services from talented artisans</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {filteredServices.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-400 mb-2">No services found</div>
+                        <p className="text-sm text-gray-500">Try adjusting your search terms</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {bookings.slice(0, 5).map((booking) => (
-                          <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                                <ShoppingBag className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-gray-800">{booking.title}</p>
-                                <p className="text-sm text-gray-500">
-                                  {booking.client_id === user.id ? "Your booking" : "Order received"}
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className={getStatusColor(booking.status)}>{booking.status.replace("_", " ")}</Badge>
+                      filteredServices.slice(0, 6).map((service) => (
+                        <div key={service.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold">{service.title}</h4>
+                            <Badge variant="secondary">₦{service.price}</Badge>
                           </div>
-                        ))}
-                      </div>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{service.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Clock className="w-4 h-4 mr-1" />
+                              {service.delivery_time}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              {userProfile.account_type === "student" && (
+                                <Button size="sm">
+                                  Book Now
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                  </div>
+                  {filteredServices.length > 6 && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" className="w-full">
+                        View All Services ({filteredServices.length})
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              {/* Services Tab */}
-              <TabsContent value="services" className="space-y-6">
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border">
+              {/* Featured Artisans */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Featured Artisans ({filteredArtisans.length})</CardTitle>
+                  <CardDescription>Connect with verified talented artisans</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {filteredArtisans.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-400 mb-2">No artisans found</div>
+                        <p className="text-sm text-gray-500">Try adjusting your search terms</p>
+                      </div>
+                    ) : (
+                      filteredArtisans.slice(0, 6).map((artisan) => (
+                        <div key={artisan.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <Avatar>
+                            <AvatarFallback className="bg-gradient-to-r from-emerald-500 to-orange-500 text-white">
+                              {artisan.full_name.split(" ").map(n => n[0]).join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{artisan.full_name}</h4>
+                            <p className="text-sm text-gray-600 line-clamp-1">{artisan.bio || "No bio available"}</p>
+                            <div className="flex items-center mt-1">
+                              <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                              <span className="text-sm">{artisan.total_rating.toFixed(1)} ({artisan.total_reviews} reviews)</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {artisan.skills.slice(0, 3).map((skill, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">{skill}</Badge>
+                              ))}
+                              {artisan.skills.length > 3 && (
+                                <Badge variant="outline" className="text-xs">+{artisan.skills.length - 3} more</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {filteredArtisans.length > 6 && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" className="w-full">
+                        View All Artisans ({filteredArtisans.length})
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* My Services Tab */}
+          <TabsContent value="services" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
-                      <ShoppingBag className="w-6 h-6 text-blue-600" />
-                      My Services
-                    </h3>
-                    <p className="text-gray-600 mt-1">Manage and showcase your skills</p>
+                    <CardTitle>My Services ({myServices.length})</CardTitle>
+                    <CardDescription>Manage your service offerings</CardDescription>
                   </div>
                   <Link href="/dashboard/services/new">
-                    <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
+                    <Button>
                       <Plus className="w-4 h-4 mr-2" />
                       Add Service
                     </Button>
                   </Link>
                 </div>
-
-                {services.length === 0 ? (
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                    <CardContent className="text-center py-16">
-                      <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <ShoppingBag className="w-12 h-12 text-blue-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No services yet</h3>
-                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Start showcasing your skills and talents by adding your first service. Let other students discover what you have to offer!
-                      </p>
-                      <Link href="/dashboard/services/new">
-                        <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-3">
-                          <Plus className="w-5 h-5 mr-2" />
-                          Add Your First Service
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
+              </CardHeader>
+              <CardContent>
+                {myServices.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gradient-to-r from-emerald-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Plus className="w-10 h-10 text-emerald-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-700 mb-2">No services yet</h4>
+                    <p className="text-gray-500 mb-4">Start showcasing your skills by adding your first service!</p>
+                    <Link href="/dashboard/services/new">
+                      <Button className="bg-gradient-to-r from-emerald-600 to-orange-600 hover:from-emerald-700 hover:to-orange-700 text-white">
+                        Create Your First Service
+                      </Button>
+                    </Link>
+                  </div>
                 ) : (
-                  <div className="grid gap-6">
-                    {services.map((service) => (
-                      <Card key={service.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 group">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
-                                  <ShoppingBag className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                  <h4 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{service.title}</h4>
-                                  <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-green-100 text-blue-700 border-0">
-                                    {service.category?.name}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">{service.description}</p>
-                              <div className="flex items-center gap-6 text-sm">
-                                <div className="flex items-center gap-2 text-blue-600">
-                                  <Eye className="w-4 h-4" />
-                                  <span className="font-medium">0 views</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-green-600">
-                                  <ShoppingBag className="w-4 h-4" />
-                                  <span className="font-medium">0 orders</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right ml-6">
-                              <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3 mb-3">
-                                <p className="text-2xl font-bold text-gray-800">₦{service.price}</p>
-                                <p className="text-sm text-gray-600">{service.delivery_time}</p>
-                              </div>
-                              <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                                Edit Service
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myServices.map((service) => (
+                      <Card key={service.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold">{service.title}</h4>
+                            <Badge variant={service.status === "active" ? "default" : "secondary"}>
+                              {service.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-emerald-600">₦{service.price}</span>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">Edit</Button>
+                              <Button size="sm" variant="outline">
+                                <Eye className="w-4 h-4" />
                               </Button>
                             </div>
                           </div>
@@ -511,168 +509,158 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 )}
-              </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {/* Bookings Tab */}
-              <TabsContent value="bookings" className="space-y-6">
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border">
+          {/* Bookings Tab */}
+          <TabsContent value="bookings" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* My Orders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Orders ({myBookingsAsClient.length})</CardTitle>
+                  <CardDescription>Services you have booked</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myBookingsAsClient.length === 0 ? (
+                    <div className="text-center py-8">
+                      <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No orders yet</p>
+                      <Button className="mt-4" onClick={() => {
+                        const marketplaceTab = document.querySelector('[value="marketplace"]') as HTMLElement;
+                        marketplaceTab?.click();
+                      }}>
+                        Browse Services
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {myBookingsAsClient.map((booking) => (
+                        <div key={booking.id} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold">{booking.title}</h4>
+                            <Badge className={getStatusColor(booking.status)}>
+                              {booking.status.replace("_", " ")}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{booking.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              {new Date(booking.created_at).toLocaleDateString()}
+                            </span>
+                            <span className="font-semibold">₦{booking.agreed_price}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Received Orders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Received Orders ({myBookingsAsProvider.length})</CardTitle>
+                  <CardDescription>Orders for your services</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myBookingsAsProvider.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No orders received yet</p>
+                      <Button className="mt-4" onClick={() => {
+                        const servicesTab = document.querySelector('[value="services"]') as HTMLElement;
+                        servicesTab?.click();
+                      }}>
+                        Add Services
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {myBookingsAsProvider.map((booking) => (
+                        <div key={booking.id} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold">{booking.title}</h4>
+                            <Badge className={getStatusColor(booking.status)}>
+                              {booking.status.replace("_", " ")}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{booking.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              {new Date(booking.created_at).toLocaleDateString()}
+                            </span>
+                            <span className="font-semibold">₦{booking.agreed_price}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Overview</CardTitle>
+                <CardDescription>Manage your TalentNest profile</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
-                      <Clock className="w-6 h-6 text-purple-600" />
-                      My Bookings
-                    </h3>
-                    <p className="text-gray-600 mt-1">Track your service bookings and requests</p>
+                    <h4 className="font-semibold mb-2">Personal Information</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Name:</strong> {userProfile.full_name}</p>
+                      <p><strong>Email:</strong> {userProfile.email}</p>
+                      <p><strong>Phone:</strong> {userProfile.phone_number}</p>
+                      {userProfile.matric_number && (
+                        <p><strong>Matric Number:</strong> {userProfile.matric_number}</p>
+                      )}
+                      {userProfile.faculty && (
+                        <p><strong>Faculty:</strong> {userProfile.faculty}</p>
+                      )}
+                      {userProfile.department && (
+                        <p><strong>Department:</strong> {userProfile.department}</p>
+                      )}
+                      {userProfile.level && (
+                        <p><strong>Level:</strong> {userProfile.level}</p>
+                      )}
+                    </div>
                   </div>
-                  <Link href="/marketplace">
-                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
-                      <Search className="w-4 h-4 mr-2" />
-                      Browse Services
+                  <div>
+                    <h4 className="font-semibold mb-2">Skills & Bio</h4>
+                    <div className="space-y-2">
+                      <p className="text-sm">{userProfile.bio || "No bio added yet"}</p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {userProfile.skills.map((skill, idx) => (
+                          <Badge key={idx} variant="outline">{skill}</Badge>
+                        ))}
+                        {userProfile.skills.length === 0 && (
+                          <span className="text-sm text-gray-500">No skills added yet</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <Link href="/dashboard/profile">
+                    <Button>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Edit Profile
                     </Button>
                   </Link>
                 </div>
-
-                {myBookingsAsClient.length === 0 ? (
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                    <CardContent className="text-center py-16">
-                      <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Clock className="w-12 h-12 text-purple-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No bookings yet</h3>
-                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Discover amazing services from talented students and make your first booking to get started!
-                      </p>
-                      <Link href="/marketplace">
-                        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3">
-                          <Search className="w-5 h-5 mr-2" />
-                          Browse Services
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-6">
-                    {myBookingsAsClient.map((booking) => (
-                      <Card key={booking.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-4 flex-1">
-                              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-bold text-gray-800 text-lg mb-2">{booking.title}</h4>
-                                <p className="text-gray-600 mb-3 leading-relaxed">{booking.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Created {new Date(booking.created_at).toLocaleDateString()}</span>
-                                  </div>
-                                  {booking.agreed_price && (
-                                    <div className="flex items-center gap-1 text-green-600 font-medium">
-                                      <span>₦{booking.agreed_price}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right ml-6">
-                              <Badge className={`${getStatusColor(booking.status)} px-3 py-1`}>
-                                {booking.status.replace("_", " ")}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* Orders Tab */}
-              <TabsContent value="orders" className="space-y-6">
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border">
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-gray-800 flex items-center gap-2">
-                      <CheckCircle className="w-6 h-6 text-orange-600" />
-                      Orders Received
-                    </h3>
-                    <p className="text-gray-600 mt-1">Manage incoming orders from other students</p>
-                  </div>
-                  <Link href="/dashboard/services/new">
-                    <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Service
-                    </Button>
-                  </Link>
-                </div>
-
-                {myBookingsAsProvider.length === 0 ? (
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                    <CardContent className="text-center py-16">
-                      <div className="w-24 h-24 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="w-12 h-12 text-orange-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No orders yet</h3>
-                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Add services to start receiving orders from other students. Showcase your skills and talents!
-                      </p>
-                      <Link href="/dashboard/services/new">
-                        <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-3">
-                          <Plus className="w-5 h-5 mr-2" />
-                          Add a Service
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-6">
-                    {myBookingsAsProvider.map((booking) => (
-                      <Card key={booking.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-4 flex-1">
-                              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                                <CheckCircle className="w-6 h-6 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-bold text-gray-800 text-lg mb-2">{booking.title}</h4>
-                                <p className="text-gray-600 mb-3 leading-relaxed">{booking.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Received {new Date(booking.created_at).toLocaleDateString()}</span>
-                                  </div>
-                                  {booking.agreed_price && (
-                                    <div className="flex items-center gap-1 text-green-600 font-medium">
-                                      <span>₦{booking.agreed_price}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right ml-6">
-                              <Badge className={`${getStatusColor(booking.status)} px-3 py-1`}>
-                                {booking.status.replace("_", " ")}
-                              </Badge>
-                              <div className="mt-3">
-                                <Button variant="outline" size="sm" className="border-orange-200 text-orange-600 hover:bg-orange-50">
-                                  Manage Order
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Footer />
     </div>
-  )
+  );
 }

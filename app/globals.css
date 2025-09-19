@@ -1,249 +1,129 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to University of Ilorin branding colors and professional design tokens */
-  --background: #ffffff; /* Pure white background */
-  --foreground: #475569; /* Professional dark gray for main text */
-  --card: #f1f5f9; /* Light slate background for cards */
-  --card-foreground: #005eb8; /* UNILORIN blue for card text */
-  --popover: #ffffff; /* White popover background */
-  --popover-foreground: #475569; /* Dark text on popovers */
-  --primary: #005eb8; /* University of Ilorin Blue - primary brand color */
-  --primary-foreground: #ffffff; /* White text on primary */
-  --secondary: #ffc107; /* Amber accent color */
-  --secondary-foreground: #000000; /* Black text on secondary */
-  --muted: #f1f5f9; /* Light muted background */
-  --muted-foreground: #475569; /* Medium gray for muted text */
-  --accent: #ffc107; /* Amber accent color */
-  --accent-foreground: #000000; /* Black text on accent */
-  --destructive: #ef4444; /* Red for destructive actions */
-  --destructive-foreground: #ffffff; /* White text on destructive */
-  --border: #e5e7eb; /* Light gray borders */
-  --input: #f1f5f9; /* Light input backgrounds */
-  --ring: rgba(0, 94, 184, 0.5); /* UNILORIN blue focus rings */
-  --chart-1: #005eb8; /* UNILORIN blue for charts */
-  --chart-2: #ffc107; /* Amber for charts */
-  --chart-3: #475569; /* Dark gray for charts */
-  --chart-4: #e5e7eb; /* Light gray for charts */
-  --chart-5: #f1f5f9; /* Very light gray for charts */
-  --radius: 0.5rem; /* Consistent border radius */
-  --sidebar: #ffffff; /* White sidebar */
-  --sidebar-foreground: #475569; /* Dark sidebar text */
-  --sidebar-primary: #005eb8; /* UNILORIN blue sidebar primary */
-  --sidebar-primary-foreground: #ffffff; /* White text on sidebar primary */
-  --sidebar-accent: #ffc107; /* Amber sidebar accent */
-  --sidebar-accent-foreground: #000000; /* Black text on sidebar accent */
-  --sidebar-border: #e5e7eb; /* Light sidebar borders */
-  --sidebar-ring: rgba(0, 94, 184, 0.5); /* UNILORIN blue sidebar focus ring */
+  --background: #ffffff;
+  --foreground: #475569;
+  --card: #f1f5f9;
+  --card-foreground: #475569;
+  --popover: #ffffff;
+  --popover-foreground: #475569;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #16a34a;
+  --secondary-foreground: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #ffc107;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #f1f5f9;
+  --ring: rgba(37, 99, 235, 0.5);
+  --chart-1: #2563eb;
+  --chart-2: #16a34a;
+  --chart-3: #ffc107;
+  --chart-4: #e5e7eb;
+  --chart-5: #f1f5f9;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #475569;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #16a34a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: rgba(37, 99, 235, 0.5);
 }
 
 .dark {
-  /* Updated dark mode tokens maintaining UNILORIN branding */
-  --background: #0f172a; /* Dark slate background */
-  --foreground: #f1f5f9; /* Light text */
-  --card: #1e293b; /* Dark card background */
-  --card-foreground: #f1f5f9; /* Light card text */
-  --popover: #1e293b; /* Dark popover */
-  --popover-foreground: #f1f5f9; /* Light popover text */
-  --primary: #005eb8; /* Consistent UNILORIN blue */
-  --primary-foreground: #ffffff; /* White text on primary */
-  --secondary: #ffc107; /* Consistent amber */
-  --secondary-foreground: #000000; /* Black text on secondary */
-  --muted: #334155; /* Dark muted background */
-  --muted-foreground: #94a3b8; /* Light muted text */
-  --accent: #ffc107; /* Consistent amber accent */
-  --accent-foreground: #000000; /* Black accent text */
-  --destructive: #ef4444; /* Consistent red */
-  --destructive-foreground: #ffffff; /* White destructive text */
-  --border: #334155; /* Dark borders */
-  --input: #334155; /* Dark input backgrounds */
-  --ring: rgba(0, 94, 184, 0.5); /* Consistent UNILORIN blue ring */
-  --chart-1: #005eb8; /* Consistent chart colors */
-  --chart-2: #ffc107;
-  --chart-3: #94a3b8;
-  --chart-4: #475569;
-  --chart-5: #f1f5f9;
-  --sidebar: #1e293b; /* Dark sidebar */
-  --sidebar-foreground: #f1f5f9; /* Light sidebar text */
-  --sidebar-primary: #005eb8; /* Consistent UNILORIN blue */
-  --sidebar-primary-foreground: #ffffff; /* White text on sidebar primary */
-  --sidebar-accent: #ffc107; /* Consistent amber */
-  --sidebar-accent-foreground: #000000; /* Black accent text */
-  --sidebar-border: #334155; /* Dark sidebar borders */
-  --sidebar-ring: rgba(0, 94, 184, 0.5); /* Consistent UNILORIN blue ring */
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #22c55e;
+  --secondary-foreground: #ffffff;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #fbbf24;
+  --accent-foreground: #000000;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #1e293b;
+  --ring: rgba(59, 130, 246, 0.5);
+  --chart-1: #3b82f6;
+  --chart-2: #22c55e;
+  --chart-3: #fbbf24;
+  --chart-4: #334155;
+  --chart-5: #1e293b;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #22c55e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #334155;
+  --sidebar-ring: rgba(59, 130, 246, 0.5);
 }
 
-@theme inline {
-  /* Updated font variables for modern typography */
-  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Manrope", ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
-
-  /* Updated color mappings to use UNILORIN branding tokens */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+* {
+  border-color: hsl(var(--border));
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
-
-  /* Enhanced typography styles for better readability */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-sans font-semibold text-balance;
-  }
-
-  p {
-    @apply text-pretty leading-relaxed;
-  }
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* Added custom animations for enhanced user experience */
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.4s ease-out;
-  }
-
-  .animate-bounce-gentle {
-    animation: bounceGentle 2s infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes bounceGentle {
-  0%,
-  20%,
-  50%,
-  80%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
+@keyframes bounce-gentle {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
 }
 
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
 }
 
-@keyframes glow {
-  from {
-    box-shadow: 0 0 20px rgba(0, 94, 184, 0.3);
-  }
-  to {
-    box-shadow: 0 0 30px rgba(0, 94, 184, 0.6);
-  }
-}
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+.animate-fade-in { animation: fade-in 1s ease-out; }
+.animate-scale-in { animation: scale-in 0.8s ease-out; }
+.animate-slide-up { animation: slide-up 1s ease-out; }
+.animate-bounce-gentle { animation: bounce-gentle 2s ease-in-out infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
 
-/* Added hover effects for interactive elements */
+.animation-delay-300ms { animation-delay: 300ms; }
+.animation-delay-600ms { animation-delay: 600ms; }
+.animation-delay-900ms { animation-delay: 900ms; }
+.animation-delay-2s { animation-delay: 2s; }
+
 .hover-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -254,21 +134,25 @@
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 20px rgba(0, 94, 184, 0.4);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
 }
 
-/* Added gradient backgrounds for UNILORIN branding */
-.bg-unilorin-gradient {
-  background: linear-gradient(135deg, #005eb8 0%, #0066cc 100%);
+.bg-talentnest-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
 }
 
-.bg-unilorin-gradient-light {
-  background: linear-gradient(135deg, rgba(0, 94, 184, 0.1) 0%, rgba(0, 102, 204, 0.05) 100%);
+.bg-talentnest-gradient-light {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
 }
 
-.text-unilorin-gradient {
-  background: linear-gradient(135deg, #005eb8 0%, #0066cc 100%);
+.text-talentnest-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }

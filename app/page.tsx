@@ -14,35 +14,36 @@ export default function HomePage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-unilorin-gradient-light relative overflow-hidden">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-white to-green-50 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full animate-float"></div>
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/5 rounded-full animate-float animation-delay-2s"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-green-500/10 rounded-full animate-pulse animation-delay-2s"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-blue-400/5 to-green-400/5 rounded-full animate-spin-slow"></div>
         </div>
 
         <div className="container mx-auto text-center max-w-5xl relative z-10">
-          <div className="inline-flex items-center px-6 py-3 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in hover-lift">
-            <GraduationCap className="w-4 h-4 mr-2" />
-            <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
+          <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-100 to-green-100 text-blue-700 text-sm font-medium mb-8 animate-fade-in hover:scale-105 transition-all duration-300">
+            <Image src="/unilorin-logo.png" alt="UNILORIN" width={20} height={20} className="mr-2" />
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
             Trusted by 500+ UNILORIN Students
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 text-balance leading-tight animate-slide-up">
-            <span className="text-unilorin-gradient">University of Ilorin</span>
-            <span className="text-secondary block animate-bounce-gentle">Skills Marketplace</span>
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 text-balance leading-tight">
+            <span className="bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent block animate-fade-in">TalentNest</span>
+            <span className="text-gray-700 block text-4xl md:text-5xl mt-2 animate-fade-in animation-delay-300ms">UNILORIN Skills Marketplace</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto text-pretty leading-relaxed animate-fade-in animation-delay-300ms">
+          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto text-pretty leading-relaxed animate-fade-in animation-delay-600ms">
             Connect with talented UNILORIN students, showcase your skills, and build your portfolio. The trusted
             platform where University of Ilorin students offer and discover professional services within our campus
             community.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-scale-in animation-delay-600ms">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-scale-in animation-delay-900ms">
             <Link href="/register">
               <Button
                 size="lg"
-                className="text-lg px-10 py-4 h-auto font-semibold shadow-lg hover:shadow-xl transition-all hover-lift bg-unilorin-gradient hover:bg-unilorin-gradient"
+                className="text-lg px-10 py-4 h-auto font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white"
               >
                 <Award className="w-5 h-5 mr-2" />
                 Start Showcasing Your Skills
@@ -156,24 +157,24 @@ export default function HomePage() {
                 <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors group-hover:animate-pulse">
                   <BookOpen className="w-7 h-7 text-primary" />
                 </div>
-                <CardTitle className="text-xl font-bold mb-3 text-primary">Learning & Tutoring</CardTitle>
+                <CardTitle className="text-xl font-bold mb-3 text-primary">Professional Services</CardTitle>
                 <CardDescription className="text-base leading-relaxed">
-                  Peer-to-peer learning, skill workshops, and academic tutoring
+                  High-quality professional services from verified UNILORIN students
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary" className="px-3 py-1 hover-lift">
-                    Tutoring
+                    Consulting
                   </Badge>
                   <Badge variant="secondary" className="px-3 py-1 hover-lift">
-                    Workshops
+                    Digital Services
                   </Badge>
                   <Badge variant="secondary" className="px-3 py-1 hover-lift">
-                    Mentoring
+                    Expert Advice
                   </Badge>
                   <Badge variant="secondary" className="px-3 py-1 hover-lift">
-                    Training
+                    Support
                   </Badge>
                 </div>
               </CardContent>

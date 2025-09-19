@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Menu, Settings, LogOut, User, Calendar } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -87,8 +88,8 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
   }
 
   const navigationLinks = [
-    { href: "/marketplace", label: "Browse Services" },
-    { href: "/skills", label: "Skills Catalog" },
+    { href: "/marketplace", label: "Marketplace" },
+    { href: "/services", label: "Services" },
     { href: "#how-it-works", label: "How It Works" },
     { href: "#about", label: "About" },
   ]
@@ -100,12 +101,21 @@ export function Header({ variant = "default", showAdminAccess = false }: HeaderP
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center group">
-              <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center mr-3 group-hover:bg-secondary/80 transition-colors">
-                <span className="text-secondary-foreground font-bold text-lg">T</span>
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mr-3 group-hover:scale-105 transition-all duration-300 shadow-md border-2 border-blue-100">
+                <Image 
+                  src="/unilorin-logo.png" 
+                  alt="University of Ilorin" 
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
-              <h1 className="text-2xl font-bold text-foreground group-hover:text-secondary transition-colors">
-                TalentNest
-              </h1>
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-green-700 transition-all duration-300">
+                  TalentNest
+                </h1>
+                <span className="text-xs text-muted-foreground font-medium">UNILORIN Community</span>
+              </div>
             </Link>
           </div>
 

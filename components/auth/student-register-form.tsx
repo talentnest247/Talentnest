@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff, User, BookOpen, AlertCircle } from "lucide-react"
 import { validateEmail, validatePhoneNumber } from "@/lib/validation"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 interface StudentSignupFormData {
@@ -268,26 +269,77 @@ export function StudentRegisterForm() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const supabase = createClient()
+
+      // Check if user already exists in users table
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id, matric_number, email')
+        .or(`matric_number.eq.${formData.matricNumber},email.eq.${formData.email}`)
+        .single()
+
+      if (existingUser) {
+        if (existingUser.matric_number === formData.matricNumber) {
+          throw new Error('Matric number already registered')
+        }
+        if (existingUser.email === formData.email) {
+          throw new Error('Email already registered')
+        }
+      }
+
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            matric_number: formData.matricNumber,
+          },
         },
-        body: JSON.stringify({
-          ...formData,
-          accountType: 'student'
-        }),
       })
 
-      const data = await response.json()
+      if (authError) {
+        throw new Error(authError.message)
+      }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
+      if (!authData.user) {
+        throw new Error('Failed to create user account')
+      }
+
+      // Create user profile in users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          matric_number: formData.matricNumber,
+          email: formData.email,
+          full_name: formData.fullName,
+          phone_number: formData.phoneNumber,
+          whatsapp_number: formData.whatsappNumber || formData.phoneNumber,
+          faculty: formData.faculty.toLowerCase().replace(/\s+/g, '_'),
+          department: formData.department,
+          level: formData.level,
+          bio: '',
+          skills: [],
+          account_type: 'student',
+          is_verified: false,
+          is_admin: false,
+          total_rating: 0.0,
+          total_reviews: 0,
+        })
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        // Clean up auth user if profile creation fails
+        await supabase.auth.admin.deleteUser(authData.user.id)
+        throw new Error('Failed to create user profile')
       }
 
       // Success - redirect to verification page
       router.push('/auth/sign-up-success?type=student')
     } catch (error) {
+      console.error('Registration error:', error)
       setErrors({ submit: error instanceof Error ? error.message : 'Registration failed. Please try again.' })
     } finally {
       setLoading(false)

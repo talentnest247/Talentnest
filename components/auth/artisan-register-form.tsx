@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Eye, EyeOff, AlertCircle, Briefcase, Plus, X, Upload } from 'lucide-react'
 import { ArtisanSignupFormData } from '@/lib/types'
 import { validateEmail, validatePhoneNumber } from '@/lib/validation'
+import { createClient } from '@/lib/supabase/client'
 
 const SKILL_CATEGORIES = [
   'Carpentry & Woodwork',
@@ -154,40 +155,71 @@ export function ArtisanRegisterForm() {
     setLoading(true)
 
     try {
-      // Create FormData for file upload
-      const submitData = new FormData()
-      
-      // Add text fields
-      submitData.append('email', formData.email)
-      submitData.append('fullName', formData.fullName)
-      submitData.append('phoneNumber', formData.phoneNumber)
-      submitData.append('whatsappNumber', formData.whatsappNumber)
-      submitData.append('bio', formData.bio)
-      submitData.append('experience', formData.experience)
-      submitData.append('skills', JSON.stringify(formData.skills))
-      submitData.append('portfolioLinks', JSON.stringify(formData.portfolioLinks))
-      submitData.append('password', formData.password)
-      submitData.append('accountType', 'artisan')
-      
-      // Add certificate files
-      formData.certificates.forEach((file, index) => {
-        submitData.append(`certificate_${index}`, file)
+      const supabase = createClient()
+
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('email', formData.email)
+        .single()
+
+      if (existingUser) {
+        throw new Error('Email already registered')
+      }
+
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            account_type: 'artisan',
+          },
+        },
       })
 
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        body: submitData,
-      })
+      if (authError) {
+        throw new Error(authError.message)
+      }
 
-      const data = await response.json()
+      if (!authData.user) {
+        throw new Error('Failed to create user account')
+      }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
+      // Create user profile in users table for artisan
+      // Note: Artisans don't have matric_number, faculty, department, level
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email: formData.email,
+          full_name: formData.fullName,
+          phone_number: formData.phoneNumber,
+          whatsapp_number: formData.whatsappNumber || formData.phoneNumber,
+          bio: formData.bio,
+          skills: formData.skills,
+          account_type: 'artisan',
+          area: 'tanke', // Default area, should be made configurable
+          is_verified: false, // Artisans need admin verification
+          is_admin: false,
+          total_rating: 0.0,
+          total_reviews: 0,
+          // Note: matric_number, faculty, department, level are NULL for artisans
+        })
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        // Clean up auth user if profile creation fails
+        await supabase.auth.admin.deleteUser(authData.user.id)
+        throw new Error('Failed to create user profile: ' + profileError.message)
       }
 
       // Success - redirect to verification pending page
       router.push('/auth/sign-up-success?type=artisan&message=Your registration has been submitted! Please wait for admin verification.')
     } catch (error) {
+      console.error('Registration error:', error)
       setErrors({ submit: error instanceof Error ? error.message : 'Registration failed. Please try again.' })
     } finally {
       setLoading(false)
