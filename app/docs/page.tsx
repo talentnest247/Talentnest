@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { BookOpen, Users, Settings, HelpCircle, FileText, Video, MessageCircle } from "lucide-react"
+import { BookOpen, Users, Settings, HelpCircle, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
@@ -19,7 +19,7 @@ export default function DocsPage() {
               Documentation & Help Center
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-              Everything you need to know about using the UNILORIN Artisan Platform.
+              Everything you need to know about using the TalentNest Platform.
               Get started, learn new skills, and grow your business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -34,7 +34,7 @@ export default function DocsPage() {
         </section>
 
         {/* Quick Links */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-900">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="text-center hover:shadow-lg transition-shadow">
@@ -44,7 +44,7 @@ export default function DocsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    New to the platform? Start here with our beginner's guide.
+                    New to the platform? Start here with our beginner&apos;s guide.
                   </p>
                   <Button variant="outline" size="sm" asChild>
                     <Link href="#getting-started">Learn More</Link>
@@ -189,7 +189,7 @@ export default function DocsPage() {
                     <li>Navigate to the Skills page from the main menu</li>
                     <li>Use filters to search by category, difficulty, or price</li>
                     <li>Click on a skill card to view details</li>
-                    <li>Click "Enroll Now" and complete the payment</li>
+                    <li>Click &quot;Enroll Now&quot; and complete the payment</li>
                     <li>Access your enrolled skills from the Dashboard</li>
                   </ol>
                 </AccordionContent>
@@ -259,7 +259,7 @@ export default function DocsPage() {
                     Create compelling skill listings to attract students:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Go to "Add Skill" from your dashboard</li>
+                    <li>Go to &quot;Add Skill&quot; from your dashboard</li>
                     <li>Provide detailed description and learning objectives</li>
                     <li>Set appropriate pricing and duration</li>
                     <li>Upload syllabus, images, and sample materials</li>
@@ -313,7 +313,7 @@ export default function DocsPage() {
                 <AccordionTrigger>What is the refund policy?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground">
-                    Refunds are available within 7 days of enrollment if you're not satisfied
+                    Refunds are available within 7 days of enrollment if you&apos;re not satisfied
                     with the skill. Contact our support team to initiate a refund request.
                     Processing takes 5-10 business days.
                   </p>
@@ -324,7 +324,7 @@ export default function DocsPage() {
                 <AccordionTrigger>How long does verification take?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground">
-                    Verification typically takes 2-3 business days. You'll receive an email
+                    Verification typically takes 2-3 business days. You&apos;ll receive an email
                     notification once your application is reviewed. Make sure all required
                     documents are submitted clearly.
                   </p>
@@ -336,7 +336,7 @@ export default function DocsPage() {
                 <AccordionContent>
                   <p className="text-muted-foreground">
                     For technical issues, contact our support team through the contact form
-                    or email support@unilorinartisan.com. We're available Monday-Friday,
+                    or email support@unilorinartisan.com. We&apos;re available Monday-Friday,
                     8 AM - 6 PM WAT.
                   </p>
                 </AccordionContent>
@@ -350,7 +350,7 @@ export default function DocsPage() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">Still Need Help?</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Can't find what you're looking for? Our support team is here to help.
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help.
               Contact us for personalized assistance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

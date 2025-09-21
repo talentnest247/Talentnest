@@ -59,7 +59,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     <Card className="w-full max-w-md mx-auto glass-card shadow-2xl animate-in fade-in slide-in-from-bottom delay-200">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
-        <CardDescription className="text-center text-muted-foreground">Sign in to your UNILORIN Artisan Community account</CardDescription>
+        <CardDescription className="text-center text-muted-foreground">Sign in to your TalentNest account</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
@@ -106,7 +106,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             </div>
           </div>
 
-          <div className="text-right">
+            <div className="text-right">
             <Link href="/forgot-password" className="text-sm text-primary hover:underline transition-colors">
               Forgot your password?
             </Link>
@@ -143,7 +143,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account?</span>{" "}
+            <span className="text-muted-foreground">Don&apos;t have an account?</span>{" "}
             <Link href="/register" className="text-primary hover:underline transition-colors">
               Sign up here
             </Link>

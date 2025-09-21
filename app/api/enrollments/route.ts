@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { mockDatabase } from "@/lib/mock-data"
 
 // Mock enrollments storage
-let mockEnrollments: any[] = [
+const mockEnrollments: any[] = [
   {
     id: "1",
     studentId: "student1",

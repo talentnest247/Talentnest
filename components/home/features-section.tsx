@@ -93,18 +93,18 @@ export function FeaturesSection() {
   ]
 
   return (
-    <section id="features-section" className="relative py-20 lg:py-32 bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <section id="features-section" className="relative py-20 lg:py-32 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-slate-900 dark:to-blue-950 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-emerald-200/20 dark:bg-emerald-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-300/30 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-sky-200/30 dark:bg-sky-500/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className={`text-center space-y-6 mb-16 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white px-4 py-2 border-0 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+            <Sparkles className="h-4 w-4 mr-2" />
             Why Choose UNILORIN Hub
           </Badge>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-600 dark:text-white">
@@ -157,7 +157,7 @@ export function FeaturesSection() {
                   <div className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-200`}>
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <Badge {...({ variant: "secondary" } as any)} className="bg-slate-100 dark:bg-slate-800 dark:text-slate-200 text-xs">
+                  <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 dark:text-slate-200 text-xs">
                     {feature.badge}
                   </Badge>
                 </div>

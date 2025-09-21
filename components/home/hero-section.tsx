@@ -17,11 +17,9 @@ import {
 } from "lucide-react"
 
 export function HeroSection() {
-  const [mounted, setMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
     const timer = setTimeout(() => setIsVisible(true), 100)
     return () => clearTimeout(timer)
   }, [])
@@ -41,12 +39,12 @@ export function HeroSection() {
   ]
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-slate-950">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-slate-900 dark:via-blue-950 dark:to-slate-950">
       {/* Professional Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Geometric Shapes */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-blue-100/40 to-indigo-100/30 dark:from-blue-950/20 dark:to-indigo-950/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-emerald-100/40 to-teal-100/30 dark:from-emerald-950/20 dark:to-teal-950/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-blue-200/60 to-indigo-300/40 dark:from-blue-800/30 dark:to-indigo-900/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-blue-300/50 to-sky-200/40 dark:from-blue-700/30 dark:to-sky-800/20 rounded-full blur-3xl"></div>
         
         {/* Professional Grid Pattern */}
         <div className="absolute inset-0 opacity-5 dark:opacity-3 bg-gradient-pattern"></div>
@@ -60,8 +58,8 @@ export function HeroSection() {
             {/* Badge */}
             <div className={`inline-flex transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white px-4 py-2 text-sm font-medium shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
-                UNILORIN Student Artisan Hub
+                <Sparkles className="h-4 w-4 mr-2" />
+                University of Ilorin - TalentNest
               </Badge>
             </div>
 
@@ -77,7 +75,7 @@ export function HeroSection() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
-                Connect with expert student artisans, learn traditional and modern skills, and become part of UNILORIN's most vibrant creative community.
+                Connect with expert student artisans, learn traditional and modern skills, and become part of UNILORIN&apos;s most vibrant creative community.
               </p>
             </div>
 
@@ -95,7 +93,7 @@ export function HeroSection() {
             <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <Button 
                 asChild
-                {...({ size: "lg" } as any)}
+                size="lg"
                 className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
                 <Link href="/marketplace" className="flex items-center space-x-2">
@@ -105,7 +103,8 @@ export function HeroSection() {
               </Button>
               
               <Button 
-                {...({ variant: "outline", size: "lg" } as any)}
+                variant="outline"
+                size="lg"
                 className="border-2 border-slate-300 text-slate-800 hover:bg-slate-50 hover:border-slate-400 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105"
               >
                 <Play className="h-5 w-5 mr-2" />

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
@@ -17,12 +17,8 @@ import {
   Menu, 
   User, 
   LogOut, 
-  BookOpen, 
-  Home, 
   Settings, 
-  ShoppingBag,
-  Award,
-  MessageCircle
+  Award
 } from "lucide-react"
 
 export function Header() {
@@ -30,15 +26,6 @@ export function Header() {
   const router = useRouter()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -52,15 +39,15 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-sm transition-all duration-300 ease-in-out">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white border-b border-blue-200 shadow-lg backdrop-blur-md transition-all duration-500 ease-in-out">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo Section */}
             <Link href="/" className="flex items-center gap-3 group">
-              <Image src="/placeholder-logo.svg" alt="UNILORIN Logo" width={40} height={40} className="rounded-full" />
+              <Image src="/images/unilorin-logo.png" alt="UNILORIN Logo" width={40} height={40} className="rounded-full" />
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-slate-900">UNILORIN</span>
-                <span className="text-xs text-slate-600 font-medium leading-tight">TalentNest</span>
+                <span className="text-lg font-bold text-slate-900">TalentNest</span>
+                <span className="text-xs text-slate-600 font-medium leading-tight">UNILORIN Skills Platform</span>
               </div>
             </Link>
 
@@ -159,10 +146,10 @@ export function Header() {
                     <SheetHeader>
                       <SheetTitle className="text-left">
                         <div className="flex items-center gap-3">
-                          <Image src="/placeholder-logo.svg" alt="UNILORIN" width={32} height={32} className="rounded-full" />
+                          <Image src="/images/unilorin-logo.png" alt="UNILORIN" width={32} height={32} className="rounded-full" />
                           <div>
-                            <h2 className="text-lg font-bold text-emerald-700">UNILORIN</h2>
-                            <p className="text-xs text-slate-600">Student Artisan Hub</p>
+                            <h2 className="text-lg font-bold text-emerald-700">TalentNest</h2>
+                            <p className="text-xs text-slate-600">UNILORIN Skills Platform</p>
                           </div>
                         </div>
                       </SheetTitle>

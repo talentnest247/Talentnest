@@ -8,14 +8,14 @@ import Link from "next/link"
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-white">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-600 to-purple-700 text-white py-20">
+        <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              About UNILORIN Artisan Platform
+              About TalentNest Platform
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
               Empowering students and artisans at the University of Ilorin through skill-sharing,
@@ -28,11 +28,11 @@ export default function AboutPage() {
         </section>
 
         {/* Mission Section */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-900">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Mission</h2>
+              <p className="text-lg text-blue-600 max-w-2xl mx-auto">
                 To create a vibrant ecosystem where University of Ilorin students can learn valuable skills
                 from experienced artisans while providing artisans with opportunities to grow their businesses
                 and share their expertise.
@@ -46,7 +46,7 @@ export default function AboutPage() {
                   <CardTitle>Skill Development</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-blue-700">
                     Bridge the gap between academic knowledge and practical skills through
                     hands-on learning experiences.
                   </p>
@@ -59,7 +59,7 @@ export default function AboutPage() {
                   <CardTitle>Community Building</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-blue-700">
                     Foster a supportive community where students and artisans can connect,
                     collaborate, and grow together.
                   </p>
@@ -72,7 +72,7 @@ export default function AboutPage() {
                   <CardTitle>Entrepreneurship</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-blue-700">
                     Empower artisans to turn their skills into sustainable businesses and
                     create economic opportunities.
                   </p>
@@ -86,8 +86,8 @@ export default function AboutPage() {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Our Values</h2>
-              <p className="text-lg text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Values</h2>
+              <p className="text-lg text-blue-600">
                 The principles that guide everything we do
               </p>
             </div>
@@ -96,8 +96,8 @@ export default function AboutPage() {
               <div className="flex items-start space-x-4">
                 <Target className="h-8 w-8 text-blue-600 mt-1" />
                 <div>
-                  <h3 className="font-semibold mb-2">Excellence</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="font-semibold mb-2 text-blue-800">Excellence</h3>
+                  <p className="text-blue-700">
                     We strive for the highest quality in education, services, and user experience.
                   </p>
                 </div>
@@ -106,8 +106,8 @@ export default function AboutPage() {
               <div className="flex items-start space-x-4">
                 <Heart className="h-8 w-8 text-red-600 mt-1" />
                 <div>
-                  <h3 className="font-semibold mb-2">Inclusivity</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="font-semibold mb-2 text-blue-800">Inclusivity</h3>
+                  <p className="text-blue-700">
                     Everyone deserves access to quality education and economic opportunities.
                   </p>
                 </div>
@@ -116,8 +116,8 @@ export default function AboutPage() {
               <div className="flex items-start space-x-4">
                 <Lightbulb className="h-8 w-8 text-yellow-600 mt-1" />
                 <div>
-                  <h3 className="font-semibold mb-2">Innovation</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="font-semibold mb-2 text-blue-800">Innovation</h3>
+                  <p className="text-blue-700">
                     We embrace new ideas and technologies to improve our platform and services.
                   </p>
                 </div>
@@ -127,11 +127,11 @@ export default function AboutPage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-900">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Our Impact</h2>
-              <p className="text-lg text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Impact</h2>
+              <p className="text-lg text-blue-600">
                 Growing together, one skill at a time
               </p>
             </div>
@@ -162,8 +162,8 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">Join Our Community</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Whether you're a student looking to learn new skills or an artisan ready to share your expertise,
-              there's a place for you in our growing community.
+              Whether you&apos;re a student looking to learn new skills or an artisan ready to share your expertise,
+              there&apos;s a place for you in our growing community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg">

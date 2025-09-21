@@ -181,7 +181,7 @@ function ProfileContent() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -189,15 +189,15 @@ function ProfileContent() {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">Student Profile</h1>
-              <p className="text-blue-200">Manage your academic profile and learning journey</p>
+              <h1 className="text-4xl font-bold text-blue-800 mb-2">Student Profile</h1>
+              <p className="text-blue-600">Manage your academic profile and learning journey</p>
             </div>
             <div className="flex space-x-3 mt-4 md:mt-0">
-              <Button variant="outline" className="border-blue-400 text-blue-200 hover:bg-blue-800">
+              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50">
                 <Download className="h-4 w-4 mr-2" />
                 Export Profile
               </Button>
-              <Button variant="outline" className="border-blue-400 text-blue-200 hover:bg-blue-800">
+              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Profile
               </Button>

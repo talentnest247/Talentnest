@@ -1,244 +1,619 @@
-import Image from 'next/image'
-import Link from 'next/link'
+"use client"
+import { useState, useEffect } from "react"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { ArtisanCard } from "@/components/marketplace/artisan-card"
+import { SearchFilters } from "@/components/marketplace/search-filters"
+import { CategoryGrid } from "@/components/marketplace/category-grid"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getAllProviders, getAllCategories, searchProviders, checkDatabaseConnection } from "@/lib/database-operations"
+import { mockDatabase } from "@/lib/mock-data" // Fallback for development
+import type { Artisan, Category } from "@/lib/types"
+import { List, Users, Star, Clock, TrendingUp, Filter, LayoutGrid } from "lucide-react"
+
+interface FilterState {
+  search: string
+  category: string
+  location: string
+  minRating: number
+  experience: string
+  availability: string
+}
 
 export default function MarketplacePage() {
+  const [artisans, setArtisans] = useState<Artisan[]>([])
+  const [filteredArtisans, setFilteredArtisans] = useState<Artisan[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [error, setError] = useState<string | null>(null)
+  const [useDatabase, setUseDatabase] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isFiltersVisible, setIsFiltersVisible] = useState(true)
+  const [stats, setStats] = useState({
+    totalArtisans: 0,
+    totalSkills: 0,
+    avgRating: 0,
+    activeToday: 0
+  })
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        // Check if database is available
+        const dbAvailable = await checkDatabaseConnection()
+        
+        if (dbAvailable && useDatabase) {
+          // Load data from database
+          console.log('Loading data from Supabase database...')
+          const [artisansData, categoriesData] = await Promise.all([
+            getAllProviders(),
+            getAllCategories(),
+          ])
+          
+          setArtisans(artisansData)
+          setFilteredArtisans(artisansData)
+          setCategories(categoriesData)
+          
+          // Calculate stats from real data
+          setStats({
+            totalArtisans: artisansData.length,
+            totalSkills: artisansData.reduce((acc, artisan) => acc + artisan.skills.length, 0),
+            avgRating: artisansData.length > 0 
+              ? artisansData.reduce((acc, artisan) => acc + artisan.rating, 0) / artisansData.length 
+              : 0,
+            activeToday: Math.floor(artisansData.length * 0.7) // Estimate 70% active today
+          })
+          
+          console.log(`Loaded ${artisansData.length} providers and ${categoriesData.length} categories from database`)
+        } else {
+          // Fallback to mock data
+          console.log('Database not available, falling back to mock data...')
+          setUseDatabase(false)
+          
+          const [artisansData, categoriesData] = await Promise.all([
+            mockDatabase.getArtisans(),
+            mockDatabase.getCategories(),
+          ])
+          
+          setArtisans(artisansData)
+          setFilteredArtisans(artisansData)
+          setCategories(categoriesData)
+          
+          // Calculate stats from mock data
+          setStats({
+            totalArtisans: artisansData.length,
+            totalSkills: artisansData.reduce((acc, artisan) => acc + artisan.skills.length, 0),
+            avgRating: artisansData.reduce((acc, artisan) => acc + artisan.rating, 0) / artisansData.length,
+            activeToday: Math.floor(artisansData.length * 0.7)
+          })
+          
+          if (!dbAvailable) {
+            setError('Database connection failed. Using demo data.')
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load marketplace data:", error)
+        setError('Failed to load data. Please try again.')
+        
+        // Fallback to mock data on error
+        try {
+          const [artisansData, categoriesData] = await Promise.all([
+            mockDatabase.getArtisans(),
+            mockDatabase.getCategories(),
+          ])
+          setArtisans(artisansData)
+          setFilteredArtisans(artisansData)
+          setCategories(categoriesData)
+          setUseDatabase(false)
+        } catch (fallbackError) {
+          console.error("Fallback to mock data also failed:", fallbackError)
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [useDatabase])
+
+  const handleFiltersChange = async (filters: FilterState) => {
+    if (useDatabase) {
+      // Use database search for better performance with large datasets
+      try {
+        setIsLoading(true)
+        const searchResults = await searchProviders(filters.search || "")
+        setFilteredArtisans(searchResults)
+      } catch (error) {
+        console.error('Database search failed, falling back to client-side filtering:', error)
+        // Fallback to client-side filtering
+        clientSideFilter(filters)
+      } finally {
+        setIsLoading(false)
+      }
+    } else {
+      // Client-side filtering for mock data
+      clientSideFilter(filters)
+    }
+  }
+
+  const clientSideFilter = (filters: FilterState) => {
+    let filtered = [...artisans]
+
+    // Search filter
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase()
+      filtered = filtered.filter(artisan =>
+        artisan.firstName.toLowerCase().includes(searchTerm) ||
+        artisan.lastName.toLowerCase().includes(searchTerm) ||
+        artisan.businessName.toLowerCase().includes(searchTerm) ||
+        artisan.specialization.some(skill => skill.toLowerCase().includes(searchTerm)) ||
+        artisan.skills.some(skill => skill.title.toLowerCase().includes(searchTerm))
+      )
+    }
+
+    // Category filter
+    if (filters.category !== "All Categories") {
+      filtered = filtered.filter(artisan =>
+        artisan.specialization.some(spec => {
+          if (filters.category === "Fashion & Tailoring") {
+            return spec.toLowerCase().includes('fashion') || 
+                   spec.toLowerCase().includes('tailoring') || 
+                   spec.toLowerCase().includes('sewing')
+          }
+          if (filters.category === "Electronics & Technology") {
+            return spec.toLowerCase().includes('electronics') || 
+                   spec.toLowerCase().includes('technology') ||
+                   spec.toLowerCase().includes('tech') || 
+                   spec.toLowerCase().includes('computer')
+          }
+          return spec.toLowerCase().includes(filters.category.toLowerCase())
+        })
+      )
+    }
+
+    // Location filter
+    if (filters.location !== "All Locations") {
+      filtered = filtered.filter(artisan => 
+        artisan.location.toLowerCase().includes(filters.location.toLowerCase())
+      )
+    }
+
+    // Rating filter
+    if (filters.minRating > 0) {
+      filtered = filtered.filter(artisan => artisan.rating >= filters.minRating)
+    }
+
+    // Experience filter
+    if (filters.experience !== "All Experience") {
+      const experienceYears = filters.experience
+      filtered = filtered.filter(artisan => {
+        switch (experienceYears) {
+          case "0-1 years":
+            return artisan.experience <= 1
+          case "2-3 years":
+            return artisan.experience >= 2 && artisan.experience <= 3
+          case "4-5 years":
+            return artisan.experience >= 4 && artisan.experience <= 5
+          case "6-10 years":
+            return artisan.experience >= 6 && artisan.experience <= 10
+          case "10+ years":
+            return artisan.experience >= 10
+          default:
+            return true
+        }
+      })
+    }
+
+    // Availability filter
+    if (filters.availability !== "All") {
+      filtered = filtered.filter(artisan => {
+        if (filters.availability === "Available") {
+          return artisan.availability?.isAvailable
+        }
+        return true
+      })
+    }
+
+    setFilteredArtisans(filtered)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-white">
+        <Header />
+        <main className="flex-1 overflow-x-hidden">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+            <div className="space-y-8">
+              <div className="text-center space-y-6">
+                <div className="inline-flex items-center justify-center p-4 bg-blue-600 rounded-2xl mb-6 shadow-lg">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+                <Skeleton className="h-16 w-3/4 mx-auto rounded-2xl" />
+                <Skeleton className="h-8 w-1/2 mx-auto rounded-xl" />
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="p-6 bg-white border border-gray-200 shadow-lg">
+                    <Skeleton className="h-12 w-12 mx-auto mb-4 rounded-2xl" />
+                    <Skeleton className="h-8 w-16 mx-auto mb-2 rounded-xl" />
+                    <Skeleton className="h-4 w-20 mx-auto rounded-lg" />
+                  </Card>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i} className="p-6 bg-white border border-gray-200 shadow-lg">
+                    <Skeleton className="h-20 w-20 rounded-full mx-auto mb-4" />
+                    <Skeleton className="h-6 w-3/4 mx-auto mb-2 rounded-lg" />
+                    <Skeleton className="h-4 w-1/2 mx-auto rounded-lg" />
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Marketplace
-            </h1>
-            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto mb-8 animate-fade-in-delay">
-              Discover talented artisans and quality services from the UNILORIN community
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                <span className="text-sm font-medium">🎯 Quality Services</span>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                <span className="text-sm font-medium">⚡ Quick Booking</span>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                <span className="text-sm font-medium">🛡️ Trusted Artisans</span>
-              </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Header />
+      
+      {/* Database Status Indicator */}
+      {error && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3">
+          <div className="flex items-center justify-center">
+            <div className="text-sm text-yellow-700">
+              ⚠️ {error}
             </div>
           </div>
         </div>
-      </div>
+      )}
+      
+      {!useDatabase && !error && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-3">
+          <div className="flex items-center justify-center">
+            <div className="text-sm text-blue-700">
+              📖 Currently using demo data for development
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {useDatabase && !error && (
+        <div className="bg-green-50 border-l-4 border-green-400 p-3">
+          <div className="flex items-center justify-center">
+            <div className="text-sm text-green-700">
+              🗄️ Connected to Supabase database
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Search and Filters Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-2xl shadow-xl border p-8 mb-12 animate-slide-up">
-          <div className="flex flex-col lg:flex-row gap-6 items-center">
-            <div className="flex-1">
+      <main className="flex-1 overflow-x-hidden">
+        {/* Premium Hero Section with Enhanced Visual Hierarchy */}
+        <section className="relative overflow-hidden py-20 lg:py-32">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 via-blue-50/40 to-purple-50/30"></div>
+          <div className="absolute inset-0 bg-dot-slate-200 opacity-40"></div>
+          
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative max-w-7xl">
+            <div className="text-center space-y-12">
+              {/* Enhanced Hero Content */}
+              <div className="space-y-8">
+                <div className="relative inline-block">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-xl rounded-3xl"></div>
+                  <div className="relative bg-white/90 backdrop-blur-sm p-6 rounded-3xl border border-white/50 shadow-2xl">
+                    <Users className="h-16 w-16 text-blue-600 mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900 bg-clip-text text-transparent leading-[1.1]">
+                    Discover Expert<br />
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Artisans</span>
+                  </h1>
+                  <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-medium">
+                    Connect with verified professionals in the UNILORIN community. 
+                    <span className="block mt-2 text-slate-500">Learn new skills or hire experts for your projects.</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Premium Stats Cards with Enhanced Design */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+                <Card className="group relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent"></div>
+                  <CardContent className="relative p-4 sm:p-6 text-center">
+                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalArtisans}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Expert Artisans</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="group relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent"></div>
+                  <CardContent className="relative p-4 sm:p-6 text-center">
+                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.activeToday}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Available Now</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="group relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent"></div>
+                  <CardContent className="relative p-4 sm:p-6 text-center">
+                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Star className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.avgRating.toFixed(1)}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Average Rating</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="group relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent"></div>
+                  <CardContent className="relative p-4 sm:p-6 text-center">
+                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalSkills}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Skills Available</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced Main Content Section */}
+        <section className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white"></div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 max-w-7xl relative">
+            <Tabs defaultValue="artisans" className="space-y-12">
+              {/* Premium Tab Navigation */}
+              <div className="flex justify-center">
+                <TabsList className="inline-flex bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-1.5 shadow-xl">
+                  <TabsTrigger 
+                    value="artisans" 
+                    className="relative px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-slate-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Browse Artisans
+                    <Badge className="ml-2 bg-slate-100 text-slate-700 text-xs px-2 py-0.5 data-[state=active]:bg-white/20 data-[state=active]:text-white">
+                      {filteredArtisans.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="categories" 
+                    className="relative px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-slate-700"
+                  >
+                    <LayoutGrid className="w-4 h-4 mr-2" />
+                    By Category
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+            <TabsContent value="artisans" className="space-y-10">
+              {/* Premium Search and Filters Section */}
               <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search services (e.g., web development, graphic design...)"
-                  className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-lg placeholder-gray-400"
-                />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <select title="Filter by category" className="px-6 py-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 bg-white">
-                <option value="">All Categories</option>
-                <option value="technology">Technology</option>
-                <option value="design">Design</option>
-                <option value="tutoring">Tutoring</option>
-                <option value="crafts">Crafts</option>
-                <option value="services">Services</option>
-              </select>
-              <button className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                Search
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Featured Services Section */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Featured Services</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover top-rated services from our most trusted artisans
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {/* Service Card 1 */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border hover:border-green-200">
-              <div className="relative h-48 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
-                <div className="text-4xl">💻</div>
-                <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                  Featured
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Web Development</h3>
-                <p className="text-gray-600 mb-4 text-sm">Professional website creation and web applications</p>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full mr-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">John Doe</p>
-                      <div className="flex items-center">
-                        <span className="text-yellow-400 text-sm">★★★★★</span>
-                        <span className="text-xs text-gray-500 ml-1">(4.9)</span>
+                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-white/50 to-purple-50/30"></div>
+                  <CardContent className="relative p-6 sm:p-8">
+                    <div className="space-y-8">
+                      {/* Header Section with Enhanced Visual Design */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-lg rounded-2xl"></div>
+                            <div className="relative p-4 bg-white rounded-2xl shadow-lg">
+                              <Filter className="h-6 w-6 text-blue-600" />
+                            </div>
+                          </div>
+                          <div>
+                            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                              Find Expert Artisans
+                            </h2>
+                            <p className="text-slate-600 text-sm sm:text-base font-medium">
+                              Discover skilled professionals tailored to your needs
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Control Panel */}
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+                            className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 rounded-xl h-11 px-4 sm:px-6 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                          >
+                            <Filter className="h-4 w-4" />
+                            <span className="hidden sm:inline">{isFiltersVisible ? 'Hide' : 'Show'} Filters</span>
+                            <span className="sm:hidden">Filters</span>
+                          </Button>
+                          
+                          {/* Premium View Mode Toggle */}
+                          <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl p-1 border border-slate-200 shadow-lg">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setViewMode('grid')}
+                              className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                                viewMode === 'grid' 
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+                                  : 'hover:bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              <LayoutGrid className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setViewMode('list')}
+                              className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                                viewMode === 'list' 
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+                                  : 'hover:bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              <List className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Enhanced Filters Panel */}
+                      {isFiltersVisible && (
+                        <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 backdrop-blur-sm shadow-inner">
+                          <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 to-blue-50/40"></div>
+                          <div className="relative p-6">
+                            <SearchFilters onFiltersChange={handleFiltersChange} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Premium Results Section */}
+              <div className="space-y-8">
+                {/* Enhanced Results Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                        {filteredArtisans.length} Expert{filteredArtisans.length !== 1 ? 's' : ''} Available
+                      </h3>
+                      <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-3 py-1.5 text-sm font-semibold rounded-full border border-blue-200/50">
+                        of {artisans.length} total
+                      </Badge>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">₦15,000</span>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Service Card 2 */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border hover:border-green-200">
-              <div className="relative h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                <div className="text-4xl">🎨</div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Graphic Design</h3>
-                <p className="text-gray-600 mb-4 text-sm">Logos, branding, and visual design services</p>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full mr-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Sarah Ahmed</p>
-                      <div className="flex items-center">
-                        <span className="text-yellow-400 text-sm">★★★★★</span>
-                        <span className="text-xs text-gray-500 ml-1">(4.8)</span>
+                  
+                  {filteredArtisans.length > 0 && (
+                    <div className="flex items-center gap-3 text-sm text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span className="font-medium">{Math.floor(filteredArtisans.length * 0.7)} available now</span>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">₦8,000</span>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            {/* Service Card 3 */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border hover:border-green-200">
-              <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                <div className="text-4xl">📚</div>
+                {/* Premium Results Grid/List */}
+                {filteredArtisans.length > 0 ? (
+                  <div className={`transition-all duration-500 ${
+                    viewMode === 'grid' 
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+                      : 'grid grid-cols-1 lg:grid-cols-2 gap-8'
+                  }`}>
+                    {filteredArtisans.map((artisan, index) => (
+                      <div 
+                        key={artisan.id} 
+                        className={`w-full animate-in fade-in slide-in-from-bottom duration-700 ${
+                          index < 4 ? 'delay-100' : 
+                          index < 8 ? 'delay-200' : 
+                          index < 12 ? 'delay-300' : 'delay-500'
+                        }`}
+                      >
+                        <ArtisanCard artisan={artisan} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // Enhanced Empty State
+                  <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 to-blue-50/40"></div>
+                    <CardContent className="relative p-12 sm:p-16 text-center">
+                      <div className="space-y-8">
+                        <div className="relative inline-block">
+                          <div className="absolute inset-0 bg-gradient-to-r from-slate-200/50 to-slate-300/50 blur-xl rounded-3xl"></div>
+                          <div className="relative w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-2xl border border-slate-200/50">
+                            <Users className="h-12 w-12 text-slate-400" />
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-600 bg-clip-text text-transparent">
+                            No artisans match your criteria
+                          </h3>
+                          <p className="text-slate-500 text-lg max-w-md mx-auto leading-relaxed">
+                            Try adjusting your search terms or filters to discover more skilled professionals in our community.
+                          </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => window.location.reload()}
+                            className="h-12 px-8 text-base font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Clear All Filters
+                          </Button>
+                          <Button 
+                            variant="default" 
+                            onClick={() => setIsFiltersVisible(true)}
+                            className="h-12 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Refine Search
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Academic Tutoring</h3>
-                <p className="text-gray-600 mb-4 text-sm">Mathematics, Physics, and Engineering subjects</p>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full mr-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Dr. Ibrahim</p>
-                      <div className="flex items-center">
-                        <span className="text-yellow-400 text-sm">★★★★★</span>
-                        <span className="text-xs text-gray-500 ml-1">(5.0)</span>
+            </TabsContent>
+
+            <TabsContent value="categories" className="space-y-10">
+              {/* Premium Categories Section */}
+              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-white/50 to-blue-50/30"></div>
+                <CardContent className="relative p-8 sm:p-12">
+                  <div className="text-center space-y-8 mb-12">
+                    <div className="relative inline-block">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 blur-xl rounded-3xl"></div>
+                      <div className="relative bg-white/90 backdrop-blur-sm p-6 rounded-3xl border border-white/50 shadow-2xl">
+                        <LayoutGrid className="h-12 w-12 text-purple-600 mx-auto" />
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">₦3,000/hr</span>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Service Card 4 */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border hover:border-green-200">
-              <div className="relative h-48 bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
-                <div className="text-4xl">🛠️</div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Handcraft Services</h3>
-                <p className="text-gray-600 mb-4 text-sm">Custom crafts, repairs, and handmade items</p>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full mr-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Fatima Yusuf</p>
-                      <div className="flex items-center">
-                        <span className="text-yellow-400 text-sm">★★★★★</span>
-                        <span className="text-xs text-gray-500 ml-1">(4.7)</span>
-                      </div>
+                    <div className="space-y-4">
+                      <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 via-purple-700 to-slate-900 bg-clip-text text-transparent">
+                        Browse by Category
+                      </h2>
+                      <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                        Explore skilled artisans organized by their expertise and specializations
+                      </p>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">₦5,500</span>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
+                  
+                  {/* Enhanced Categories Grid Container */}
+                  <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 backdrop-blur-sm shadow-inner">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 to-purple-50/40"></div>
+                    <div className="relative p-6 sm:p-8">
+                      <CategoryGrid categories={categories} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
           </div>
-        </div>
-
-        {/* Categories Section */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Browse by Category</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Find the perfect service for your needs
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[
-              { name: 'Technology', icon: '💻', count: '120+' },
-              { name: 'Design', icon: '🎨', count: '85+' },
-              { name: 'Tutoring', icon: '📚', count: '200+' },
-              { name: 'Crafts', icon: '🛠️', count: '45+' },
-              { name: 'Services', icon: '🔧', count: '90+' }
-            ].map((category, index) => (
-              <div key={index} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 text-center border hover:border-green-200 cursor-pointer">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                  {category.icon}
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.name}</h3>
-                <p className="text-sm text-gray-500">{category.count} services</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-3xl text-white p-12 text-center animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to get started?</h2>
-          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied customers who found their perfect service match on TalentNest
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register/student" className="bg-white text-green-600 px-8 py-4 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-              Post a Request
-            </Link>
-            <Link href="/register/artisan" className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300">
-              Become an Artisan
-            </Link>
-          </div>
-        </div>
-      </div>
+        </section>
+      </main>
+      <Footer />
     </div>
   )
 }

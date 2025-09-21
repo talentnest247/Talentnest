@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1 py-16">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  Welcome to the UNILORIN Artisan Platform ("we," "our," or "us"). We are committed to protecting
+                  Welcome to TalentNest Platform (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting
                   your privacy and ensuring the security of your personal information. This Privacy Policy explains
                   how we collect, use, disclose, and safeguard your information when you use our platform.
                 </p>
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
                   We may update this Privacy Policy from time to time. We will notify you of any changes
-                  by posting the new policy on this page and updating the "Last updated" date.
+                  by posting the new policy on this page and updating the &quot;Last updated&quot; date.
                 </p>
                 <p>
                   We encourage you to review this Privacy Policy periodically to stay informed about

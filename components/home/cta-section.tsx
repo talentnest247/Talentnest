@@ -38,13 +38,13 @@ export function CTASection() {
   ]
 
   return (
-    <section id="cta-section" className="relative py-20 lg:py-32 overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 dark:from-black dark:via-slate-900 dark:to-emerald-950">
+    <section id="cta-section" className="relative py-20 lg:py-32 overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-slate-950">
       {/* Background Elements */}
       <div className="absolute inset-0">
         {/* Professional Shapes */}
-        <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/8 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500/10 dark:bg-teal-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 bg-white/20 dark:bg-blue-400/15 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-300/20 dark:bg-blue-300/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-200/15 dark:bg-sky-400/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,8 +55,8 @@ export function CTASection() {
             {/* Badge */}
             <div className={`inline-flex transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             <Badge className="bg-white/20 text-white border border-white/30 px-4 py-2 hover:bg-white/30 transition-all duration-300 hover:scale-105">
-              <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
-              Join UNILORIN Artisan Hub Today
+              <Sparkles className="h-4 w-4 mr-2" />
+              Join TalentNest Today
             </Badge>
             </div>
 
@@ -65,7 +65,7 @@ export function CTASection() {
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
                 Ready to Master
                 <br />
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
                   New Skills?
                 </span>
               </h2>
@@ -91,7 +91,7 @@ export function CTASection() {
             <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <Button 
                 asChild
-                {...({ size: "lg" } as any)}
+                size="lg"
                 className="bg-white text-blue-600 hover:bg-gray-100 shadow-xl shadow-black/20 transition-all duration-200 hover:scale-105 group"
               >
                 <Link href="/register" className="flex items-center space-x-2 text-blue-600">
@@ -102,7 +102,8 @@ export function CTASection() {
               
               <Button 
                 asChild
-                {...({ variant: "outline", size: "lg" } as any)}
+                variant="outline" 
+                size="lg"
                 className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-200 hover:scale-105"
               >
                 <Link href="/marketplace" className="text-white hover:text-blue-200">
@@ -179,8 +180,8 @@ export function CTASection() {
             </div>
 
             {/* Floating Elements */}
-            <div className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full animate-bounce delay-500"></div>
-            <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-400 rounded-full animate-ping"></div>
+            <div className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full"></div>
+            <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-400 rounded-full"></div>
           </div>
         </div>
       </div>

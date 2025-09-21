@@ -18,7 +18,6 @@ import {
   Bell,
   Shield,
   Palette,
-  Key,
   Trash2,
   Save,
   Camera,
@@ -35,57 +34,14 @@ export default function SettingsPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  // Refresh user data on component mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (isAuthenticated && !user?.firstName) {
-        await refreshUser()
-      }
-    }
-    loadUserData()
-  }, [isAuthenticated]) // Remove refreshUser from dependencies to prevent loop
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-md mx-auto px-4 py-20">
-          <Card className="text-center p-8 bg-white border shadow-lg">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-blue-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h1>
-            <p className="text-gray-600 mb-6">Please log in to access your settings.</p>
-            <Button onClick={() => router.push("/login")} className="w-full">
-              Log In
-            </Button>
-          </Card>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
-
+  // Initialize all state hooks at the top
   const [profileData, setProfileData] = useState({
-    fullName: user?.fullName || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    department: user?.department || "",
-    studentId: user?.studentId || ""
+    fullName: "",
+    email: "",
+    phone: "",
+    department: "",
+    studentId: ""
   })
-
-  // Update profile data when user data changes
-  useEffect(() => {
-    if (user) {
-      setProfileData({
-        fullName: user.fullName || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        department: user.department || "",
-        studentId: user.studentId || ""
-      })
-    }
-  }, [user])
 
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
@@ -112,6 +68,50 @@ export default function SettingsPage() {
 
   const [showApiKey, setShowApiKey] = useState(false)
 
+  // Update profile data when user data changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        department: user.department || "",
+        studentId: user.studentId || ""
+      })
+    }
+  }, [user])
+
+  // Refresh user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (isAuthenticated && !user?.firstName) {
+        await refreshUser()
+      }
+    }
+    loadUserData()
+  }, [isAuthenticated, user?.firstName, refreshUser])
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="max-w-md mx-auto px-4 py-20">
+          <Card className="text-center p-8 bg-white border shadow-lg">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-8 w-8 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h1>
+            <p className="text-gray-600 mb-6">Please log in to access your settings.</p>
+            <Button onClick={() => router.push("/login")} className="w-full">
+              Log In
+            </Button>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   const handleProfileUpdate = async () => {
     setIsLoading(true)
     try {
@@ -122,6 +122,7 @@ export default function SettingsPage() {
         description: "Your profile has been successfully updated.",
       })
     } catch (error) {
+      console.error('Profile update failed:', error)
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -141,6 +142,7 @@ export default function SettingsPage() {
         description: "Your notification preferences have been saved.",
       })
     } catch (error) {
+      console.error('Notification update failed:', error)
       toast({
         title: "Error",
         description: "Failed to update notifications. Please try again.",
@@ -160,6 +162,7 @@ export default function SettingsPage() {
         description: "Your privacy settings have been saved.",
       })
     } catch (error) {
+      console.error('Privacy update failed:', error)
       toast({
         title: "Error",
         description: "Failed to update privacy settings. Please try again.",
@@ -179,6 +182,7 @@ export default function SettingsPage() {
         description: "Your API settings have been saved.",
       })
     } catch (error) {
+      console.error('API settings update failed:', error)
       toast({
         title: "Error",
         description: "Failed to update API settings. Please try again.",
@@ -219,7 +223,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1 py-16">
         <div className="container mx-auto px-4 max-w-4xl">

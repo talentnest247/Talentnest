@@ -9,14 +9,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { mockDatabase } from "@/lib/mock-data"
-import type { Skill, Artisan, Category } from "@/lib/types"
-import { Grid, List, BookOpen, Users, Award, Clock, TrendingUp, Star } from "lucide-react"
+import type { Skill, Artisan } from "@/lib/types"
+import { Grid, List, BookOpen, Award, TrendingUp, Star } from "lucide-react"
 
 export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([])
   const [filteredSkills, setFilteredSkills] = useState<Skill[]>([])
   const [artisans, setArtisans] = useState<Artisan[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -29,20 +28,18 @@ export default function SkillsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [skillsData, artisansData, categoriesData] = await Promise.all([
+        const [skillsData, artisansData] = await Promise.all([
           mockDatabase.getSkills(),
           mockDatabase.getArtisans(),
-          mockDatabase.getCategories(),
         ])
         setSkills(skillsData)
         setFilteredSkills(skillsData)
         setArtisans(artisansData)
-        setCategories(categoriesData)
         
         // Calculate stats
         setStats({
           totalSkills: skillsData.length,
-          totalCategories: categoriesData.length,
+          totalCategories: 10, // Default number of categories
           avgPrice: skillsData.reduce((acc, skill) => acc + skill.price, 0) / skillsData.length,
           popularSkills: skillsData.filter(skill => skill.currentStudents > 10).length
         })
@@ -119,7 +116,7 @@ export default function SkillsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <div className="flex-1 container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[600px]">
@@ -152,18 +149,18 @@ export default function SkillsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1">
         {/* Hero Section with Stats */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 py-16">
+        <section className="relative overflow-hidden bg-white py-16">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="container mx-auto px-4 relative">
             <div className="text-center mb-12 animate-in slide-in-from-bottom duration-1000">
               <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
                 Skills Marketplace
               </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              <p className="text-xl text-blue-600 max-w-2xl mx-auto mb-8">
                 Learn from expert artisans and master new skills. Start your learning journey today.
               </p>
               
@@ -211,7 +208,7 @@ export default function SkillsPage() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/30 dark:bg-muted/30 backdrop-blur rounded-lg p-4 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
               <div className="flex items-center space-x-4">
-                <Badge {...({ variant: "secondary" } as any)} className="bg-primary/10 text-primary">
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
                   {filteredSkills.length} skills found
                 </Badge>
                 <p className="text-sm text-muted-foreground">
@@ -220,14 +217,16 @@ export default function SkillsPage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Button
-                  {...({ variant: viewMode === "grid" ? "default" : "outline", size: "sm" } as any)}
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
                   onClick={() => setViewMode("grid")}
                   className="transition-all duration-200 hover:scale-105"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  {...({ variant: viewMode === "list" ? "default" : "outline", size: "sm" } as any)}
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
                   onClick={() => setViewMode("list")}
                   className="transition-all duration-200 hover:scale-105"
                 >
@@ -247,7 +246,7 @@ export default function SkillsPage() {
                     <p className="text-muted-foreground">Try adjusting your search criteria to find more skills</p>
                   </div>
                   <Button
-                    {...({ variant: "outline" } as any)}
+                    variant="outline"
                     onClick={() => {
                       setFilteredSkills(skills)
                       // Reset filters by calling handleFiltersChange with default filters

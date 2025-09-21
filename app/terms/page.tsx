@@ -24,7 +24,7 @@ export default function TermsPage() {
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  Welcome to the UNILORIN Artisan Platform. These Terms of Service ("Terms") govern your use of our
+                  Welcome to TalentNest Platform. These Terms of Service (&quot;Terms&quot;) govern your use of our
                   platform and services. By accessing or using our platform, you agree to be bound by these Terms.
                 </p>
                 <p>
@@ -39,8 +39,8 @@ export default function TermsPage() {
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  The UNILORIN Artisan Platform is an online marketplace that connects students of the University of Ilorin
-                  with skilled artisans for learning opportunities and services. Our platform includes:
+                  TalentNest is an online marketplace that connects students of the University of Ilorin
+                  with skilled students for learning opportunities and services. Our platform includes:
                 </p>
                 <ul>
                   <li>Skill learning and enrollment system</li>
@@ -156,7 +156,7 @@ export default function TermsPage() {
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  The platform is provided "as is" without warranties of any kind. We do not guarantee:
+                  The platform is provided &quot;as is&quot; without warranties of any kind. We do not guarantee:
                 </p>
                 <ul>
                   <li>Continuous, uninterrupted access to the platform</li>

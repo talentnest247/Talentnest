@@ -1,250 +1,428 @@
 "use client"
+import { useState, useEffect } from "react"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Briefcase,
+  FileText,
+  Eye,
+  AlertCircle,
+  Filter,
+  Search
+} from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import Image from "next/image"
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Eye, Check, X, Users, Briefcase } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
-import { ArtisanVerification } from '@/components/admin/artisan-verification'
-import { User } from '@/lib/types'
+interface PendingArtisan {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  businessName: string
+  specialization: string
+  experience: number
+  location: string
+  bio: string
+  certificates: string[]
+  submittedAt: string
+  status: 'pending' | 'approved' | 'rejected'
+  rejectionReason?: string
+}
 
-export default function AdminVerificationPage() {
-  const [users, setUsers] = useState<User[]>([])
+export default function ArtisanVerificationPage() {
+  const [pendingArtisans, setPendingArtisans] = useState<PendingArtisan[]>([])
+  const [selectedArtisan, setSelectedArtisan] = useState<PendingArtisan | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('artisans')
 
+  // Mock data - replace with actual API calls
   useEffect(() => {
-    fetchUsers()
+    const mockArtisans: PendingArtisan[] = [
+      {
+        id: "1",
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@email.com",
+        phone: "+234 812 345 6789",
+        businessName: "John's Fashion Studio",
+        specialization: "Fashion Design & Tailoring",
+        experience: 3,
+        location: "Kwara State",
+        bio: "Experienced fashion designer with expertise in traditional and modern clothing. I have been working with various clients across the university community for over 3 years, specializing in both male and female outfits.",
+        certificates: ["certificate1.pdf", "portfolio1.jpg", "portfolio2.jpg"],
+        submittedAt: "2025-01-15T10:30:00Z",
+        status: 'pending'
+      },
+      {
+        id: "2", 
+        firstName: "Mary",
+        lastName: "Johnson",
+        email: "mary.j@email.com",
+        phone: "+234 803 456 7890",
+        businessName: "Mary's Beauty Salon",
+        specialization: "Hair Styling & Barbing",
+        experience: 5,
+        location: "Kwara State",
+        bio: "Professional hair stylist and makeup artist with 5+ years of experience. I specialize in both traditional and contemporary hairstyles for all occasions.",
+        certificates: ["certificate2.pdf", "work1.jpg"],
+        submittedAt: "2025-01-14T14:20:00Z",
+        status: 'pending'
+      },
+      {
+        id: "3",
+        firstName: "David",
+        lastName: "Wilson", 
+        email: "david.wilson@email.com",
+        phone: "+234 807 123 4567",
+        businessName: "Tech Solutions",
+        specialization: "Web Development",
+        experience: 4,
+        location: "Lagos State",
+        bio: "Full-stack web developer with expertise in modern web technologies. I help businesses and individuals create professional websites and web applications.",
+        certificates: ["certificate3.pdf", "project1.jpg", "project2.jpg"],
+        submittedAt: "2025-01-13T09:15:00Z",
+        status: 'approved'
+      }
+    ]
+    
+    setPendingArtisans(mockArtisans)
+    setIsLoading(false)
   }, [])
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/admin/users?verificationStatus=pending')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users || [])
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load pending users",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  const filteredArtisans = pendingArtisans.filter(artisan => {
+    const matchesFilter = filter === 'all' || artisan.status === filter
+    const matchesSearch = searchTerm === '' || 
+      artisan.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    return matchesFilter && matchesSearch
+  })
+
+  const handleApprove = async (artisanId: string) => {
+    // Mock API call - replace with actual implementation
+    setPendingArtisans(prev => 
+      prev.map(artisan => 
+        artisan.id === artisanId 
+          ? { ...artisan, status: 'approved' as const }
+          : artisan
+      )
+    )
+    setSelectedArtisan(null)
+    // In real implementation, send approval email here
   }
 
-  const handleStudentVerification = async (userId: string, action: 'verified' | 'rejected') => {
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action, accountType: 'student' }),
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Student ${action === 'verified' ? 'verified' : 'rejected'} successfully`,
-        })
-        fetchUsers()
-      } else {
-        toast({
-          title: "Error",
-          description: `Failed to ${action} student`,
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error('Verification error:', error)
-      toast({
-        title: "Error",
-        description: 'An error occurred during verification',
-        variant: "destructive",
-      })
+  const handleReject = async (artisanId: string) => {
+    if (!rejectionReason.trim()) {
+      alert("Please provide a reason for rejection")
+      return
     }
+
+    // Mock API call - replace with actual implementation
+    setPendingArtisans(prev => 
+      prev.map(artisan => 
+        artisan.id === artisanId 
+          ? { ...artisan, status: 'rejected' as const, rejectionReason }
+          : artisan
+      )
+    )
+    setSelectedArtisan(null)
+    setRejectionReason("")
+    // In real implementation, send rejection email with reason here
   }
 
-  // Filter users by account type
-  const pendingStudents = users.filter(
-    user => user.accountType === 'student' && user.verificationStatus === 'pending'
-  )
-  const pendingArtisans = users.filter(
-    user => user.accountType === 'artisan' && user.verificationStatus === 'pending'
-  )
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
+      case 'approved':
+        return <Badge variant="secondary" className="bg-green-100 text-green-700"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>
+      case 'rejected':
+        return <Badge variant="secondary" className="bg-red-100 text-red-700"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>
+      default:
+        return null
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-blue-100">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto mb-4"></div>
+            <p>Loading artisan applications...</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">User Verification</h1>
-        <p className="text-gray-600">Review and verify pending user registrations</p>
-      </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-blue-100">
+      <Header />
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <Image
+              src="/images/unilorin-logo.png"
+              alt="University of Ilorin Logo"
+              width={80}
+              height={80}
+              className="mx-auto"
+            />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Artisan Verification Center
+            </h1>
+            <p className="text-muted-foreground">
+              Review and verify artisan applications for the TalentNest platform
+            </p>
+          </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="artisans" className="flex items-center space-x-2">
-            <Briefcase className="h-4 w-4" />
-            <span>Artisans</span>
-            <Badge variant="secondary">{pendingArtisans.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="students" className="flex items-center space-x-2">
-            <Users className="h-4 w-4" />
-            <span>Students</span>
-            <Badge variant="secondary">{pendingStudents.length}</Badge>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="artisans" className="mt-6">
-          <ArtisanVerification 
-            users={users} 
-            onVerificationUpdate={fetchUsers} 
-          />
-        </TabsContent>
-
-        <TabsContent value="students" className="mt-6">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Student Verification</h2>
-                <p className="text-gray-600">Review and verify student registrations</p>
+          {/* Filters and Search */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Filter className="h-5 w-5 mr-2" />
+                Filter Applications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search">Search</Label>
+                  <div className="relative">
+                    <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Search by name, business, or specialization..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="w-full md:w-48">
+                  <Label htmlFor="filter">Status Filter</Label>
+                  <Select value={filter} onValueChange={(value: 'all' | 'pending' | 'approved' | 'rejected') => setFilter(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Applications</SelectItem>
+                      <SelectItem value="pending">Pending Review</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Badge variant="secondary" className="text-lg px-3 py-1">
-                {pendingStudents.length} Pending
-              </Badge>
+            </CardContent>
+          </Card>
+
+          {/* Applications List */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* List of Applications */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">
+                Applications ({filteredArtisans.length})
+              </h2>
+              
+              {filteredArtisans.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">No applications found matching your criteria.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredArtisans.map((artisan) => (
+                  <Card 
+                    key={artisan.id} 
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedArtisan?.id === artisan.id ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onClick={() => setSelectedArtisan(artisan)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-semibold">{artisan.firstName} {artisan.lastName}</h3>
+                            {getStatusBadge(artisan.status)}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{artisan.businessName}</p>
+                          <p className="text-sm text-blue-600">{artisan.specialization}</p>
+                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                            <span className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {artisan.location}
+                            </span>
+                            <span>{artisan.experience} years exp.</span>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
 
-            {pendingStudents.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No pending student verifications</p>
-                  <p className="text-gray-400 text-sm">All student applications have been processed</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pending Student Applications</CardTitle>
-                  <CardDescription>
-                    {pendingStudents.length} students waiting for verification
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Student Details</TableHead>
-                        <TableHead>Academic Info</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Registration Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingStudents.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <div className="font-medium">{user.fullName}</div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
-                              <Badge 
-                                className="w-fit mt-1 bg-blue-100 text-blue-800"
-                                variant="secondary"
-                              >
-                                Student
-                              </Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col space-y-1">
-                              {user.matricNumber && (
-                                <div className="text-sm">
-                                  <span className="font-medium">Matric:</span> {user.matricNumber}
-                                </div>
-                              )}
-                              {user.faculty && (
-                                <div className="text-sm">
-                                  <span className="font-medium">Faculty:</span> {user.faculty}
-                                </div>
-                              )}
-                              {user.department && (
-                                <div className="text-sm">
-                                  <span className="font-medium">Dept:</span> {user.department}
-                                </div>
-                              )}
-                              {user.level && (
-                                <div className="text-sm">
-                                  <span className="font-medium">Level:</span> {user.level}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col space-y-1">
-                              {user.phoneNumber && (
-                                <div className="text-sm">{user.phoneNumber}</div>
-                              )}
-                              {user.whatsappNumber && (
-                                <div className="text-sm text-green-600">{user.whatsappNumber}</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {new Date(user.createdAt).toLocaleDateString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  // TODO: Open student details modal
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => handleStudentVerification(user.id, 'verified')}
-                              >
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleStudentVerification(user.id, 'rejected')}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
+            {/* Application Details */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Application Details</h2>
+              
+              {selectedArtisan ? (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>{selectedArtisan.firstName} {selectedArtisan.lastName}</CardTitle>
+                        <CardDescription>{selectedArtisan.businessName}</CardDescription>
+                      </div>
+                      {getStatusBadge(selectedArtisan.status)}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Contact Information */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-blue-600">Contact Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedArtisan.email}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedArtisan.phone}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedArtisan.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Business Information */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-blue-600">Business Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <Briefcase className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedArtisan.specialization}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedArtisan.experience} years of experience</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bio */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-blue-600">Bio</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {selectedArtisan.bio}
+                      </p>
+                    </div>
+
+                    {/* Certificates */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-blue-600">Certificates & Portfolio</h4>
+                      <div className="space-y-2">
+                        {selectedArtisan.certificates.map((cert, index) => (
+                          <div key={index} className="flex items-center space-x-2 p-2 bg-blue-50 rounded border">
+                            <FileText className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm">{cert}</span>
+                            <Button variant="ghost" size="sm" className="ml-auto">
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Rejection Reason (if rejected) */}
+                    {selectedArtisan.status === 'rejected' && selectedArtisan.rejectionReason && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-red-600">Rejection Reason</h4>
+                        <div className="p-3 bg-red-50 border border-red-200 rounded">
+                          <p className="text-sm text-red-700">{selectedArtisan.rejectionReason}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    {selectedArtisan.status === 'pending' && (
+                      <div className="space-y-4 pt-4 border-t">
+                        <div className="space-y-2">
+                          <Label htmlFor="rejectionReason">Rejection Reason (if rejecting)</Label>
+                          <Textarea
+                            id="rejectionReason"
+                            placeholder="Provide a clear reason for rejection that will be sent to the applicant..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            className="min-h-[80px]"
+                          />
+                        </div>
+                        
+                        <div className="flex space-x-3">
+                          <Button 
+                            onClick={() => handleApprove(selectedArtisan.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve Application
+                          </Button>
+                          <Button 
+                            onClick={() => handleReject(selectedArtisan.id)}
+                            variant="destructive"
+                            className="flex-1"
+                            disabled={!rejectionReason.trim()}
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject Application
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">Select an application to view details</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </main>
+      <Footer />
     </div>
   )
 }
