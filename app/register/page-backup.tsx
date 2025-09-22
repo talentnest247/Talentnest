@@ -7,6 +7,7 @@ import ArtisanRegistrationForm from "@/components/auth/artisan-registration-form
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 import { GraduationCap, Briefcase, Users, Shield } from "lucide-react"
 
 export default function RegisterPage() {
@@ -59,7 +60,6 @@ export default function RegisterPage() {
     )
   }
 
-  return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1 flex items-center justify-center p-4 py-8 bg-white">

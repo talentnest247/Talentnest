@@ -29,8 +29,8 @@ export function Header() {
 
   const navigation = [
     { name: "Home", href: "/" },
-    { name: "Marketplace", href: "/marketplace" },
     { name: "Services", href: "/services" },
+    { name: "About Us", href: "/about" },
   ]
 
   const isActive = (href: string) => {

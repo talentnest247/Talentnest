@@ -18,14 +18,20 @@ interface AuthContextType {
     studentId?: string
     department?: string
     level?: string
-  bio?: string
-  address?: string
-  dateOfBirth?: string
-  gender?: string
-  nationality?: string
-  stateOfOrigin?: string
-  emergencyContact?: string
-  emergencyPhone?: string
+    bio?: string
+    address?: string
+    dateOfBirth?: string
+    gender?: string
+    nationality?: string
+    stateOfOrigin?: string
+    emergencyContact?: string
+    emergencyPhone?: string
+    // Additional fields for service providers
+    businessName?: string
+    specialization?: string
+    experience?: number
+    location?: string
+    certificates?: string[]
   }) => Promise<boolean>
   logout: () => void
   refreshUser: () => Promise<void>
@@ -124,6 +130,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     stateOfOrigin?: string
     emergencyContact?: string
     emergencyPhone?: string
+    // Additional fields for service providers
+    businessName?: string
+    specialization?: string
+    experience?: number
+    location?: string
+    certificates?: string[]
   }): Promise<boolean> => {
     setIsLoading(true)
     try {

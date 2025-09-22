@@ -1,6 +1,5 @@
 "use client"
-import { useState } from "react"
-import type React from "react"
+import { useState, type FormEvent } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,7 +21,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const [error, setError] = useState("")
   const { login, isLoading } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError("")
 
@@ -56,34 +55,34 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto glass-card shadow-2xl animate-in fade-in slide-in-from-bottom delay-200">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
-        <CardDescription className="text-center text-muted-foreground">Sign in to your TalentNest account</CardDescription>
+    <Card className="w-full max-w-md mx-auto bg-white border-blue-200 shadow-lg">
+      <CardHeader className="space-y-4 text-center bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-lg border-b border-blue-200">
+        <CardTitle className="text-2xl font-bold text-blue-900">Welcome Back</CardTitle>
+        <CardDescription className="text-blue-700">Sign in to your TalentNest account</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 p-6 bg-white">
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertDescription className="text-red-800">{error}</AlertDescription>
             </Alert>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-blue-900 font-medium">Email Address</Label>
             <Input
               id="email"
               type="email"
-              placeholder="your.email@unilorin.edu.ng"
+              placeholder="your.email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="border-input bg-background/50 backdrop-blur-sm"
+              className="bg-white border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-200"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-blue-900 font-medium">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -92,13 +91,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="border-input bg-background/50 backdrop-blur-sm"
+                className="bg-white border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-200 pr-10"
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-blue-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -106,19 +105,19 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             </div>
           </div>
 
-            <div className="text-right">
-            <Link href="/forgot-password" className="text-sm text-primary hover:underline transition-colors">
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
               Forgot your password?
             </Link>
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-4 p-6 bg-blue-50 rounded-b-lg border-t border-blue-200">
           {/* Google Sign In */}
           <Button 
             type="button" 
             variant="outline" 
-            className="w-full border-input bg-background/50 backdrop-blur-sm hover:bg-background/80"
+            className="w-full bg-white border-2 border-blue-200 text-blue-900 hover:bg-blue-50"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
           >
@@ -131,10 +130,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             Continue with Google
           </Button>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed" 
+            disabled={isLoading}
+          >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Signing in...
               </>
             ) : (
@@ -142,9 +145,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             )}
           </Button>
 
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don&apos;t have an account?</span>{" "}
-            <Link href="/register" className="text-primary hover:underline transition-colors">
+          <div className="text-center text-sm text-blue-700">
+            <span>Don&apos;t have an account?</span>{" "}
+            <Link href="/register" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
               Sign up here
             </Link>
           </div>
