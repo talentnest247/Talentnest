@@ -2,40 +2,20 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star, MapPin, Clock, Users, MessageCircle, CheckCircle } from "lucide-react"
+import { Star, MapPin, Clock, Users, CheckCircle, Eye } from "lucide-react"
 import { WhatsAppCTACompact } from "@/components/providers/whatsapp-cta"
 import { useAuth } from "@/contexts/auth-context"
-import type { Artisan, Provider } from "@/lib/types"
+import type { Provider, Student } from "@/lib/types"
 import Link from "next/link"
+import Image from "next/image"
 
-interface ArtisanCardProps {
-  artisan: Artisan | Provider
+interface ProviderCardProps {
+  artisan: Provider // Keep as "artisan" for now to maintain compatibility
 }
 
-export function ArtisanCard({ artisan }: ArtisanCardProps) {
+export function ArtisanCard({ artisan }: ProviderCardProps) {
   const { user } = useAuth()
   const initials = `${artisan.firstName[0]}${artisan.lastName[0]}`
-  
-  // Convert to Provider type for WhatsApp CTA (backward compatibility)
-  const provider: Provider = {
-    ...artisan,
-    role: "artisan",
-    fullName: `${artisan.firstName} ${artisan.lastName}`,
-    availability: {
-      isAvailable: true,
-      availableForWork: true,
-      availableForLearning: true,
-      responseTime: "Usually responds within 24 hours"
-    },
-    pricing: {
-      baseRate: undefined,
-      learningRate: undefined,
-      currency: "NGN"
-    },
-    whatsappNumber: "+234" + Math.random().toString().slice(2, 13),
-    verificationStatus: artisan.verified ? "approved" : "pending",
-    verificationEvidence: []
-  }
 
   return (
     <Card className="h-full flex flex-col hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 border-0 shadow-md bg-white/95 backdrop-blur-sm overflow-hidden group">
@@ -69,13 +49,13 @@ export function ArtisanCard({ artisan }: ArtisanCardProps) {
             <div className="flex items-center space-x-1">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
+                  <Star
+                    key={i}
                     className={`h-3.5 w-3.5 ${
-                      i < Math.floor(artisan.rating) 
-                        ? 'fill-yellow-400 text-yellow-400' 
-                        : 'text-gray-300'
-                    }`} 
+                      i < Math.floor(artisan.rating)
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
                   />
                 ))}
               </div>
@@ -90,96 +70,121 @@ export function ArtisanCard({ artisan }: ArtisanCardProps) {
                 Verified
               </Badge>
             )}
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-0.5 font-medium">
-              Available
-            </Badge>
+            {artisan.availability.availableForLearning && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-0.5 font-medium">
+                Teaching
+              </Badge>
+            )}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="flex-1 space-y-4 px-4">
-        {/* Skills */}
+        {/* Specializations */}
         <div className="space-y-2">
           <div className="flex flex-wrap gap-1.5">
-            {artisan.specialization.slice(0, 3).map((skill, index) => (
+            {artisan.specialization.slice(0, 3).map((category: string, index: number) => (
               <Badge 
-                key={index} 
-                variant="outline" 
-                className="text-xs px-2 py-1 bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                key={index}
+                variant="secondary" 
+                className="text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20 font-medium"
               >
-                {skill}
+                {category}
               </Badge>
             ))}
             {artisan.specialization.length > 3 && (
-              <Badge variant="outline" className="text-xs px-2 py-1 bg-gray-100 text-gray-600">
+              <Badge variant="outline" className="text-xs px-2 py-1 text-gray-500 border-gray-300">
                 +{artisan.specialization.length - 3} more
               </Badge>
             )}
           </div>
         </div>
 
-        {/* Info */}
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center space-x-2">
-            <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
-            <span className="truncate">{artisan.location}</span>
+        {/* Description */}
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+          {artisan.description}
+        </p>
+
+        {/* Stats */}
+        <div className="flex items-center justify-between text-xs text-gray-500 py-2 border-t border-gray-100">
+          <div className="flex items-center space-x-1">
+            <Clock className="h-3 w-3" />
+            <span>{artisan.experience}+ years</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Clock className="h-4 w-4 flex-shrink-0 text-gray-400" />
-            <span>{artisan.experience} years experience</span>
+          <div className="flex items-center space-x-1">
+            <MapPin className="h-3 w-3" />
+            <span className="truncate max-w-[80px]">{artisan.location}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 flex-shrink-0 text-gray-400" />
-            <span>{artisan.skills.length} skills offered</span>
+          <div className="flex items-center space-x-1">
+            <Users className="h-3 w-3" />
+            <span>Portfolio: {artisan.portfolio.length}</span>
           </div>
         </div>
+
+        {/* Portfolio Preview */}
+        {artisan.portfolio.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-800">Portfolio</h4>
+              <Link href={`/providers/${artisan.id}/portfolio`} className="text-xs text-primary hover:underline">
+                View All
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {artisan.portfolio.slice(0, 3).map((item, index) => (
+                <div key={index} className="relative group">
+                  <Image
+                    src={item.images[0] || "/placeholder.svg"}
+                    alt={item.title}
+                    width={64}
+                    height={64}
+                    className="w-full h-16 object-cover rounded-lg group-hover:opacity-90 transition-opacity"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
+                    <Eye className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
 
-      <CardFooter className="pt-4 space-y-3 flex-shrink-0 bg-gray-50/50">
-        <div className="grid grid-cols-2 gap-2 w-full">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-9 text-xs font-medium hover:bg-primary hover:text-white transition-all duration-200" 
-            asChild
-          >
-            <Link href={`/artisans/${artisan.id}`}>
-              View Profile
+      <CardFooter className="px-4 pb-4 pt-0 flex-shrink-0">
+        <div className="w-full space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-bold text-primary">
+                ₦{artisan.pricing.serviceRate?.toLocaleString() || "Negotiable"}
+              </span>
+              <span className="text-xs text-gray-500">/ service</span>
+            </div>
+            {artisan.availability.availableForLearning && (
+              <div className="text-right">
+                <span className="text-sm font-semibold text-blue-600">
+                  ₦{artisan.pricing.learningRate?.toLocaleString() || "Ask"}
+                </span>
+                <span className="text-xs text-gray-500 block">/ session</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex space-x-2">
+            <Link href={`/providers/${artisan.id}`} className="flex-1">
+              <Button variant="outline" className="w-full text-sm h-8 border-primary/20 text-primary hover:bg-primary/5">
+                View Profile
+              </Button>
             </Link>
-          </Button>
-          <Button 
-            size="sm" 
-            className="h-9 text-xs font-medium bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 transition-all duration-200" 
-            asChild
-          >
-            <Link href={`/artisans/${artisan.id}/skills`}>
-              View Skills
-            </Link>
-          </Button>
+            
+            {user?.role === "student" && (
+              <WhatsAppCTACompact
+                provider={artisan}
+                student={user as unknown as Student}
+                className="flex-1"
+              />
+            )}
+          </div>
         </div>
-        
-        {/* WhatsApp CTA - only show if user is logged in as student */}
-        {user && user.role === "student" && (
-          <WhatsAppCTACompact
-            provider={provider}
-            student={{
-              ...user,
-              role: "student" as const,
-              firstName: user.firstName || "Student",
-              lastName: user.lastName || "User",
-              phone: user.phone || "",
-              studentId: user.studentId || "default-student-id",
-              department: user.department || "Computer Science",
-              level: String(user.level || "300"),
-              enrolledSkills: [],
-              password: "",
-              createdAt: new Date(),
-              updatedAt: new Date()
-            }}
-            serviceType="direct_service"
-            className="w-full bg-green-600 hover:bg-green-700 text-white h-9 text-xs font-medium transition-all duration-200 hover:scale-[1.02]"
-          />
-        )}
       </CardFooter>
     </Card>
   )

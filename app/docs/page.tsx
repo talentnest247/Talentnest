@@ -20,7 +20,7 @@ export default function DocsPage() {
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
               Everything you need to know about using the TalentNest Platform.
-              Get started, learn new skills, and grow your business.
+              Get started, find services, and grow your business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
@@ -55,14 +55,14 @@ export default function DocsPage() {
               <Card className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <Users className="h-12 w-12 mx-auto mb-4 text-green-600" />
-                  <CardTitle className="text-lg">For Students</CardTitle>
+                  <CardTitle className="text-lg">For Customers</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    Learn how to find skills, enroll in classes, and track progress.
+                    Learn how to find services, book providers, and leave reviews.
                   </p>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="#students">View Guide</Link>
+                    <Link href="#customers">View Guide</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -70,14 +70,14 @@ export default function DocsPage() {
               <Card className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <Settings className="h-12 w-12 mx-auto mb-4 text-purple-600" />
-                  <CardTitle className="text-lg">For Artisans</CardTitle>
+                  <CardTitle className="text-lg">For Service Providers</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    Create your profile, list skills, and manage your business.
+                    Create your profile, list services, and manage your business.
                   </p>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="#artisans">View Guide</Link>
+                    <Link href="#providers">View Guide</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -158,12 +158,12 @@ export default function DocsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    Browse skills, connect with artisans, and begin your learning journey.
+                    Browse services, connect with providers, and book what you need.
                   </p>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Explore the marketplace</li>
-                    <li>• Enroll in skills</li>
-                    <li>• Connect with the community</li>
+                    <li>• Book services</li>
+                    <li>• Connect with providers</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -171,56 +171,56 @@ export default function DocsPage() {
           </div>
         </section>
 
-        {/* Students Guide */}
-        <section id="students" className="py-16 bg-slate-50 dark:bg-slate-900">
+        {/* Customer Guide */}
+        <section id="customers" className="py-16 bg-slate-50 dark:bg-slate-900">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Student Guide</h2>
+              <h2 className="text-3xl font-bold mb-4">Customer Guide</h2>
               <p className="text-lg text-muted-foreground">
-                Everything you need to know as a student
+                Everything you need to know as a customer
               </p>
             </div>
 
             <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="finding-skills">
-                <AccordionTrigger>How do I find and enroll in skills?</AccordionTrigger>
+              <AccordionItem value="finding-services">
+                <AccordionTrigger>How do I find and book services?</AccordionTrigger>
                 <AccordionContent>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                    <li>Navigate to the Skills page from the main menu</li>
-                    <li>Use filters to search by category, difficulty, or price</li>
-                    <li>Click on a skill card to view details</li>
-                    <li>Click &quot;Enroll Now&quot; and complete the payment</li>
-                    <li>Access your enrolled skills from the Dashboard</li>
+                    <li>Navigate to the Services page from the main menu</li>
+                    <li>Use filters to search by category, rating, or price</li>
+                    <li>Click on a service card to view details</li>
+                    <li>Click &quot;Book Now&quot; and complete the booking</li>
+                    <li>Access your bookings from the Dashboard</li>
                   </ol>
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="tracking-progress">
-                <AccordionTrigger>How do I track my learning progress?</AccordionTrigger>
+              <AccordionItem value="tracking-bookings">
+                <AccordionTrigger>How do I track my bookings?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground mb-4">
-                    Your learning dashboard provides comprehensive progress tracking:
+                    Your booking dashboard provides comprehensive tracking:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>View enrolled skills and completion status</li>
-                    <li>Track progress percentage for each skill</li>
-                    <li>Access completed lessons and materials</li>
-                    <li>View certificates upon completion</li>
+                    <li>View booked services and completion status</li>
+                    <li>Track service progress and timeline</li>
+                    <li>Access service materials and updates</li>
+                    <li>Leave reviews upon completion</li>
                   </ul>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="communication">
-                <AccordionTrigger>How do I communicate with artisans?</AccordionTrigger>
+                <AccordionTrigger>How do I communicate with service providers?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground mb-4">
                     Direct communication is available through our platform:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     <li>Use the messaging system in your dashboard</li>
-                    <li>Contact artisans directly from their profile</li>
-                    <li>Schedule sessions and ask questions</li>
-                    <li>Request clarifications on lessons</li>
+                    <li>Contact providers directly from their profile</li>
+                    <li>Schedule services and ask questions</li>
+                    <li>Request updates on service progress</li>
                   </ul>
                 </AccordionContent>
               </AccordionItem>
@@ -228,13 +228,13 @@ export default function DocsPage() {
           </div>
         </section>
 
-        {/* Artisans Guide */}
-        <section id="artisans" className="py-16">
+        {/* Service Providers Guide */}
+        <section id="providers" className="py-16">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Artisan Guide</h2>
+              <h2 className="text-3xl font-bold mb-4">Service Provider Guide</h2>
               <p className="text-lg text-muted-foreground">
-                Build your business and share your expertise
+                Build your business and market your services
               </p>
             </div>
 
@@ -243,8 +243,8 @@ export default function DocsPage() {
                 <AccordionTrigger>How do I get verified?</AccordionTrigger>
                 <AccordionContent>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                    <li>Complete your artisan profile with detailed information</li>
-                    <li>Upload proof of your skills and experience</li>
+                    <li>Complete your provider profile with detailed information</li>
+                    <li>Upload proof of your services and experience</li>
                     <li>Submit identification documents</li>
                     <li>Wait for admin review (usually 2-3 business days)</li>
                     <li>Receive verification badge upon approval</li>
@@ -252,18 +252,18 @@ export default function DocsPage() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="creating-skills">
-                <AccordionTrigger>How do I create and list skills?</AccordionTrigger>
+              <AccordionItem value="creating-services">
+                <AccordionTrigger>How do I create and list services?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground mb-4">
-                    Create compelling skill listings to attract students:
+                    Create compelling service listings to attract customers:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Go to &quot;Add Skill&quot; from your dashboard</li>
-                    <li>Provide detailed description and learning objectives</li>
-                    <li>Set appropriate pricing and duration</li>
-                    <li>Upload syllabus, images, and sample materials</li>
-                    <li>Specify prerequisites and target audience</li>
+                    <li>Go to &quot;Add Service&quot; from your dashboard</li>
+                    <li>Provide detailed description and service features</li>
+                    <li>Set appropriate pricing and delivery time</li>
+                    <li>Upload portfolio images and sample work</li>
+                    <li>Specify service requirements and target audience</li>
                   </ul>
                 </AccordionContent>
               </AccordionItem>
@@ -275,11 +275,11 @@ export default function DocsPage() {
                     Use your provider dashboard to manage all aspects:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Track enrollments and student progress</li>
-                    <li>Manage your skill listings and pricing</li>
+                    <li>Track bookings and customer progress</li>
+                    <li>Manage your service listings and pricing</li>
                     <li>View earnings and payment history</li>
                     <li>Update availability and contact information</li>
-                    <li>Respond to student inquiries and reviews</li>
+                    <li>Respond to customer inquiries and reviews</li>
                   </ul>
                 </AccordionContent>
               </AccordionItem>
@@ -313,8 +313,8 @@ export default function DocsPage() {
                 <AccordionTrigger>What is the refund policy?</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-muted-foreground">
-                    Refunds are available within 7 days of enrollment if you&apos;re not satisfied
-                    with the skill. Contact our support team to initiate a refund request.
+                    Refunds are available within 7 days of booking if you&apos;re not satisfied
+                    with the service. Contact our support team to initiate a refund request.
                     Processing takes 5-10 business days.
                   </p>
                 </AccordionContent>

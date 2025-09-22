@@ -119,7 +119,7 @@ export default function CookiesPage() {
                 <ul>
                   <li>Most browsers allow you to block or delete cookies</li>
                   <li>You can set your browser to notify you when cookies are placed</li>
-                  <li>Check your browser's help section for specific instructions</li>
+                  <li>Check your browser&apos;s help section for specific instructions</li>
                 </ul>
 
                 <h4>Our Cookie Preferences</h4>

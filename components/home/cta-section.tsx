@@ -32,7 +32,7 @@ export function CTASection() {
 
   const benefits = [
     { icon: Users, text: "Join 2,500+ student learners" },
-    { icon: BookOpen, text: "150+ peer-taught skills" },
+    { icon: BookOpen, text: "150+ professional services" },
     { icon: Award, text: "University-backed courses" },
     { icon: Star, text: "4.9/5 campus rating" }
   ]
@@ -66,7 +66,7 @@ export function CTASection() {
                 Ready to Master
                 <br />
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  New Skills?
+                  New Services?
                 </span>
               </h2>
               <p className="text-lg sm:text-xl text-white/90 max-w-2xl">
@@ -126,7 +126,7 @@ export function CTASection() {
               <div className="w-px h-8 bg-white/30"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold">150+</div>
-                <div className="text-xs">Available Skills</div>
+                <div className="text-xs">Available Services</div>
               </div>
             </div>
           </div>
@@ -162,7 +162,7 @@ export function CTASection() {
                   <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <BookOpen className="h-6 w-6 text-blue-800" />
                   </div>
-                  <h3 className="font-semibold mb-2">Practical Skills</h3>
+                  <h3 className="font-semibold mb-2">Professional Services</h3>
                   <p className="text-sm text-white/80">Hands-on learning approach</p>
                 </CardContent>
               </Card>

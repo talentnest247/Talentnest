@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { ArtisanCard } from "@/components/marketplace/artisan-card"
+import { ArtisanCard as ProviderCard } from "@/components/marketplace/artisan-card"
 import { SearchFilters } from "@/components/marketplace/search-filters"
 import { CategoryGrid } from "@/components/marketplace/category-grid"
 import { Button } from "@/components/ui/button"
@@ -10,9 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getAllProviders, getAllCategories, searchProviders, checkDatabaseConnection } from "@/lib/database-operations"
 import { mockDatabase } from "@/lib/mock-data" // Fallback for development
-import type { Artisan, Category } from "@/lib/types"
+import type { Provider, Category } from "@/lib/types"
 import { List, Users, Star, Clock, TrendingUp, Filter, LayoutGrid } from "lucide-react"
 
 interface FilterState {
@@ -25,8 +24,8 @@ interface FilterState {
 }
 
 export default function MarketplacePage() {
-  const [artisans, setArtisans] = useState<Artisan[]>([])
-  const [filteredArtisans, setFilteredArtisans] = useState<Artisan[]>([])
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [filteredProviders, setFilteredProviders] = useState<Provider[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [error, setError] = useState<string | null>(null)
@@ -34,8 +33,8 @@ export default function MarketplacePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFiltersVisible, setIsFiltersVisible] = useState(true)
   const [stats, setStats] = useState({
-    totalArtisans: 0,
-    totalSkills: 0,
+    totalProviders: 0,
+    totalServices: 0,
     avgRating: 0,
     activeToday: 0
   })
@@ -46,122 +45,67 @@ export default function MarketplacePage() {
       setError(null)
       
       try {
-        // Check if database is available
-        const dbAvailable = await checkDatabaseConnection()
+        // Temporarily use mock data directly for faster loading
+        // TODO: Re-enable database connection after schema is deployed
+        console.log('Using mock data for faster loading...')
         
-        if (dbAvailable && useDatabase) {
-          // Load data from database
-          console.log('Loading data from Supabase database...')
-          const [artisansData, categoriesData] = await Promise.all([
-            getAllProviders(),
-            getAllCategories(),
-          ])
-          
-          setArtisans(artisansData)
-          setFilteredArtisans(artisansData)
-          setCategories(categoriesData)
-          
-          // Calculate stats from real data
-          setStats({
-            totalArtisans: artisansData.length,
-            totalSkills: artisansData.reduce((acc, artisan) => acc + artisan.skills.length, 0),
-            avgRating: artisansData.length > 0 
-              ? artisansData.reduce((acc, artisan) => acc + artisan.rating, 0) / artisansData.length 
-              : 0,
-            activeToday: Math.floor(artisansData.length * 0.7) // Estimate 70% active today
-          })
-          
-          console.log(`Loaded ${artisansData.length} providers and ${categoriesData.length} categories from database`)
-        } else {
-          // Fallback to mock data
-          console.log('Database not available, falling back to mock data...')
-          setUseDatabase(false)
-          
-          const [artisansData, categoriesData] = await Promise.all([
-            mockDatabase.getArtisans(),
-            mockDatabase.getCategories(),
-          ])
-          
-          setArtisans(artisansData)
-          setFilteredArtisans(artisansData)
-          setCategories(categoriesData)
-          
-          // Calculate stats from mock data
-          setStats({
-            totalArtisans: artisansData.length,
-            totalSkills: artisansData.reduce((acc, artisan) => acc + artisan.skills.length, 0),
-            avgRating: artisansData.reduce((acc, artisan) => acc + artisan.rating, 0) / artisansData.length,
-            activeToday: Math.floor(artisansData.length * 0.7)
-          })
-          
-          if (!dbAvailable) {
-            setError('Database connection failed. Using demo data.')
-          }
-        }
+        const [providersData, categoriesData] = await Promise.all([
+          mockDatabase.getProviders(),
+          mockDatabase.getCategories(),
+        ])
+        
+        setProviders(providersData)
+        setFilteredProviders(providersData)
+        setCategories(categoriesData)
+        setUseDatabase(false)
+        
+        // Calculate stats from mock data
+        setStats({
+          totalProviders: providersData.length,
+          totalServices: providersData.reduce((acc: number, provider) => acc + (provider.portfolio?.length || provider.specialization?.length || 0), 0),
+          avgRating: providersData.length > 0 
+            ? providersData.reduce((acc: number, provider) => acc + provider.rating, 0) / providersData.length 
+            : 0,
+          activeToday: Math.floor(providersData.length * 0.7) // Estimate 70% active today
+        })
+        
+        console.log(`Loaded ${providersData.length} providers and ${categoriesData.length} categories from mock data`)
+        
       } catch (error) {
         console.error("Failed to load marketplace data:", error)
         setError('Failed to load data. Please try again.')
-        
-        // Fallback to mock data on error
-        try {
-          const [artisansData, categoriesData] = await Promise.all([
-            mockDatabase.getArtisans(),
-            mockDatabase.getCategories(),
-          ])
-          setArtisans(artisansData)
-          setFilteredArtisans(artisansData)
-          setCategories(categoriesData)
-          setUseDatabase(false)
-        } catch (fallbackError) {
-          console.error("Fallback to mock data also failed:", fallbackError)
-        }
       } finally {
         setIsLoading(false)
       }
     }
 
     loadData()
-  }, [useDatabase])
+  }, [])
 
   const handleFiltersChange = async (filters: FilterState) => {
-    if (useDatabase) {
-      // Use database search for better performance with large datasets
-      try {
-        setIsLoading(true)
-        const searchResults = await searchProviders(filters.search || "")
-        setFilteredArtisans(searchResults)
-      } catch (error) {
-        console.error('Database search failed, falling back to client-side filtering:', error)
-        // Fallback to client-side filtering
-        clientSideFilter(filters)
-      } finally {
-        setIsLoading(false)
-      }
-    } else {
-      // Client-side filtering for mock data
-      clientSideFilter(filters)
-    }
+    // Use client-side filtering since we're using mock data
+    clientSideFilter(filters)
   }
 
   const clientSideFilter = (filters: FilterState) => {
-    let filtered = [...artisans]
+    let filtered = [...providers]
 
     // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase()
-      filtered = filtered.filter(artisan =>
-        artisan.firstName.toLowerCase().includes(searchTerm) ||
-        artisan.lastName.toLowerCase().includes(searchTerm) ||
-        artisan.businessName.toLowerCase().includes(searchTerm) ||
-        artisan.specialization.some(skill => skill.toLowerCase().includes(searchTerm)) ||
-        artisan.skills.some(skill => skill.title.toLowerCase().includes(searchTerm))
+      filtered = filtered.filter(provider =>
+        provider.firstName.toLowerCase().includes(searchTerm) ||
+        provider.lastName.toLowerCase().includes(searchTerm) ||
+        provider.businessName.toLowerCase().includes(searchTerm) ||
+        provider.specialization.some(service => service.toLowerCase().includes(searchTerm)) ||
+        (provider.portfolio && provider.portfolio.some((item) => item.title?.toLowerCase().includes(searchTerm)))
       )
     }
 
     // Category filter
     if (filters.category !== "All Categories") {
-      filtered = filtered.filter(artisan =>
-        artisan.specialization.some(spec => {
+      filtered = filtered.filter(provider =>
+        provider.specialization.some(spec => {
           if (filters.category === "Fashion & Tailoring") {
             return spec.toLowerCase().includes('fashion') || 
                    spec.toLowerCase().includes('tailoring') || 
@@ -180,31 +124,31 @@ export default function MarketplacePage() {
 
     // Location filter
     if (filters.location !== "All Locations") {
-      filtered = filtered.filter(artisan => 
-        artisan.location.toLowerCase().includes(filters.location.toLowerCase())
+      filtered = filtered.filter(provider => 
+        provider.location.toLowerCase().includes(filters.location.toLowerCase())
       )
     }
 
     // Rating filter
     if (filters.minRating > 0) {
-      filtered = filtered.filter(artisan => artisan.rating >= filters.minRating)
+      filtered = filtered.filter(provider => provider.rating >= filters.minRating)
     }
 
     // Experience filter
     if (filters.experience !== "All Experience") {
       const experienceYears = filters.experience
-      filtered = filtered.filter(artisan => {
+      filtered = filtered.filter(provider => {
         switch (experienceYears) {
           case "0-1 years":
-            return artisan.experience <= 1
+            return provider.experience <= 1
           case "2-3 years":
-            return artisan.experience >= 2 && artisan.experience <= 3
+            return provider.experience >= 2 && provider.experience <= 3
           case "4-5 years":
-            return artisan.experience >= 4 && artisan.experience <= 5
+            return provider.experience >= 4 && provider.experience <= 5
           case "6-10 years":
-            return artisan.experience >= 6 && artisan.experience <= 10
+            return provider.experience >= 6 && provider.experience <= 10
           case "10+ years":
-            return artisan.experience >= 10
+            return provider.experience >= 10
           default:
             return true
         }
@@ -213,15 +157,15 @@ export default function MarketplacePage() {
 
     // Availability filter
     if (filters.availability !== "All") {
-      filtered = filtered.filter(artisan => {
+      filtered = filtered.filter(provider => {
         if (filters.availability === "Available") {
-          return artisan.availability?.isAvailable
+          return provider.availability?.isAvailable
         }
         return true
       })
     }
 
-    setFilteredArtisans(filtered)
+    setFilteredProviders(filtered)
   }
 
   if (isLoading) {
@@ -320,7 +264,7 @@ export default function MarketplacePage() {
                 <div className="space-y-6">
                   <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900 bg-clip-text text-transparent leading-[1.1]">
                     Discover Expert<br />
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Artisans</span>
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Providers</span>
                   </h1>
                   <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-medium">
                     Connect with verified professionals in the UNILORIN community. 
@@ -337,8 +281,8 @@ export default function MarketplacePage() {
                     <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                       <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                     </div>
-                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalArtisans}</div>
-                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Expert Artisans</div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalProviders}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Expert Providers</div>
                   </CardContent>
                 </Card>
 
@@ -370,7 +314,7 @@ export default function MarketplacePage() {
                     <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                       <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
                     </div>
-                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalSkills}</div>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{stats.totalServices}</div>
                     <div className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Skills Available</div>
                   </CardContent>
                 </Card>
@@ -383,18 +327,18 @@ export default function MarketplacePage() {
         <section className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white"></div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 max-w-7xl relative">
-            <Tabs defaultValue="artisans" className="space-y-12">
+            <Tabs defaultValue="providers" className="space-y-12">
               {/* Premium Tab Navigation */}
               <div className="flex justify-center">
                 <TabsList className="inline-flex bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-1.5 shadow-xl">
                   <TabsTrigger 
-                    value="artisans" 
+                    value="providers" 
                     className="relative px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-slate-700"
                   >
                     <Users className="w-4 h-4 mr-2" />
-                    Browse Artisans
+                    Browse Providers
                     <Badge className="ml-2 bg-slate-100 text-slate-700 text-xs px-2 py-0.5 data-[state=active]:bg-white/20 data-[state=active]:text-white">
-                      {filteredArtisans.length}
+                      {filteredProviders.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger 
@@ -407,7 +351,7 @@ export default function MarketplacePage() {
                 </TabsList>
               </div>
 
-            <TabsContent value="artisans" className="space-y-10">
+            <TabsContent value="providers" className="space-y-10">
               {/* Premium Search and Filters Section */}
               <div className="relative">
                 <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl overflow-hidden">
@@ -425,7 +369,7 @@ export default function MarketplacePage() {
                           </div>
                           <div>
                             <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                              Find Expert Artisans
+                              Find Expert Providers
                             </h2>
                             <p className="text-slate-600 text-sm sm:text-base font-medium">
                               Discover skilled professionals tailored to your needs
@@ -496,41 +440,41 @@ export default function MarketplacePage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        {filteredArtisans.length} Expert{filteredArtisans.length !== 1 ? 's' : ''} Available
+                        {filteredProviders.length} Expert{filteredProviders.length !== 1 ? 's' : ''} Available
                       </h3>
                       <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-3 py-1.5 text-sm font-semibold rounded-full border border-blue-200/50">
-                        of {artisans.length} total
+                        of {providers.length} total
                       </Badge>
                     </div>
                   </div>
                   
-                  {filteredArtisans.length > 0 && (
+                  {filteredProviders.length > 0 && (
                     <div className="flex items-center gap-3 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <span className="font-medium">{Math.floor(filteredArtisans.length * 0.7)} available now</span>
+                        <span className="font-medium">{Math.floor(filteredProviders.length * 0.7)} available now</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Premium Results Grid/List */}
-                {filteredArtisans.length > 0 ? (
+                {filteredProviders.length > 0 ? (
                   <div className={`transition-all duration-500 ${
                     viewMode === 'grid' 
                       ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
                       : 'grid grid-cols-1 lg:grid-cols-2 gap-8'
                   }`}>
-                    {filteredArtisans.map((artisan, index) => (
+                    {filteredProviders.map((provider, index) => (
                       <div 
-                        key={artisan.id} 
+                        key={provider.id} 
                         className={`w-full animate-in fade-in slide-in-from-bottom duration-700 ${
                           index < 4 ? 'delay-100' : 
                           index < 8 ? 'delay-200' : 
                           index < 12 ? 'delay-300' : 'delay-500'
                         }`}
                       >
-                        <ArtisanCard artisan={artisan} />
+                        <ProviderCard artisan={provider} />
                       </div>
                     ))}
                   </div>
@@ -548,7 +492,7 @@ export default function MarketplacePage() {
                         </div>
                         <div className="space-y-4">
                           <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-600 bg-clip-text text-transparent">
-                            No artisans match your criteria
+                            No providers match your criteria
                           </h3>
                           <p className="text-slate-500 text-lg max-w-md mx-auto leading-relaxed">
                             Try adjusting your search terms or filters to discover more skilled professionals in our community.
@@ -594,7 +538,7 @@ export default function MarketplacePage() {
                         Browse by Category
                       </h2>
                       <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                        Explore skilled artisans organized by their expertise and specializations
+                        Explore skilled providers organized by their expertise and specializations
                       </p>
                     </div>
                   </div>

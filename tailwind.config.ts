@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import tailwindcssAnimate from "tailwindcss-animate"
 
 const config: Config = {
   darkMode: "class",
@@ -56,8 +57,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "unilorin-purple": "#6B46C1",
-        "unilorin-gold": "#F59E0B",
+        "university-blue": "#1e3a8a",
+        "university-light-blue": "#3b82f6",
+        "university-dark-blue": "#1e40af",
+        "university-gold": "#f59e0b",
+        "university-white": "#ffffff",
+        "university-gray": "#f8fafc",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -73,14 +78,38 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        "fade-in-up": {
+          from: { 
+            opacity: "0",
+            transform: "translateY(30px)"
+          },
+          to: { 
+            opacity: "1",
+            transform: "translateY(0)"
+          },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "spin-slow": "spin-slow 20s linear infinite",
+        "fade-in-up": "fade-in-up 0.6s ease-out",
+        "float": "float 3s ease-in-out infinite",
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config
 
 export default config

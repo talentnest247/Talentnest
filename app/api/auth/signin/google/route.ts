@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const googleClientId = process.env.GOOGLE_CLIENT_ID
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'

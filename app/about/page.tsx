@@ -18,8 +18,8 @@ export default function AboutPage() {
               About TalentNest Platform
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-              Empowering students and artisans at the University of Ilorin through skill-sharing,
-              entrepreneurship, and community building.
+                            Empowering students and service providers at the University of Ilorin through service marketing,
+              professional connections, and a thriving marketplace ecosystem.
             </p>
             <Badge variant="secondary" className="text-lg px-4 py-2">
               Since 2024
@@ -33,9 +33,9 @@ export default function AboutPage() {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Mission</h2>
               <p className="text-lg text-blue-600 max-w-2xl mx-auto">
-                To create a vibrant ecosystem where University of Ilorin students can learn valuable skills
-                from experienced artisans while providing artisans with opportunities to grow their businesses
-                and share their expertise.
+                To create a vibrant ecosystem where University of Ilorin students can find quality services
+                from verified providers while providing service providers with opportunities to grow their businesses
+                and market their expertise.
               </p>
             </div>
 
@@ -43,12 +43,12 @@ export default function AboutPage() {
               <Card className="text-center">
                 <CardHeader>
                   <GraduationCap className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-                  <CardTitle>Skill Development</CardTitle>
+                  <CardTitle>Service Marketing</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-blue-700">
-                    Bridge the gap between academic knowledge and practical skills through
-                    hands-on learning experiences.
+                    Bridge the gap between academic life and professional services through
+                    quality service connections.
                   </p>
                 </CardContent>
               </Card>
@@ -60,7 +60,7 @@ export default function AboutPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-blue-700">
-                    Foster a supportive community where students and artisans can connect,
+                    Foster a supportive community where students and service providers can connect,
                     collaborate, and grow together.
                   </p>
                 </CardContent>
@@ -73,7 +73,7 @@ export default function AboutPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-blue-700">
-                    Empower artisans to turn their skills into sustainable businesses and
+                    Empower providers to turn their services into sustainable businesses and
                     create economic opportunities.
                   </p>
                 </CardContent>
@@ -132,7 +132,7 @@ export default function AboutPage() {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Impact</h2>
               <p className="text-lg text-blue-600">
-                Growing together, one skill at a time
+                Growing together, one service at a time
               </p>
             </div>
 
@@ -143,11 +143,11 @@ export default function AboutPage() {
               </div>
               <div>
                 <div className="text-4xl font-bold text-green-600 mb-2">100+</div>
-                <p className="text-muted-foreground">Artisans Onboarded</p>
+                <p className="text-muted-foreground">Service Providers</p>
               </div>
               <div>
                 <div className="text-4xl font-bold text-purple-600 mb-2">50+</div>
-                <p className="text-muted-foreground">Skills Offered</p>
+                <p className="text-muted-foreground">Services Offered</p>
               </div>
               <div>
                 <div className="text-4xl font-bold text-orange-600 mb-2">95%</div>
@@ -162,7 +162,7 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">Join Our Community</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Whether you&apos;re a student looking to learn new skills or an artisan ready to share your expertise,
+              Whether you&apos;re a student looking to find professional services or a provider ready to market your expertise,
               there&apos;s a place for you in our growing community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -170,7 +170,7 @@ export default function AboutPage() {
                 <Link href="/register">Get Started</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/marketplace">Explore Skills</Link>
+                <Link href="/marketplace">Explore Services</Link>
               </Button>
             </div>
           </div>

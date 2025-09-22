@@ -20,12 +20,11 @@ import {
 } from "lucide-react"
 import { ProviderProfileForm } from "./provider-profile-form"
 import { useAuth } from "@/contexts/auth-context"
-import type { Provider, ContactRequest, VerificationRequest } from "@/lib/types"
+import type { Provider, ContactRequest } from "@/lib/types"
 
 export function ProviderDashboard() {
   const { user } = useAuth()
   const [provider, setProvider] = useState<Provider | null>(null)
-  const [verificationRequest, setVerificationRequest] = useState<VerificationRequest | null>(null)
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -44,7 +43,7 @@ export function ProviderDashboard() {
         firstName: user.firstName || "John",
         lastName: user.lastName || "Doe",
         fullName: user.fullName,
-        role: "artisan",
+        role: "provider",
         businessName: "Custom Tailoring Services",
         description: "Professional tailoring and fashion design services specializing in traditional and modern Nigerian attire.",
         specialization: ["Fashion Design", "Tailoring", "Traditional Wear"],
@@ -55,7 +54,6 @@ export function ProviderDashboard() {
         phone: "+234 803 123 4567",
         whatsappNumber: "+234 803 123 4567",
         verified: true,
-        skills: [], // Empty for now
         availability: {
           isAvailable: true,
           availableForWork: true,
@@ -63,7 +61,7 @@ export function ProviderDashboard() {
           responseTime: "Usually responds within 2 hours"
         },
         pricing: {
-          baseRate: 15000,
+          serviceRate: 15000,
           learningRate: 8000,
           currency: "NGN"
         },
@@ -93,9 +91,9 @@ export function ProviderDashboard() {
           id: "contact-2",
           studentId: "student-2",
           providerId: "provider-1",
-          serviceType: "skill_learning",
+          serviceType: "service_booking",
           contactMethod: "whatsapp",
-          messagePreview: "Hello! I'd like to learn basic tailoring techniques. Do you offer beginner classes?",
+          messagePreview: "Hello! I'd like to book basic tailoring services. Do you offer beginner consultations?",
           contactedAt: new Date("2024-01-21T14:15:00Z"),
           responseReceived: true,
           responseTimeHours: 3,
@@ -151,10 +149,7 @@ export function ProviderDashboard() {
         
         {isEditing && (
           <div className="mt-8">
-            <ProviderProfileForm 
-              onSubmit={() => setIsEditing(false)}
-              onCancel={() => setIsEditing(false)}
-            />
+            <ProviderProfileForm />
           </div>
         )}
       </div>
@@ -208,7 +203,7 @@ export function ProviderDashboard() {
         <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Your verification is in progress. You'll receive an email once it's reviewed. Meanwhile, you can update your profile information.
+            Your verification is in progress. You&apos;ll receive an email once it&apos;s reviewed. Meanwhile, you can update your profile information.
           </AlertDescription>
         </Alert>
       )}
@@ -263,11 +258,11 @@ export function ProviderDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Base Service Rate</label>
-                  <p className="font-medium">₦{provider.pricing.baseRate?.toLocaleString() || 'Not set'}</p>
+                  <p className="font-medium">₦{provider.pricing.serviceRate?.toLocaleString() || 'Not set'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Learning Rate</label>
-                  <p className="font-medium">₦{provider.pricing.learningRate?.toLocaleString() || 'Not set'}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Service Rate</label>
+                  <p className="font-medium">₦{provider.pricing.serviceRate?.toLocaleString() || 'Not set'}</p>
                 </div>
               </div>
 
@@ -285,8 +280,6 @@ export function ProviderDashboard() {
         <TabsContent value="profile">
           <ProviderProfileForm 
             provider={provider}
-            onSubmit={() => setIsEditing(false)}
-            onCancel={() => setIsEditing(false)}
           />
         </TabsContent>
 
@@ -309,7 +302,7 @@ export function ProviderDashboard() {
                     <div key={contact.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">
-                          {contact.serviceType === 'direct_service' ? 'Service Request' : 'Learning Inquiry'}
+                          {contact.serviceType === 'direct_service' ? 'Service Request' : 'Service Inquiry'}
                         </Badge>
                         <div className="text-xs text-muted-foreground">
                           {new Date(contact.contactedAt).toLocaleDateString()}
@@ -399,8 +392,6 @@ export function ProviderDashboard() {
           <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto">
             <ProviderProfileForm 
               provider={provider}
-              onSubmit={() => setIsEditing(false)}
-              onCancel={() => setIsEditing(false)}
             />
           </div>
         </div>

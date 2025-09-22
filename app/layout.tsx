@@ -5,8 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 
 export const metadata: Metadata = {
-  title: "TalentNest - UNILORIN Skills & Learning Platform",
-  description: "Connect with skilled students and learn new skills at University of Ilorin community platform - TalentNest",
+  title: "TalentNest - UNILORIN Services & Marketing Platform",
+  description: "Connect with professional service providers and find quality services at University of Ilorin community platform - TalentNest",
   generator: "",
 }
 

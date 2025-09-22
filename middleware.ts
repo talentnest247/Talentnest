@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth-token")?.value
 
   // Protected routes
-  const protectedRoutes = ["/dashboard", "/profile", "/skills/enroll"]
+  const protectedRoutes = ["/dashboard", "/profile", "/providers/dashboard"]
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
   if (isProtectedRoute) {

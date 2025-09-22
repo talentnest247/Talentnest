@@ -17,33 +17,26 @@ import {
   Plus, 
   X, 
   Camera, 
-  FileText, 
   MapPin, 
   Phone, 
   DollarSign,
   Clock,
-  CheckCircle,
   AlertCircle,
   Info
 } from "lucide-react"
-import type { Provider, PortfolioItem } from "@/lib/types"
+import type { Provider } from "@/lib/types"
 import { WhatsAppService } from "@/lib/whatsapp"
 
 interface ProviderProfileFormProps {
   provider?: Provider
   existingProfile?: Provider
   onSave?: (profile: Partial<Provider>) => void
-  onSubmit?: () => void
-  onCancel?: () => void
   mode?: "create" | "edit"
 }
 
 export function ProviderProfileForm({ 
-  provider,
   existingProfile, 
   onSave, 
-  onSubmit,
-  onCancel,
   mode = "create" 
 }: ProviderProfileFormProps) {
   const { user } = useAuth()
@@ -66,14 +59,14 @@ export function ProviderProfileForm({
       responseTime: existingProfile?.availability?.responseTime || "Usually responds within 24 hours"
     },
     pricing: {
-      baseRate: existingProfile?.pricing?.baseRate || undefined,
+      serviceRate: existingProfile?.pricing?.serviceRate || undefined,
       learningRate: existingProfile?.pricing?.learningRate || undefined,
       currency: existingProfile?.pricing?.currency || "NGN"
     },
     portfolio: existingProfile?.portfolio || []
   })
 
-  const [newSkill, setNewSkill] = useState("")
+  const [newService, setNewService] = useState("")
   const [portfolioUploads, setPortfolioUploads] = useState<File[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -122,20 +115,20 @@ export function ProviderProfileForm({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !formData.specialization?.includes(newSkill.trim())) {
+  const handleAddService = () => {
+    if (newService.trim() && !formData.specialization?.includes(newService.trim())) {
       setFormData(prev => ({
         ...prev,
-        specialization: [...(prev.specialization || []), newSkill.trim()]
+        specialization: [...(prev.specialization || []), newService.trim()]
       }))
-      setNewSkill("")
+      setNewService("")
     }
   }
 
-  const handleRemoveSkill = (skill: string) => {
+  const handleRemoveService = (service: string) => {
     setFormData(prev => ({
       ...prev,
-      specialization: prev.specialization?.filter(s => s !== skill) || []
+      specialization: prev.specialization?.filter(s => s !== service) || []
     }))
   }
 
@@ -170,7 +163,7 @@ export function ProviderProfileForm({
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
-        role: "artisan" as const,
+        role: "provider" as const,
         rating: existingProfile?.rating || 0,
         totalReviews: existingProfile?.totalReviews || 0,
         verified: existingProfile?.verified || false,
@@ -203,7 +196,7 @@ export function ProviderProfileForm({
           {mode === "create" ? "Create Your Provider Profile" : "Edit Provider Profile"}
         </h1>
         <p className="text-muted-foreground">
-          Showcase your skills and connect with students at UNILORIN
+          Showcase your services and connect with students at UNILORIN
         </p>
         
         {/* Progress indicator */}
@@ -320,31 +313,31 @@ export function ProviderProfileForm({
         {/* Specializations */}
         <Card>
           <CardHeader>
-            <CardTitle>Skills & Specializations *</CardTitle>
+            <CardTitle>Services & Specializations *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Add a skill or specialization"
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
+                value={newService}
+                onChange={(e) => setNewService(e.target.value)}
+                placeholder="Add a service or specialization"
+                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddService())}
               />
-              <Button type="button" onClick={handleAddSkill} size="sm">
+              <Button type="button" onClick={handleAddService} size="sm">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             
             <div className="flex flex-wrap gap-2">
-              {formData.specialization?.map((skill, index) => (
+              {formData.specialization?.map((service, index) => (
                 <Badge key={index} variant="secondary" className="text-sm">
-                  {skill}
+                  {service}
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="h-auto p-0 ml-2"
-                    onClick={() => handleRemoveSkill(skill)}
+                    onClick={() => handleRemoveService(service)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -371,7 +364,7 @@ export function ProviderProfileForm({
               <div className="space-y-0.5">
                 <Label>Currently Available for Work</Label>
                 <p className="text-sm text-muted-foreground">
-                  Turn off if you're not accepting new clients
+                  Turn off if you&apos;re not accepting new clients
                 </p>
               </div>
               <Switch
@@ -391,7 +384,7 @@ export function ProviderProfileForm({
               <div className="space-y-0.5">
                 <Label>Available for Teaching/Training</Label>
                 <p className="text-sm text-muted-foreground">
-                  Show "Available for Learning" badge to attract students
+                  Show &quot;Available for Learning&quot; badge to attract students
                 </p>
               </div>
               <Switch
@@ -414,12 +407,12 @@ export function ProviderProfileForm({
                     id="baseRate"
                     type="number"
                     min="0"
-                    value={formData.pricing?.baseRate || ""}
+                    value={formData.pricing?.serviceRate || ""}
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
                       pricing: { 
                         ...prev.pricing!, 
-                        baseRate: parseFloat(e.target.value) || undefined 
+                        serviceRate: parseFloat(e.target.value) || undefined 
                       }
                     }))}
                     placeholder="e.g., 5000"

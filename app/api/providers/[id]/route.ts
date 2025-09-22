@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getProviderById } from "@/lib/database"
+import { getProviderById } from "@/lib/database-operations"
 
 // GET /api/providers/[id] - Get provider by ID
 export async function GET(

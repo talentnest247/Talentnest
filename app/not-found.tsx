@@ -21,7 +21,7 @@ export default function NotFound() {
                     Page Not Found
                   </h2>
                   <p className="text-lg text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-                    The page you're looking for doesn't exist or has been moved to a new location.
+                    The page you&apos;re looking for doesn&apos;t exist or has been moved to a new location.
                   </p>
                 </div>
               </div>
@@ -31,7 +31,7 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               asChild
-              {...({ size: "lg" } as any)}
+              size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-200 hover:scale-105"
             >
               <Link href="/" className="flex items-center space-x-2">
@@ -41,7 +41,8 @@ export default function NotFound() {
             </Button>
             <Button 
               asChild
-              {...({ variant: "outline", size: "lg" } as any)}
+              variant="outline"
+              size="lg"
               className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 hover:scale-105"
             >
               <Link href="/marketplace" className="flex items-center space-x-2">

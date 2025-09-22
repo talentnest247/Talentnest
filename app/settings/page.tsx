@@ -46,7 +46,7 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     smsNotifications: false,
-    skillUpdates: true,
+    serviceUpdates: true,
     marketingEmails: false,
     securityAlerts: true
   })
@@ -386,16 +386,16 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="skill-updates" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Skill Updates</Label>
+                        <Label htmlFor="service-updates" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Service Updates</Label>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Get notified about skill progress and deadlines
+                          Get notified about service progress and updates
                         </p>
                       </div>
                       <Switch
-                        id="skill-updates"
-                        checked={notifications.skillUpdates}
+                        id="service-updates"
+                        checked={notifications.serviceUpdates}
                         onCheckedChange={(checked) =>
-                          setNotifications(prev => ({ ...prev, skillUpdates: checked }))
+                          setNotifications(prev => ({ ...prev, serviceUpdates: checked }))
                         }
                       />
                     </div>

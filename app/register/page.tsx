@@ -39,7 +39,7 @@ export default function RegisterPage() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 TalentNest Registration
               </h1>
-              <p className="text-sm text-muted-foreground">University of Ilorin Skills Platform</p>
+              <p className="text-sm text-muted-foreground">University of Ilorin Services Platform</p>
               
               <Button 
                 variant="outline" 
@@ -87,7 +87,7 @@ export default function RegisterPage() {
               Join TalentNest
             </h1>
             <p className="text-lg text-blue-600 max-w-2xl mx-auto">
-              University of Ilorin&apos;s Premier Skills & Learning Platform
+              University of Ilorin&apos;s Premier Services & Marketing Platform
             </p>
             <p className="text-sm text-blue-500">
               Choose your registration type to get started
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                 <div>
                   <CardTitle className="text-2xl text-blue-600 dark:text-blue-400">Student Registration</CardTitle>
                   <CardDescription className="text-base">
-                    Join as a University of Ilorin student to learn new skills and connect with expert artisans
+                    Join as a University of Ilorin student to find professional services and connect with expert providers
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -114,7 +114,7 @@ export default function RegisterPage() {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Access to all skill courses</span>
+                    <span className="text-sm">Access to all service providers</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -155,24 +155,24 @@ export default function RegisterPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-sm">Teach and mentor students</span>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Market your services to students</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-sm">Build your client base</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-sm">Showcase your portfolio</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-sm">Earn from your skills</span>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Earn from your services</span>
                   </div>
                 </div>
                 <div className="pt-4">
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                     <Shield className="h-3 w-3 mr-1" />
                     Admin Verification Required
                   </Badge>

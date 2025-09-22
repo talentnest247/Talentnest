@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
-import { mockCategories, mockArtisans } from './mock-data'
-import type { Artisan, Category, Skill } from './types'
+import { mockCategories, mockProviders } from './mock-data'
+import type { Provider, Category } from './types'
 
 // Database response types - temporarily commented out during transition
 /*
@@ -30,11 +30,11 @@ interface ArtisanDbResponse {
     avatar_url?: string
     phone?: string
   }
-  artisan_skills?: Array<{
-    skill_id: string
+  artisan_services?: Array<{
+    service_id: string
     proficiency_level: string
     price_per_hour?: number
-    skills?: {
+    services?: {
       id: string
       name: string
       description?: string
@@ -58,7 +58,7 @@ interface CategoryDbResponse {
   is_active: boolean
 }
 
-interface SkillDbResponse {
+interface ServiceDbResponse {
   id: string
   name: string
   description?: string
@@ -77,13 +77,20 @@ interface SkillDbResponse {
 */
 
 // Re-export types from the main types file
-export type { Artisan, Category, Skill } from './types'
+export type { Provider, Category } from './types'
 
 // Database connection check
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
-    // Test Supabase connection by querying a simple table
-    const { error } = await supabase.from('categories').select('count', { count: 'exact', head: true })
+    // Test Supabase connection with a timeout to prevent long waits
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Database connection timeout')), 3000) // 3 second timeout
+    })
+    
+    const connectionTest = supabase.from('categories').select('count', { count: 'exact', head: true })
+    
+    const { error } = await Promise.race([connectionTest, timeoutPromise])
+    
     if (error) {
       console.warn('Supabase connection failed, using mock data:', error.message)
       return false
@@ -96,23 +103,23 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 }
 
 // Provider operations
-export async function getAllProviders(): Promise<Artisan[]> {
+export async function getAllProviders(): Promise<Provider[]> {
   try {
     // First check if database is available
     const isConnected = await checkDatabaseConnection()
     if (!isConnected) {
       console.log('Using mock data for providers')
-      return mockArtisans
+      return mockProviders
     }
 
     // For now, return mock data while we transition to the new database schema
     // TODO: Implement proper database queries once schema is deployed
     console.log('Database connected, but using mock data during transition')
-    return mockArtisans
+    return mockProviders
   } catch (error) {
     console.error('Error fetching providers:', error)
     // Fallback to mock data
-    return mockArtisans
+    return mockProviders
   }
 }
 
@@ -136,42 +143,8 @@ export async function getAllCategories(): Promise<Category[]> {
   }
 }
 
-// Skills operations
-export async function getAllSkills(): Promise<Skill[]> {
-  try {
-    // First check if database is available
-    const isConnected = await checkDatabaseConnection()
-    if (!isConnected) {
-      console.log('Using mock data for skills')
-      // Extract all skills from all artisans
-      const allSkills: Skill[] = []
-      for (const artisan of mockArtisans) {
-        allSkills.push(...artisan.skills)
-      }
-      return allSkills
-    }
-
-    // For now, return mock data while we transition to the new database schema
-    // TODO: Implement proper database queries once schema is deployed
-    console.log('Database connected, but using mock data during transition')
-    const allSkills: Skill[] = []
-    for (const artisan of mockArtisans) {
-      allSkills.push(...artisan.skills)
-    }
-    return allSkills
-  } catch (error) {
-    console.error('Error fetching skills:', error)
-    // Fallback to mock data
-    const allSkills: Skill[] = []
-    for (const artisan of mockArtisans) {
-      allSkills.push(...artisan.skills)
-    }
-    return allSkills
-  }
-}
-
-// Search providers
-export async function searchProviders(query: string): Promise<Artisan[]> {
+// Search providers based on query, category, location, etc.
+export async function searchProviders(query: string): Promise<Provider[]> {
   try {
     const allProviders = await getAllProviders()
     
@@ -189,7 +162,7 @@ export async function searchProviders(query: string): Promise<Artisan[]> {
       provider.specialization?.some((spec: string) => spec.toLowerCase().includes(searchTerm)) ||
       provider.description?.toLowerCase().includes(searchTerm) ||
       provider.bio?.toLowerCase().includes(searchTerm) ||
-      provider.skills?.some((skill: Skill) => skill.title?.toLowerCase().includes(searchTerm))
+      provider.portfolio?.some((item) => item.title?.toLowerCase().includes(searchTerm) || item.description?.toLowerCase().includes(searchTerm))
     )
     
     return filteredProviders
@@ -200,23 +173,13 @@ export async function searchProviders(query: string): Promise<Artisan[]> {
 }
 
 // Additional helper functions for completeness
-export async function getProviderById(id: string): Promise<Artisan | null> {
+export async function getProviderById(id: string): Promise<Provider | null> {
   try {
     const providers = await getAllProviders()
     return providers.find(provider => provider.id === id) || null
   } catch (error) {
     console.error('Error fetching provider by ID:', error)
     throw new Error('Failed to fetch provider')
-  }
-}
-
-export async function getSkillById(id: string): Promise<Skill | null> {
-  try {
-    const skills = await getAllSkills()
-    return skills.find(skill => skill.id === id) || null
-  } catch (error) {
-    console.error('Error fetching skill by ID:', error)
-    throw new Error('Failed to fetch skill')
   }
 }
 

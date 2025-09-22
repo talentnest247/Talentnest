@@ -1,4 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
+import type { 
+  CreateUserData, 
+  CreateProviderData, 
+  CreatePortfolioData, 
+  CreateContactData, 
+  CreateVerificationData, 
+  UpdateVerificationData 
+} from './types'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -28,11 +36,18 @@ export const supabaseAdmin = supabaseServiceKey
   : null
 
 // Helper function to handle Supabase errors
-export function handleSupabaseError(error: any): string {
-  console.error('Supabase error:', error)
-  
+export function handleSupabaseError(error: unknown): string {
+  // Type guard for error objects with expected properties
+  const isSupabaseError = (err: unknown): err is { code?: string; message?: string } => {
+    return typeof err === 'object' && err !== null
+  }
+
+  if (!isSupabaseError(error)) {
+    return 'An unexpected error occurred'
+  }
+
   if (error?.code === 'PGRST116') {
-    return 'No data found'
+    return 'No data found matching your criteria'
   }
   
   if (error?.code === '23505') {
@@ -40,15 +55,15 @@ export function handleSupabaseError(error: any): string {
   }
   
   if (error?.code === '23503') {
-    return 'Related record not found'
+    return 'Cannot complete operation: missing required data'
   }
   
   if (error?.code === '42501') {
-    return 'Insufficient permissions'
+    return 'You do not have permission to perform this action'
   }
   
   if (error?.code === 'PGRST301') {
-    return 'Row level security policy violation'
+    return 'Invalid request format'
   }
   
   return error?.message || 'An unexpected error occurred'
@@ -64,7 +79,7 @@ function getClient() {
 }
 
 // User operations
-export async function createUser(userData: any) {
+export async function createUser(userData: CreateUserData) {
   try {
     const client = getClient()
     const { data, error } = await client
@@ -121,7 +136,7 @@ export async function getUserByEmail(email: string) {
 }
 
 // Provider operations
-export async function createProvider(providerData: any) {
+export async function createProvider(providerData: CreateProviderData) {
   try {
     const client = getClient()
     const { data, error } = await client
@@ -204,13 +219,13 @@ export async function getProviderById(id: string) {
   }
 }
 
-// Skill operations
-export async function createSkill(skillData: any) {
+// Portfolio operations
+export async function createPortfolioItem(portfolioData: CreatePortfolioData) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('skills')
-      .insert(skillData)
+      .from('portfolio')
+      .insert(portfolioData)
       .select(`
         *,
         provider:providers(
@@ -223,93 +238,48 @@ export async function createSkill(skillData: any) {
     if (error) throw new Error(handleSupabaseError(error))
     return data
   } catch (error) {
-    console.error('Error creating skill:', error)
+    console.error('Error creating portfolio item:', error)
     throw error
   }
 }
 
-export async function getSkills(filters?: {
-  category?: string
-  difficulty?: string
-  provider_id?: string
-  search?: string
-  limit?: number
-}) {
+export async function getPortfolioByProvider(providerId: string) {
   try {
     const client = getClient()
-    let query = client
-      .from('skills')
-      .select(`
-        *,
-        provider:providers(
-          *,
-          user:users(first_name, last_name, profile_image)
-        )
-      `)
-    
-    if (filters?.category) {
-      query = query.eq('category', filters.category)
-    }
-    
-    if (filters?.difficulty) {
-      query = query.eq('difficulty', filters.difficulty)
-    }
-    
-    if (filters?.provider_id) {
-      query = query.eq('provider_id', filters.provider_id)
-    }
-    
-    if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
-    }
-    
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: false })
+    const { data, error } = await client
+      .from('portfolio')
+      .select('*')
+      .eq('provider_id', providerId)
+      .order('created_at', { ascending: false })
     
     if (error) throw new Error(handleSupabaseError(error))
     return data || []
   } catch (error) {
-    console.error('Error getting skills:', error)
+    console.error('Error getting portfolio:', error)
     throw error
   }
 }
 
-export async function getSkillById(id: string) {
+// Booking operations
+export async function createBooking(bookingData: {
+  studentId: string
+  providerId: string
+  serviceType: "direct_service" | "training"
+  description: string
+}) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('skills')
+      .from('bookings')
+      .insert({
+        student_id: bookingData.studentId,
+        provider_id: bookingData.providerId,
+        service_type: bookingData.serviceType,
+        description: bookingData.description,
+        status: 'pending'
+      })
       .select(`
         *,
-        provider:providers(
-          *,
-          user:users(*)
-        )
-      `)
-      .eq('id', id)
-      .single()
-    
-    if (error) throw new Error(handleSupabaseError(error))
-    return data
-  } catch (error) {
-    console.error('Error getting skill by ID:', error)
-    throw error
-  }
-}
-
-// Enrollment operations
-export async function createEnrollment(enrollmentData: any) {
-  try {
-    const client = getClient()
-    const { data, error } = await client
-      .from('enrollments')
-      .insert(enrollmentData)
-      .select(`
-        *,
-        skill:skills(*),
         student:users(first_name, last_name, email),
         provider:providers(*, user:users(first_name, last_name))
       `)
@@ -318,55 +288,53 @@ export async function createEnrollment(enrollmentData: any) {
     if (error) throw new Error(handleSupabaseError(error))
     return data
   } catch (error) {
-    console.error('Error creating enrollment:', error)
+    console.error('Error creating booking:', error)
     throw error
   }
 }
 
-export async function getUserEnrollments(userId: string) {
+export async function getUserBookings(userId: string) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('enrollments')
+      .from('bookings')
       .select(`
         *,
-        skill:skills(*),
         provider:providers(*, user:users(first_name, last_name))
       `)
       .eq('student_id', userId)
-      .order('enrolled_at', { ascending: false })
+      .order('booked_at', { ascending: false })
     
     if (error) throw new Error(handleSupabaseError(error))
     return data || []
   } catch (error) {
-    console.error('Error getting user enrollments:', error)
+    console.error('Error getting user bookings:', error)
     throw error
   }
 }
 
-export async function getProviderEnrollments(providerId: string) {
+export async function getProviderBookings(providerId: string) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('enrollments')
+      .from('bookings')
       .select(`
         *,
-        skill:skills(*),
         student:users(first_name, last_name, email, phone)
       `)
       .eq('provider_id', providerId)
-      .order('enrolled_at', { ascending: false })
+      .order('booked_at', { ascending: false })
     
     if (error) throw new Error(handleSupabaseError(error))
     return data || []
   } catch (error) {
-    console.error('Error getting provider enrollments:', error)
+    console.error('Error getting provider bookings:', error)
     throw error
   }
 }
 
 // Contact operations
-export async function createContactRequest(contactData: any) {
+export async function createContactRequest(contactData: CreateContactData) {
   try {
     const client = getClient()
     const { data, error } = await client
@@ -388,7 +356,7 @@ export async function createContactRequest(contactData: any) {
 }
 
 // Verification operations
-export async function createVerificationRequest(verificationData: any) {
+export async function createVerificationRequest(verificationData: CreateVerificationData) {
   try {
     const client = getClient()
     const { data, error } = await client
@@ -435,7 +403,7 @@ export async function getVerificationRequests(status?: 'pending' | 'approved' | 
   }
 }
 
-export async function updateVerificationRequest(id: string, updates: any) {
+export async function updateVerificationRequest(id: string, updates: UpdateVerificationData) {
   try {
     const client = getClient()
     const { data, error } = await client
@@ -467,7 +435,7 @@ export async function getCategories() {
     if (error) throw new Error(handleSupabaseError(error))
     
     // Get unique categories
-    const uniqueCategories = [...new Set(data?.map((item: any) => item.category) || [])]
+    const uniqueCategories = [...new Set(data?.map((item: { category: string }) => item.category) || [])]
     return uniqueCategories
   } catch (error) {
     console.error('Error getting categories:', error)

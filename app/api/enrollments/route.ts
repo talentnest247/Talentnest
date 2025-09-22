@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
-import { mockDatabase } from "@/lib/mock-data"
+
+type Enrollment = {
+  id: string
+  studentId: string
+  skillId: string
+  providerId: string
+  providerName: string
+  status: string
+  progress?: number
+  enrolledAt: string
+}
 
 // Mock enrollments storage
-const mockEnrollments: any[] = [
+const mockEnrollments: Enrollment[] = [
   {
     id: "1",
     studentId: "student1",
     skillId: "1",
     providerId: "1",
+    providerName: "Sarah Design Studios",
     status: "active",
     progress: 65,
-    enrolledAt: new Date("2024-01-15"),
+    enrolledAt: "2024-01-15T00:00:00.000Z",
   }
 ]
 
@@ -48,11 +59,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { studentId, skillId, providerId } = body
+    const { studentId, skillId, providerId, providerName } = body
 
-    if (!studentId || !skillId || !providerId) {
+    if (!studentId || !skillId || !providerId || !providerName) {
       return NextResponse.json(
-        { error: "Missing required fields: studentId, skillId, providerId" },
+        { error: "Missing required fields: studentId, skillId, providerId, providerName" },
         { status: 400 }
       )
     }
@@ -70,14 +81,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new enrollment
-    const newEnrollment = {
+    const newEnrollment: Enrollment = {
       id: `enrollment_${Date.now()}`,
       studentId,
       skillId,
       providerId,
+      providerName,
       status: "active",
       progress: 0,
-      enrolledAt: new Date(),
+      enrolledAt: new Date().toISOString(),
     }
 
     mockEnrollments.push(newEnrollment)

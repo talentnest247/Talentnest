@@ -1,6 +1,6 @@
 // WhatsApp CTA utility functions for provider contact
 
-import type { WhatsAppMessage, Provider, Student } from './types'
+import type { Provider, Student } from './types'
 
 export class WhatsAppService {
   /**
@@ -9,10 +9,10 @@ export class WhatsAppService {
   static generateWhatsAppURL(
     provider: Provider,
     student: Student,
-    serviceType: 'skill_learning' | 'direct_service',
-    skillTitle?: string
+    serviceType: 'service_booking' | 'direct_service',
+    serviceTitle?: string
   ): string {
-    const message = this.generateMessage(provider, student, serviceType, skillTitle)
+    const message = this.generateMessage(provider, student, serviceType, serviceTitle)
     const encodedMessage = encodeURIComponent(message)
     
     // Clean phone number (remove non-digits except +)
@@ -36,26 +36,26 @@ export class WhatsAppService {
   private static generateMessage(
     provider: Provider,
     student: Student,
-    serviceType: 'skill_learning' | 'direct_service',
-    skillTitle?: string
+    serviceType: 'service_booking' | 'direct_service',
+    serviceTitle?: string
   ): string {
     const studentName = student.fullName || `${student.firstName} ${student.lastName}`
     const providerName = provider.businessName || `${provider.firstName} ${provider.lastName}`
     
-    if (serviceType === 'skill_learning' && skillTitle) {
+    if (serviceType === 'service_booking' && serviceTitle) {
       return `Hi ${providerName}! 👋
 
-I'm ${studentName}, a student at UNILORIN. I found your profile on the Artisan Platform and I'm interested in learning "${skillTitle}".
+I'm ${studentName}, a student at UNILORIN. I found your profile on the Services Platform and I'm interested in booking "${serviceTitle}".
 
 ${provider.availability.availableForLearning ? 
-  `I saw that you're available for teaching. Could you please share more details about:
-- Training schedule and duration
-- Learning approach and materials
-- Pricing for the training sessions` :
-  `Could you please let me know if you're available to teach this skill?`
+  `I saw that you're available for services. Could you please share more details about:
+- Service schedule and duration
+- Service approach and process
+- Pricing for the service` :
+  `Could you please let me know if you're available for this service?`
 }
 
-I'm looking forward to learning from your expertise!
+I'm looking forward to working with you!
 
 Best regards,
 ${studentName}
@@ -63,7 +63,7 @@ UNILORIN Student`
     } else {
       return `Hi ${providerName}! 👋
 
-I'm ${studentName}, a student at UNILORIN. I found your profile on the Artisan Platform and I'm interested in your ${provider.specialization.join(', ')} services.
+I'm ${studentName}, a student at UNILORIN. I found your profile on the Services Platform and I'm interested in your ${provider.specialization.join(', ')} services.
 
 Could you please share more details about:
 - Your availability
@@ -84,8 +84,8 @@ UNILORIN Student`
   static async trackWhatsAppContact(
     studentId: string,
     providerId: string,
-    serviceType: 'skill_learning' | 'direct_service',
-    skillId?: string
+    serviceType: 'service_booking' | 'direct_service',
+    serviceId?: string
   ): Promise<void> {
     try {
       // In a real implementation, this would call an API endpoint
@@ -93,14 +93,14 @@ UNILORIN Student`
         studentId,
         providerId,
         serviceType,
-        skillId,
+        serviceId,
         timestamp: new Date().toISOString()
       })
       
       // You can implement actual tracking here:
       // await fetch('/api/analytics/whatsapp-contact', {
       //   method: 'POST',
-      //   body: JSON.stringify({ studentId, providerId, serviceType, skillId })
+      //   body: JSON.stringify({ studentId, providerId, serviceType, serviceId })
       // })
     } catch (error) {
       console.error('Failed to track WhatsApp contact:', error)
@@ -140,10 +140,6 @@ UNILORIN Student`
     if (typeof window === 'undefined') return false
     
     // For mobile devices, check if WhatsApp app might be installed
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
-    
     // Always return true for web as web.whatsapp.com is available
     return true
   }
@@ -161,8 +157,8 @@ export const useWhatsApp = () => {
   const contactProvider = (
     provider: Provider,
     student: Student,
-    serviceType: 'skill_learning' | 'direct_service',
-    skillTitle?: string
+    serviceType: 'service_booking' | 'direct_service',
+    serviceTitle?: string
   ) => {
     if (!WhatsAppService.isWhatsAppAvailable()) {
       alert('WhatsApp is not available on this device')
@@ -179,7 +175,7 @@ export const useWhatsApp = () => {
       student.id,
       provider.id,
       serviceType,
-      skillTitle ? 'skill-based-contact' : undefined
+      serviceTitle ? 'service-based-contact' : undefined
     )
 
     // Generate and open WhatsApp URL
@@ -187,7 +183,7 @@ export const useWhatsApp = () => {
       provider,
       student,
       serviceType,
-      skillTitle
+      serviceTitle
     )
 
     // Open in new window/tab

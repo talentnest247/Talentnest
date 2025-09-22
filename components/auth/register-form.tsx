@@ -9,11 +9,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileUpload } from "@/components/ui/file-upload"
+import { FileUpload } from "@/components/upload/file-upload"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
-import type { User } from "@/lib/types"
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -27,7 +26,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "" as "student" | "artisan",
+    role: "" as "student" | "provider",
     // Student specific fields
     studentId: "",
     department: "",
@@ -95,19 +94,19 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     }
 
     if (
-      formData.role === "artisan" &&
+      formData.role === "provider" &&
       (!formData.businessName || !formData.specialization || !formData.experience || !formData.location || !formData.bio)
     ) {
       return "Please fill in all artisan information including bio"
     }
 
     // Additional validation for custom specialization
-    if (formData.role === "artisan" && formData.specialization === "Other" && !formData.customSpecialization) {
+    if (formData.role === "provider" && formData.specialization === "Other" && !formData.customSpecialization) {
       return "Please specify your specialization"
     }
 
     // Certificate validation for artisans
-    if (formData.role === "artisan" && formData.certificates.length === 0) {
+    if (formData.role === "provider" && formData.certificates.length === 0) {
       return "Please upload at least one certificate or proof of expertise"
     }
 
@@ -132,19 +131,19 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      role: formData.role as "student" | "artisan",
+      role: formData.role as "student" | "provider",
       phone: formData.phone,
       // Student specific data
       studentId: formData.role === "student" ? formData.studentId : undefined,
       department: formData.role === "student" ? (formData.department === "Other" ? formData.customDepartment : formData.department) : undefined,
       level: formData.role === "student" ? formData.level : undefined,
-      // Artisan specific data
-      businessName: formData.role === "artisan" ? formData.businessName : undefined,
-      specialization: formData.role === "artisan" ? (formData.specialization === "Other" ? formData.customSpecialization : formData.specialization) : undefined,
-      experience: formData.role === "artisan" ? parseInt(formData.experience) : undefined,
-      location: formData.role === "artisan" ? formData.location : undefined,
-      bio: formData.role === "artisan" ? formData.bio : undefined,
-      certificates: formData.role === "artisan" ? formData.certificates : undefined,
+      // Provider specific data
+      businessName: formData.role === "provider" ? formData.businessName : undefined,
+      specialization: formData.role === "provider" ? (formData.specialization === "Other" ? formData.customSpecialization : formData.specialization) : undefined,
+      experience: formData.role === "provider" ? parseInt(formData.experience) : undefined,
+      location: formData.role === "provider" ? formData.location : undefined,
+      bio: formData.role === "provider" ? formData.bio : undefined,
+      certificates: formData.role === "provider" ? formData.certificates : undefined,
     }
 
     const success = await register(userData)
@@ -171,7 +170,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold text-center">Join UNILORIN Community</CardTitle>
         <CardDescription className="text-center text-muted-foreground">
-          Create your account to connect with artisans and learn new skills
+          Create your account to connect with service providers and find professional services
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -251,7 +250,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   className="border-input bg-background/50 backdrop-blur-sm"
                 />
                 <Button
-                  {...({ type: "button", variant: "ghost", size: "sm" } as any)}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -272,7 +273,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   className="border-input bg-background/50 backdrop-blur-sm"
                 />
                 <Button
-                  {...({ type: "button", variant: "ghost", size: "sm" } as any)}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
@@ -295,19 +298,19 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               <SelectContent className="glass-card border-border min-w-[320px]">
                 <SelectItem value="student" className="h-16 p-4 cursor-pointer hover:bg-accent focus:bg-accent data-[state=checked]:bg-accent">
                   <div className="flex items-center space-x-3 w-full">
-                    <div className="h-3 w-3 bg-blue-500 rounded-full shadow-sm flex-shrink-0"></div>
+                    <div className="h-3 w-3 bg-white border-2 border-blue-500 rounded-full shadow-sm flex-shrink-0"></div>
                     <div className="flex-1 text-left">
-                      <div className="font-semibold text-foreground">Student</div>
-                      <div className="text-sm text-muted-foreground">I want to learn new skills</div>
+                      <div className="font-semibold text-blue-700">Student</div>
+                      <div className="text-sm text-blue-600">I want to find professional service providers</div>
                     </div>
                   </div>
                 </SelectItem>
                 <SelectItem value="artisan" className="h-16 p-4 cursor-pointer hover:bg-accent focus:bg-accent data-[state=checked]:bg-accent">
                   <div className="flex items-center space-x-3 w-full">
-                    <div className="h-3 w-3 bg-orange-500 rounded-full shadow-sm flex-shrink-0"></div>
+                    <div className="h-3 w-3 bg-blue-500 rounded-full shadow-sm flex-shrink-0"></div>
                     <div className="flex-1 text-left">
-                      <div className="font-semibold text-foreground">Artisan</div>
-                      <div className="text-sm text-muted-foreground">I want to teach my skills</div>
+                      <div className="font-semibold text-white">Artisan</div>
+                      <div className="text-sm text-white">I want to market my services</div>
                     </div>
                   </div>
                 </SelectItem>
@@ -317,37 +320,37 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {/* Student-specific fields */}
           {formData.role === "student" && (
-            <div className="space-y-4 p-6 border rounded-lg glass-card">
+            <div className="space-y-4 p-6 border rounded-lg bg-white">
               <div className="flex items-center space-x-2">
                 <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                <h3 className="font-semibold text-primary">Student Information</h3>
+                <h3 className="font-semibold text-blue-700">Student Information</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="studentId">Student ID *</Label>
+                  <Label htmlFor="studentId" className="text-blue-700">Student ID *</Label>
                   <Input
                     id="studentId"
                     placeholder="e.g., 19/55HA001"
                     value={formData.studentId}
                     onChange={(e) => handleInputChange("studentId", e.target.value)}
-                    className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                    className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-blue-700"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department *</Label>
+                  <Label htmlFor="department" className="text-blue-700">Department *</Label>
                   <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
-                    <SelectTrigger className="h-12 border-input bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary/20 transition-all text-white [&>span]:text-white">
-                      <SelectValue placeholder="Select your department" className="text-white" />
+                    <SelectTrigger className="h-12 border-blue-200 bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-blue-700">
+                      <SelectValue placeholder="Select your department" />
                     </SelectTrigger>
-                    <SelectContent className="glass-card border-border max-h-60 overflow-auto">
-                      <SelectItem value="Computer Science" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Computer Science</SelectItem>
-                      <SelectItem value="Electrical Engineering" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Electrical Engineering</SelectItem>
-                      <SelectItem value="Mechanical Engineering" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Mechanical Engineering</SelectItem>
-                      <SelectItem value="Civil Engineering" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Civil Engineering</SelectItem>
-                      <SelectItem value="Chemical Engineering" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Chemical Engineering</SelectItem>
-                      <SelectItem value="Business Administration" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Business Administration</SelectItem>
-                      <SelectItem value="Economics" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Economics</SelectItem>
-                      <SelectItem value="Accounting" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Accounting</SelectItem>
+                    <SelectContent className="bg-white border-blue-200 max-h-60 overflow-auto">
+                      <SelectItem value="Computer Science" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Computer Science</SelectItem>
+                      <SelectItem value="Electrical Engineering" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Electrical Engineering</SelectItem>
+                      <SelectItem value="Mechanical Engineering" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Mechanical Engineering</SelectItem>
+                      <SelectItem value="Civil Engineering" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Civil Engineering</SelectItem>
+                      <SelectItem value="Chemical Engineering" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Chemical Engineering</SelectItem>
+                      <SelectItem value="Business Administration" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Business Administration</SelectItem>
+                      <SelectItem value="Economics" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Economics</SelectItem>
+                      <SelectItem value="Accounting" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Accounting</SelectItem>
                       <SelectItem value="Mass Communication" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Mass Communication</SelectItem>
                       <SelectItem value="English Language" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">English Language</SelectItem>
                       <SelectItem value="Mathematics" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Mathematics</SelectItem>
@@ -467,37 +470,37 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           )}
 
           {/* Artisan-specific fields */}
-          {formData.role === "artisan" && (
-            <div className="space-y-4 p-6 border rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-orange-200 dark:border-orange-800">
+          {formData.role === "provider" && (
+            <div className="space-y-4 p-6 border rounded-lg bg-blue-600 border-blue-500">
               <div className="flex items-center space-x-2">
-                <div className="h-2 w-2 bg-orange-600 rounded-full"></div>
-                <h3 className="font-semibold text-orange-900 dark:text-orange-100">Artisan Information</h3>
+                <div className="h-2 w-2 bg-white rounded-full"></div>
+                <h3 className="font-semibold text-white">Artisan Information</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="businessName" className="text-blue-200">Business/Workshop Name *</Label>
+                  <Label htmlFor="businessName" className="text-white">Business/Workshop Name *</Label>
                   <Input
                     id="businessName"
                     placeholder="e.g., Fatima's Fashion House"
                     value={formData.businessName}
                     onChange={(e) => handleInputChange("businessName", e.target.value)}
-                    className="border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                    className="border-blue-300 focus:border-white focus:ring-white bg-white text-blue-700"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="specialization">Specialization *</Label>
+                  <Label htmlFor="specialization" className="text-white">Specialization *</Label>
                   <Select value={formData.specialization} onValueChange={(value) => handleInputChange("specialization", value)}>
-                    <SelectTrigger className="h-12 border-input bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary/20 transition-all text-white [&>span]:text-white">
-                      <SelectValue placeholder="Select your specialization" className="text-white" />
+                    <SelectTrigger className="h-12 border-blue-300 bg-white focus:ring-2 focus:ring-white transition-all text-blue-700">
+                      <SelectValue placeholder="Select your specialization" />
                     </SelectTrigger>
-                    <SelectContent className="glass-card border-border max-h-80 overflow-auto min-w-[350px]">
-                      <div className="px-3 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-accent/50 sticky top-0">
+                    <SelectContent className="bg-white border-blue-200 max-h-80 overflow-auto min-w-[350px]">
+                      <div className="px-3 py-2 text-sm font-semibold text-blue-700 uppercase tracking-wide bg-blue-50 sticky top-0">
                         Fashion & Textiles
                       </div>
-                      <SelectItem value="Fashion Design" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Fashion Design</SelectItem>
-                      <SelectItem value="Tailoring" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Tailoring & Alterations</SelectItem>
-                      <SelectItem value="Embroidery" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Embroidery & Decoration</SelectItem>
-                      <SelectItem value="Textile Design" className="h-10 p-3 cursor-pointer hover:bg-accent focus:bg-accent text-foreground">Textile Design</SelectItem>
+                      <SelectItem value="Fashion Design" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Fashion Design</SelectItem>
+                      <SelectItem value="Tailoring" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Tailoring & Alterations</SelectItem>
+                      <SelectItem value="Embroidery" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Embroidery & Decoration</SelectItem>
+                      <SelectItem value="Textile Design" className="h-10 p-3 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-blue-700">Textile Design</SelectItem>
                       
                       <div className="px-3 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-accent/50 border-t border-border mt-1 sticky top-8">
                         Crafts & Arts
@@ -571,7 +574,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                           <div className="h-3 w-3 bg-blue-500 rounded-full shadow-sm flex-shrink-0"></div>
                           <div className="flex-1 text-left">
                             <div className="font-semibold text-foreground">2-3 Years</div>
-                            <div className="text-sm text-muted-foreground">Developing Skills</div>
+                            <div className="text-sm text-muted-foreground">Developing Services</div>
                           </div>
                         </div>
                       </SelectItem>
@@ -642,35 +645,66 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                 
                 {/* Bio Field for Artisans */}
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Professional Bio *</Label>
+                  <Label htmlFor="bio" className="text-white">Professional Bio *</Label>
                   <Textarea
                     id="bio"
                     placeholder="Tell us about your background, expertise, and what makes you unique as an artisan..."
                     value={formData.bio}
                     onChange={(e) => handleInputChange("bio", e.target.value)}
-                    className="min-h-[120px] border-input bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                    className="min-h-[120px] border-blue-300 bg-white focus:ring-2 focus:ring-white transition-all resize-none text-blue-700"
                     maxLength={500}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white/80">
                     {formData.bio.length}/500 characters
                   </p>
                 </div>
 
-                {/* Certificate Upload for Artisans */}
+                {/* Portfolio Upload */}
                 <div className="space-y-2">
                   <FileUpload
+                    accept="image/*"
+                    multiple={true}
+                    maxFiles={6}
+                    maxSize={5}
                     onUpload={handleCertificateUpload}
                     onRemove={handleCertificateRemove}
                     uploadedFiles={formData.certificates}
-                    maxFiles={3}
-                    label="Certificates & Proof of Expertise"
-                    description="Upload certificates, portfolios, or other documents that showcase your skills and expertise. This helps verify your credentials."
-                    required={true}
-                    className="w-full"
+                    label="Portfolio Images *"
+                    description="Upload high-quality images of your work to showcase your services"
+                    type="portfolio"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Upload up to 3 files (PDF, JPG, PNG, WEBP). These will be reviewed by our admin team for verification.
-                  </p>
+                </div>
+
+                {/* Certificates Upload */}
+                <div className="space-y-2">
+                  <FileUpload
+                    accept="image/*,application/pdf"
+                    multiple={true}
+                    maxFiles={3}
+                    maxSize={5}
+                    onUpload={handleCertificateUpload}
+                    onRemove={handleCertificateRemove}
+                    uploadedFiles={formData.certificates}
+                    label="Certificates & Credentials"
+                    description="Upload certificates, diplomas, or other credentials that verify your expertise"
+                    type="certificate"
+                  />
+                </div>
+
+                {/* Verification Documents */}
+                <div className="space-y-2">
+                  <FileUpload
+                    accept="image/*,application/pdf"
+                    multiple={true}
+                    maxFiles={2}
+                    maxSize={5}
+                    onUpload={handleCertificateUpload}
+                    onRemove={handleCertificateRemove}
+                    uploadedFiles={formData.certificates}
+                    label="Verification Documents"
+                    description="Upload ID card, business registration, or other verification documents"
+                    type="document"
+                  />
                 </div>
               </div>
             </div>
@@ -704,7 +738,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -716,8 +750,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account?</span>{" "}
-            <Link href="/login" className="text-primary hover:underline transition-colors">
+            <span className="text-blue-700">Already have an account?</span>{" "}
+            <Link href="/login" className="text-blue-600 hover:underline transition-colors">
               Sign in here
             </Link>
           </div>

@@ -1,7 +1,8 @@
 // Custom class variance authority replacement
-export type VariantProps<T extends (...args: any) => any> = {
-  [K in keyof NonNullable<Parameters<T>[0]>]?: NonNullable<Parameters<T>[0]>[K]
-}
+type CVAFunction = (props?: Record<string, string | boolean | undefined>) => string
+
+export type VariantProps<T extends CVAFunction> = 
+  T extends (props: infer P) => string ? P : never
 
 export function cva(
   base: string,
@@ -10,20 +11,16 @@ export function cva(
     defaultVariants?: Record<string, string>
   },
 ) {
-  return (props: Record<string, any> = {}) => {
+  return (props: Record<string, string | boolean | undefined> = {}) => {
     let classes = base
 
     if (config?.variants) {
       Object.entries(config.variants).forEach(([key, variants]) => {
         const value = props[key] ?? config.defaultVariants?.[key]
-        if (value && variants[value]) {
+        if (value && typeof value === 'string' && variants[value]) {
           classes += ` ${variants[value]}`
         }
       })
-    }
-
-    if (props.className) {
-      classes += ` ${props.className}`
     }
 
     return classes

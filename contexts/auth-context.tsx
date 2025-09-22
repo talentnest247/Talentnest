@@ -14,7 +14,7 @@ interface AuthContextType {
     firstName: string
     lastName: string
     phone: string
-    role: "student" | "artisan"
+    role: "student" | "provider" | "admin"
     studentId?: string
     department?: string
     level?: string
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     firstName: string
     lastName: string
     phone: string
-    role: "student" | "artisan"
+    role: "student" | "provider" | "admin"
     studentId?: string
     department?: string
     level?: string

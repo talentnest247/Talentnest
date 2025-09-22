@@ -25,16 +25,16 @@ export function HeroSection() {
   }, [])
 
   const stats = [
-    { icon: Users, value: "2,500+", label: "Active Artisans" },
-    { icon: BookOpen, value: "150+", label: "Skills Available" },
+    { icon: Users, value: "2,500+", label: "Service Providers" },
+    { icon: BookOpen, value: "150+", label: "Services Available" },
     { icon: Star, value: "4.9", label: "Average Rating" },
     { icon: Award, value: "95%", label: "Success Rate" }
   ]
 
   const features = [
-    "Connect with skilled artisans",
+    "Connect with experienced service providers",
     "Learn from certified professionals", 
-    "Flexible learning schedules",
+    "Flexible service schedules",
     "Community-driven platform"
   ]
 
@@ -67,7 +67,7 @@ export function HeroSection() {
             <div className={`space-y-4 transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                 <span className="bg-gradient-to-r from-blue-700 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  Master Skills,
+                  Find Services,
                 </span>
                 <br />
                 <span className="text-slate-900 dark:text-white">
@@ -75,7 +75,7 @@ export function HeroSection() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
-                Connect with expert student artisans, learn traditional and modern skills, and become part of UNILORIN&apos;s most vibrant creative community.
+                Connect with talented service providers across every field, access professional services, and become part of UNILORIN&apos;s most inclusive marketplace community.
               </p>
             </div>
 
@@ -135,7 +135,7 @@ export function HeroSection() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src="/young-man-technician.png"
-                  alt="UNILORIN Student Artisan"
+                  alt="UNILORIN Service Provider"
                   width={600}
                   height={500}
                   className="w-full h-auto object-cover"
@@ -163,7 +163,7 @@ export function HeroSection() {
                     <div className="flex items-center space-x-3">
                       <Award className="h-5 w-5 text-emerald-500" />
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">150+ Skills</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">150+ Services</p>
                         <p className="text-xs text-slate-600 dark:text-slate-400">Learn & Teach</p>
                       </div>
                     </div>

@@ -10,14 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Star, MapPin, Clock, Users, Award, Calendar } from "lucide-react"
 import { mockDatabase } from "@/lib/mock-data"
-import type { Artisan, Skill, Review } from "@/lib/types"
+import type { Provider, PortfolioItem } from "@/lib/types"
 import Link from "next/link"
 
 export default function ArtisanProfilePage() {
   const params = useParams()
-  const [artisan, setArtisan] = useState<Artisan | null>(null)
-  const [skills, setSkills] = useState<Skill[]>([])
-  const [reviews, setReviews] = useState<Review[]>([])
+  const [artisan, setArtisan] = useState<Provider | null>(null)
+  const [services, setServices] = useState<PortfolioItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -25,16 +24,14 @@ export default function ArtisanProfilePage() {
       if (!params.id) return
 
       try {
-        const artisanData = await mockDatabase.getArtisanById(params.id as string)
+        const artisanData = await mockDatabase.getProviderById(params.id as string)
         if (artisanData) {
           setArtisan(artisanData)
-          // In a real app, these would be separate API calls
-          const skillsData = await mockDatabase.getSkills()
-          const artisanSkills = skillsData.filter((skill) => skill.artisanId === artisanData.id)
-          setSkills(artisanSkills)
+          // Use the existing services from the artisan's profile
+          setServices(artisanData.portfolio || [])
         }
       } catch (error) {
-        console.error("Failed to load artisan data:", error)
+        console.error("Failed to load service provider data:", error)
       } finally {
         setIsLoading(false)
       }
@@ -63,8 +60,8 @@ export default function ArtisanProfilePage() {
         <Header />
         <div className="flex-1 container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Artisan Not Found</h1>
-            <p className="text-muted-foreground mb-4">The artisan you're looking for doesn't exist.</p>
+            <h1 className="text-2xl font-bold mb-4">Service Provider Not Found</h1>
+            <p className="text-muted-foreground mb-4">The service provider you&apos;re looking for doesn&apos;t exist.</p>
             <Button asChild>
               <Link href="/marketplace">Back to Marketplace</Link>
             </Button>
@@ -118,7 +115,7 @@ export default function ArtisanProfilePage() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button>Contact Artisan</Button>
+                      <Button>Contact Provider</Button>
                       <Button variant="outline">Message</Button>
                     </div>
                   </div>
@@ -134,7 +131,7 @@ export default function ArtisanProfilePage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{skills.length} skills offered</span>
+                      <span>{services.length} services offered</span>
                     </div>
                   </div>
                 </div>
@@ -144,59 +141,55 @@ export default function ArtisanProfilePage() {
         </div>
 
         {/* Content Tabs */}
-        <Tabs defaultValue="skills" className="space-y-6">
+        <Tabs defaultValue="services" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="skills">Skills</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="skills">
+          <TabsContent value="services">
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-semibold mb-4">Available Skills</h2>
+                <h2 className="text-2xl font-semibold mb-4">Available Services</h2>
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {artisan.specialization.map((skill, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      {skill}
+                  {artisan.specialization.map((service, index) => (
+                    <Badge key={index} variant="secondary" className="px-3 py-1">
+                      {service}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              {skills.length === 0 ? (
+              {services.length === 0 ? (
                 <Card>
                   <CardContent className="pt-6 text-center">
-                    <p className="text-muted-foreground">No skills available yet.</p>
+                    <p className="text-muted-foreground">No services listed yet.</p>
+                    <p className="text-sm text-muted-foreground mt-2">Check back later for available services.</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {skills.map((skill) => (
-                    <Card key={skill.id}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{skill.title}</CardTitle>
-                            <Badge variant="outline" className="mt-2">
-                              {skill.difficulty}
-                            </Badge>
+                  {services.map((service) => (
+                    <Card key={service.id}>
+                      <CardContent className="pt-6">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-semibold text-lg">{service.title}</h3>
+                            <Badge variant="outline">{service.category}</Badge>
                           </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-unilorin-purple">₦{skill.price.toLocaleString()}</p>
-                            <p className="text-sm text-muted-foreground">{skill.duration}</p>
+                          <p className="text-muted-foreground text-sm">{service.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm">
+                              <span className="font-medium">Category:</span>
+                              <span className="ml-1 text-lg font-bold text-green-600">
+                                {service.category}
+                              </span>
+                            </div>
+                            <Button size="sm">
+                              Contact Provider
+                            </Button>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground mb-4">{skill.description}</p>
-                        <div className="flex items-center justify-between text-sm">
-                          <span>
-                            {skill.currentStudents}/{skill.maxStudents} enrolled
-                          </span>
-                          <Button size="sm" asChild>
-                            <Link href={`/skills/${skill.id}`}>Learn More</Link>
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>

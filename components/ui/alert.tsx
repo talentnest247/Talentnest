@@ -1,5 +1,5 @@
 import type * as React from "react"
-import { cva, type VariantProps } from "@/lib/cva"
+import { cva } from "@/lib/cva"
 import { cn } from "@/lib/utils"
 
 const alertVariants = cva(
@@ -18,7 +18,11 @@ const alertVariants = cva(
   },
 )
 
-function Alert({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "destructive"
+}
+
+function Alert({ className, variant, ...props }: AlertProps) {
   return <div data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
 }
 

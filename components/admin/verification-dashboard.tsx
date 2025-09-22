@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -75,7 +76,7 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
                 { url: "/mock-certificate-1.pdf", type: "certificate" },
                 { url: "/mock-student-id.jpg", type: "student_id" }
               ],
-              specializations: ["Fashion Design", "Tailoring", "Traditional Wear"],
+              specializations: ["Fashion & Style", "Creative Services", "Traditional Wear"],
               experienceYears: 3,
               adminNotes: undefined,
               // Verification tracking fields
@@ -108,7 +109,7 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
                 { url: "/mock-portfolio-2.jpg", type: "portfolio" },
                 { url: "/mock-certificate-2.pdf", type: "certificate" }
               ],
-              specializations: ["Web Development", "Digital Marketing", "UI/UX Design"],
+              specializations: ["Tech & Digital", "Creative Services", "Business Support"],
               experienceYears: 2,
               adminNotes: "Excellent portfolio, verified student status. Approved for web development services.",
               // Verification tracking fields (all verified since it's approved)
@@ -133,7 +134,7 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
           pendingVerifications: 15,
           approvedProviders: 67,
           rejectedApplications: 7,
-          totalSkills: 156,
+          totalServices: 156,
           totalEnrollments: 334,
           monthlyGrowthRate: 12.5,
           averageRating: 4.3
@@ -345,7 +346,7 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
                 />
               </div>
             </div>
-            <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+            <Select value={filter} onValueChange={(value: "pending" | "approved" | "rejected" | "all") => setFilter(value)}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by status" />
@@ -611,7 +612,7 @@ function VerificationRequestDetail({ request, onApprove, onReject }: Verificatio
               </div>
               <p className="text-sm text-muted-foreground mt-1">
                 {request.verificationComplete 
-                  ? 'All verification requirements have been met. Artisan can be approved.'
+                  ? 'All verification requirements have been met. Provider can be approved.'
                   : 'Some verification requirements are missing or incomplete.'
                 }
               </p>
@@ -662,9 +663,11 @@ function VerificationRequestDetail({ request, onApprove, onReject }: Verificatio
                     {certUrl.includes('.pdf') ? (
                       <FileText className="h-8 w-8 text-muted-foreground" />
                     ) : (
-                      <img 
+                      <Image 
                         src={certUrl} 
                         alt={`Certificate ${index + 1}`}
+                        width={200}
+                        height={200}
                         className="max-w-full max-h-full object-contain rounded-md"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

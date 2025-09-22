@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         responseTime: artisan.availability_response_time
       },
       pricing: {
-        baseRate: artisan.pricing_base_rate,
+        serviceRate: artisan.pricing_base_rate,
         learningRate: artisan.pricing_learning_rate,
         currency: artisan.pricing_currency
       },

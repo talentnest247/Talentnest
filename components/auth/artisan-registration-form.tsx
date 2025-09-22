@@ -134,7 +134,7 @@ export default function ArtisanRegistrationForm() {
       password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      role: "artisan" as const,
+      role: "provider" as const,
       phone: formData.phone,
       businessName: formData.businessName,
       specialization: formData.specialization === "Other" ? formData.customSpecialization : formData.specialization,
@@ -160,7 +160,7 @@ export default function ArtisanRegistrationForm() {
         </div>
         <CardTitle className="text-2xl font-bold">Artisan Registration</CardTitle>
         <CardDescription className="text-center text-muted-foreground">
-          Join as a skilled artisan to share your expertise with the UNILORIN community
+          Join as a professional service provider to share your expertise with the UNILORIN community
         </CardDescription>
         
         {/* Verification Notice */}

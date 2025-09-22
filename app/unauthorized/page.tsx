@@ -20,7 +20,7 @@ export default function UnauthorizedPage() {
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-gray-900">Access Denied</CardTitle>
             <CardDescription className="text-gray-600">
-              You don't have permission to access this page.
+              You don&apos;t have permission to access this page.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

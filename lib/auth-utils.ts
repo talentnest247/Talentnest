@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from "./supabase"
+import { supabaseAdmin } from "./supabase"
 const JWT_SECRET = process.env.JWT_SECRET || "unilorin-artisan-platform-jwt-secret-key-minimum-32-chars-2024"
 
 export interface AuthUser {
@@ -224,8 +224,8 @@ export const authUtils = {
 
       console.log("Searching for user with email:", email)
       const { data, error } = await supabaseAdmin
-        .from('users')
-        .select('id, email, full_name, first_name, last_name, role, password, student_id, department, level, phone')
+        .from('profiles')
+        .select('id, email, full_name, first_name, last_name, role, phone')
         .eq('email', email)
         .single()
       
@@ -240,6 +240,18 @@ export const authUtils = {
       }
 
       console.log("User found:", { id: data.id, email: data.email, role: data.role })
+      
+      // Get additional data based on role
+      let studentData = null
+      if (data.role === 'student') {
+        const { data: student } = await supabaseAdmin
+          .from('students')
+          .select('student_id, department, level')
+          .eq('user_id', data.id)
+          .single()
+        studentData = student
+      }
+
       return {
         id: data.id,
         email: data.email,
@@ -248,11 +260,11 @@ export const authUtils = {
         lastName: data.last_name,
         userType: data.role,
         role: data.role,
-        studentId: data.student_id,
-        department: data.department,
-        level: data.level,
+        studentId: studentData?.student_id,
+        department: studentData?.department,
+        level: studentData?.level,
         phone: data.phone,
-        password: data.password,
+        password: '', // Password not stored in profiles table
       }
     } catch (error) {
       console.error("Error fetching user by email:", error)
@@ -260,7 +272,7 @@ export const authUtils = {
     }
   },
 
-    async createUser(user: {
+  async createUser(user: {
     email: string,
     password: string,
     firstName: string,
@@ -278,60 +290,62 @@ export const authUtils = {
         return null
       }
 
-      console.log("Inserting user into Supabase:", {
+      // Use Supabase Auth to create user
+      console.log("Creating user with Supabase Auth:", user.email)
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: user.email,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        full_name: user.fullName,
-        phone: user.phone,
-        role: user.role,
-        student_id: user.studentId,
-        department: user.department,
-        level: user.level,
+        password: user.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: user.fullName,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          phone: user.phone,
+          role: user.role
+        }
       })
 
-      const { data, error } = await supabaseAdmin
-        .from('users')
-        .insert([
-          {
-            email: user.email,
-            password: user.password,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            full_name: user.fullName,
-            phone: user.phone,
-            role: user.role,
-            student_id: user.studentId || null,
-            department: user.department || null,
-            level: user.level || null,
-          }
-        ])
-        .select('id, email, full_name, first_name, last_name, role, student_id, department, level, phone')
-        .single()
-
-      if (error) {
-        console.error("Supabase insert error:", error)
+      if (authError) {
+        console.error("Supabase auth error:", authError)
         return null
       }
 
-      if (!data) {
-        console.error("No data returned from Supabase insert")
+      if (!authData.user) {
+        console.error("No user data returned from auth")
         return null
       }
 
-      console.log("User created successfully in Supabase:", data.id)
+      // Profile will be created automatically by trigger
+      console.log("User created successfully:", authData.user.id)
+      
+      // Create student record if role is student
+      if (user.role === 'student' && user.studentId) {
+        const { error: studentError } = await supabaseAdmin
+          .from('students')
+          .insert([{
+            user_id: authData.user.id,
+            student_id: user.studentId,
+            department: user.department,
+            level: Number(user.level) || null
+          }])
+
+        if (studentError) {
+          console.error("Error creating student record:", studentError)
+        }
+      }
+
       return {
-        id: data.id,
-        email: data.email,
-        fullName: data.full_name,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        userType: data.role,
-        role: data.role,
-        studentId: data.student_id,
-        department: data.department,
-        level: data.level,
-        phone: data.phone,
+        id: authData.user.id,
+        email: user.email,
+        fullName: user.fullName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userType: user.role,
+        role: user.role,
+        studentId: user.studentId,
+        department: user.department,
+        level: user.level ? Number(user.level) : undefined,
+        phone: user.phone,
       }
     } catch (error) {
       console.error("Error creating user:", error)

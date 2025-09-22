@@ -227,6 +227,17 @@ CREATE POLICY "Public can view verified artisan profiles" ON public.profiles
         id IN (SELECT user_id FROM public.artisans WHERE verification_status = 'verified')
     );
 
+-- Admin users can view and manage all profiles
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+CREATE POLICY "Admins can update all profiles" ON public.profiles
+    FOR UPDATE USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
 -- Students policies
 CREATE POLICY "Students can view their own data" ON public.students
     FOR SELECT USING (user_id = auth.uid());
@@ -237,13 +248,36 @@ CREATE POLICY "Students can update their own data" ON public.students
 CREATE POLICY "Students can insert their own data" ON public.students
     FOR INSERT WITH CHECK (user_id = auth.uid());
 
+-- Admin users can view and manage all students
+CREATE POLICY "Admins can view all students" ON public.students
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+CREATE POLICY "Admins can update all students" ON public.students
+    FOR UPDATE USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
 -- Categories policies (public read)
 CREATE POLICY "Categories are viewable by everyone" ON public.categories
     FOR SELECT USING (TRUE);
 
+-- Admin users can manage categories
+CREATE POLICY "Admins can manage categories" ON public.categories
+    FOR ALL USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
 -- Skills policies (public read)
 CREATE POLICY "Skills are viewable by everyone" ON public.skills
     FOR SELECT USING (TRUE);
+
+-- Admin users can manage skills
+CREATE POLICY "Admins can manage skills" ON public.skills
+    FOR ALL USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
 
 -- Artisans policies
 CREATE POLICY "Artisans can view their own data" ON public.artisans
@@ -257,6 +291,17 @@ CREATE POLICY "Artisans can insert their own data" ON public.artisans
 
 CREATE POLICY "Verified artisans are viewable by everyone" ON public.artisans
     FOR SELECT USING (verification_status = 'verified');
+
+-- Admin users can view and manage all artisans (for verification)
+CREATE POLICY "Admins can view all artisans" ON public.artisans
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+CREATE POLICY "Admins can update all artisans" ON public.artisans
+    FOR UPDATE USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
 
 -- Artisan skills policies
 CREATE POLICY "Artisan skills are viewable by everyone" ON public.artisan_skills
@@ -327,9 +372,34 @@ CREATE POLICY "Students can update their own reviews" ON public.reviews
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, full_name)
-    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
-    RETURN NEW;
+    -- Determine role based on email
+    DECLARE
+        user_role text := 'student';
+    BEGIN
+        -- Set admin role for specific email
+        IF NEW.email = 'talentnest247@gmail.com' THEN
+            user_role := 'admin';
+        END IF;
+        
+        -- Insert profile with appropriate role
+        INSERT INTO public.profiles (id, email, full_name, role, status, email_verified)
+        VALUES (
+            NEW.id, 
+            NEW.email, 
+            COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+            user_role,
+            'active',
+            true
+        );
+        
+        -- Create student record for non-admin users
+        IF user_role = 'student' THEN
+            INSERT INTO public.students (user_id, student_id)
+            VALUES (NEW.id, 'STU' || substring(NEW.id::text, 1, 8));
+        END IF;
+        
+        RETURN NEW;
+    END;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -418,41 +488,136 @@ INSERT INTO public.skills (name, slug, description, category_id, price_range_min
 -- STORAGE BUCKETS
 -- =====================================================
 
--- Create storage buckets for file uploads
-INSERT INTO storage.buckets (id, name, public) VALUES 
-('avatars', 'avatars', true),
-('portfolios', 'portfolios', true),
-('certificates', 'certificates', true),
-('documents', 'documents', false);
+-- Create storage buckets for file uploads (only if they don't exist)
+INSERT INTO storage.buckets (id, name, public) 
+SELECT 'avatars', 'avatars', true
+WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'avatars');
 
--- Storage policies
-CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY "Users can upload their own avatar" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
-CREATE POLICY "Users can update their own avatar" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Users can delete their own avatar" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+INSERT INTO storage.buckets (id, name, public) 
+SELECT 'portfolios', 'portfolios', true
+WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'portfolios');
 
-CREATE POLICY "Portfolio images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'portfolios');
-CREATE POLICY "Artisans can upload portfolio images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'portfolios' AND auth.role() = 'authenticated');
-CREATE POLICY "Artisans can update their portfolio images" ON storage.objects FOR UPDATE USING (bucket_id = 'portfolios' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Artisans can delete their portfolio images" ON storage.objects FOR DELETE USING (bucket_id = 'portfolios' AND auth.uid()::text = (storage.foldername(name))[1]);
+INSERT INTO storage.buckets (id, name, public) 
+SELECT 'certificates', 'certificates', true
+WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'certificates');
 
-CREATE POLICY "Certificate images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'certificates');
-CREATE POLICY "Artisans can upload certificates" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'certificates' AND auth.role() = 'authenticated');
-CREATE POLICY "Artisans can update their certificates" ON storage.objects FOR UPDATE USING (bucket_id = 'certificates' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Artisans can delete their certificates" ON storage.objects FOR DELETE USING (bucket_id = 'certificates' AND auth.uid()::text = (storage.foldername(name))[1]);
+INSERT INTO storage.buckets (id, name, public) 
+SELECT 'documents', 'documents', false
+WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'documents');
 
-CREATE POLICY "Documents are private" ON storage.objects FOR SELECT USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Users can upload their own documents" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'documents' AND auth.role() = 'authenticated');
-CREATE POLICY "Users can update their own documents" ON storage.objects FOR UPDATE USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Users can delete their own documents" ON storage.objects FOR DELETE USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- Storage policies (create only if they don't exist)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Avatar images are publicly accessible') THEN
+        CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can upload their own avatar') THEN
+        CREATE POLICY "Users can upload their own avatar" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can update their own avatar') THEN
+        CREATE POLICY "Users can update their own avatar" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can delete their own avatar') THEN
+        CREATE POLICY "Users can delete their own avatar" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Portfolio images are publicly accessible') THEN
+        CREATE POLICY "Portfolio images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'portfolios');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can upload portfolio images') THEN
+        CREATE POLICY "Artisans can upload portfolio images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'portfolios' AND auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can update their portfolio images') THEN
+        CREATE POLICY "Artisans can update their portfolio images" ON storage.objects FOR UPDATE USING (bucket_id = 'portfolios' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can delete their portfolio images') THEN
+        CREATE POLICY "Artisans can delete their portfolio images" ON storage.objects FOR DELETE USING (bucket_id = 'portfolios' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Certificate images are publicly accessible') THEN
+        CREATE POLICY "Certificate images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'certificates');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can upload certificates') THEN
+        CREATE POLICY "Artisans can upload certificates" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'certificates' AND auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can update their certificates') THEN
+        CREATE POLICY "Artisans can update their certificates" ON storage.objects FOR UPDATE USING (bucket_id = 'certificates' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Artisans can delete their certificates') THEN
+        CREATE POLICY "Artisans can delete their certificates" ON storage.objects FOR DELETE USING (bucket_id = 'certificates' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Documents are private') THEN
+        CREATE POLICY "Documents are private" ON storage.objects FOR SELECT USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can upload their own documents') THEN
+        CREATE POLICY "Users can upload their own documents" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'documents' AND auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can update their own documents') THEN
+        CREATE POLICY "Users can update their own documents" ON storage.objects FOR UPDATE USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Users can delete their own documents') THEN
+        CREATE POLICY "Users can delete their own documents" ON storage.objects FOR DELETE USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+    END IF;
+END $$;
 
 -- =====================================================
 -- COMPLETION MESSAGE
 -- =====================================================
 -- Database setup complete!
+-- 
+-- ADMIN USER SETUP:
+-- 1. Register with email: talentnest247@gmail.com and password: talentnest247
+-- 2. Use ANY role during registration (student/artisan) - the system will automatically assign admin role
+-- 3. Admin will have full access to verification, user management, and all data
+-- 4. Admin can access /admin routes and verification pages
+--
 -- Next steps:
--- 1. Go to Authentication > Settings and enable email confirmations if desired
--- 2. Configure your authentication providers (Google, etc.)
--- 3. Set up your storage buckets in the Storage section
--- 4. Test the database connection from your application
+-- 1. Deploy this SQL schema to your Supabase project
+-- 2. Go to Authentication > Settings and enable email confirmations if desired
+-- 3. Configure your authentication providers (Google, etc.) if needed
+-- 4. Register the admin user through your application with the above credentials
+-- 5. Test admin functionality and verification access
+-- 6. Access admin panel at /admin after login
 -- =====================================================

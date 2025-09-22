@@ -40,7 +40,7 @@ interface ProviderWithUser {
   }[]
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get verification requests by fetching pending providers
     const { data: providers, error } = await supabase
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Artisan verified successfully! All verification requirements met.`,
+        message: `Service Provider verified successfully! All verification requirements met.`,
         data: data[0]
       })
 
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Application rejected. Detailed feedback provided to artisan.`,
+        message: `Application rejected. Detailed feedback provided to service provider.`,
         data: data[0]
       })
     }

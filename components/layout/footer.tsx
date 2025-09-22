@@ -18,8 +18,8 @@ export function Footer() {
   const footerLinks = {
     platform: [
       { name: "Marketplace", href: "/marketplace" },
-      { name: "Skills", href: "/skills" },
-      { name: "Artisans", href: "/artisans" },
+      { name: "Services", href: "/services" },
+      { name: "Service Providers", href: "/marketplace" },
       { name: "Dashboard", href: "/dashboard" },
     ],
     support: [
@@ -80,13 +80,13 @@ export function Footer() {
                   <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                     TalentNest
                   </h3>
-                  <p className="text-sm text-gray-400">UNILORIN Skills Platform</p>
+                  <p className="text-sm text-gray-400">UNILORIN Services Platform</p>
                 </div>
               </div>
               
               <p className="text-gray-300 leading-relaxed max-w-md">
-                Empowering the next generation of skilled artisans through quality education, 
-                expert mentorship, and a vibrant community of learners.
+                Empowering the next generation of service providers through quality business opportunities, 
+                expert connections, and a vibrant community of professionals.
               </p>
 
               {/* Contact Info */}
@@ -101,7 +101,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Mail className="h-4 w-4 text-purple-400" />
-                  <span className="text-sm">hello@unilorin-artisan.edu.ng</span>
+                  <span className="text-sm">hello@unilorin-talentnest.edu.ng</span>
                 </div>
               </div>
 

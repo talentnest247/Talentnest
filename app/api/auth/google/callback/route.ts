@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server"
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get('code')
-  const state = searchParams.get('state')
 
   // If no code, redirect to Google OAuth
   if (!code) {
@@ -60,11 +59,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user exists
-    let { data: user, error } = await supabaseAdmin
+    const { data: userData, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('email', googleUser.email)
       .single()
+
+    let user = userData
 
     if (!user && !error?.code?.includes('PGRST116')) {
       // Create new user

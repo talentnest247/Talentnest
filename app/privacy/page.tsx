@@ -50,7 +50,7 @@ export default function PrivacyPage() {
                 <h4>Usage Information</h4>
                 <ul>
                   <li>Pages visited and time spent on our platform</li>
-                  <li>Skills enrolled in and progress tracking</li>
+                  <li>Services booked and progress tracking</li>
                   <li>Communication preferences</li>
                   <li>Device and browser information</li>
                 </ul>

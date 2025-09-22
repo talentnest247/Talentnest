@@ -30,7 +30,7 @@ export function Header() {
   const navigation = [
     { name: "Home", href: "/" },
     { name: "Marketplace", href: "/marketplace" },
-    { name: "Skills", href: "/skills" },
+    { name: "Services", href: "/services" },
   ]
 
   const isActive = (href: string) => {
@@ -47,7 +47,7 @@ export function Header() {
               <Image src="/images/unilorin-logo.png" alt="UNILORIN Logo" width={40} height={40} className="rounded-full" />
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-slate-900">TalentNest</span>
-                <span className="text-xs text-slate-600 font-medium leading-tight">UNILORIN Skills Platform</span>
+                <span className="text-xs text-slate-600 font-medium leading-tight">UNILORIN Services Platform</span>
               </div>
             </Link>
 
@@ -57,17 +57,17 @@ export function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${pathname === item.href ? 'text-emerald-700 bg-emerald-50' : 'text-slate-700 hover:text-emerald-600 hover:bg-slate-50'}`}
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${pathname === item.href ? 'text-blue-700 bg-blue-50' : 'text-blue-700 hover:text-blue-800 hover:bg-blue-50'}`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
-              {/* Teach a Skill as a separate button */}
+              {/* Get Support button */}
               <Link
-                href="/skills/add"
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm font-medium transition-colors duration-200 shadow-sm border border-orange-400"
+                href="/contact"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors duration-200 shadow-sm border border-blue-500"
               >
-                Teach a Skill
+                Get Support
               </Link>
             </nav>
 
@@ -75,8 +75,8 @@ export function Header() {
             <div className="flex items-center gap-3">
               {!isAuthenticated ? (
                 <>
-                  <Button variant="ghost" onClick={() => router.push("/login")} className="text-slate-700 hover:text-emerald-600 hover:bg-slate-100">Sign In</Button>
-                  <Button onClick={() => router.push("/register")} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm border border-emerald-500">Get Started</Button>
+                  <Button variant="ghost" onClick={() => router.push("/login")} className="text-blue-700 hover:text-blue-800 hover:bg-blue-50">Sign In</Button>
+                  <Button onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-500">Get Started</Button>
                 </>
               ) : (
                 // Desktop-only avatar dropdown. Mobile still uses the sheet menu above.
@@ -105,20 +105,20 @@ export function Header() {
                       </div>
                       <div className="py-1">
                         <DropdownMenuItem asChild>
-                          <Link href="/profile" className="flex items-center px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors">
-                            <User className="h-4 w-4 mr-3 text-emerald-600" />
+                          <Link href="/profile" className="flex items-center px-3 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50 hover:text-blue-700 rounded-md transition-colors">
+                            <User className="h-4 w-4 mr-3 text-blue-600" />
                             View Profile
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/dashboard" className="flex items-center px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors">
-                            <Award className="h-4 w-4 mr-3 text-emerald-600" />
+                          <Link href="/dashboard" className="flex items-center px-3 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50 hover:text-blue-700 rounded-md transition-colors">
+                            <Award className="h-4 w-4 mr-3 text-blue-600" />
                             Dashboard
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/settings" className="flex items-center px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors">
-                            <Settings className="h-4 w-4 mr-3 text-emerald-600" />
+                          <Link href="/settings" className="flex items-center px-3 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50 hover:text-blue-700 rounded-md transition-colors">
+                            <Settings className="h-4 w-4 mr-3 text-blue-600" />
                             Account Settings
                           </Link>
                         </DropdownMenuItem>
@@ -137,7 +137,7 @@ export function Header() {
               <div className="md:hidden">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-700 hover:text-emerald-600 hover:bg-slate-100">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-700 hover:text-blue-800 hover:bg-blue-50">
                       <Menu className="h-5 w-5" />
                       <span className="sr-only">Toggle menu</span>
                     </Button>
@@ -148,8 +148,8 @@ export function Header() {
                         <div className="flex items-center gap-3">
                           <Image src="/images/unilorin-logo.png" alt="UNILORIN" width={32} height={32} className="rounded-full" />
                           <div>
-                            <h2 className="text-lg font-bold text-emerald-700">TalentNest</h2>
-                            <p className="text-xs text-slate-600">UNILORIN Skills Platform</p>
+                            <h2 className="text-lg font-bold text-blue-700">TalentNest</h2>
+                            <p className="text-xs text-slate-600">UNILORIN Services Platform</p>
                           </div>
                         </div>
                       </SheetTitle>
@@ -161,7 +161,7 @@ export function Header() {
                             key={item.name}
                             href={item.href}
                             onClick={() => setIsOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${isActive(item.href) ? 'text-emerald-700 bg-slate-100 border border-emerald-200' : 'text-slate-700 hover:text-emerald-600 hover:bg-slate-50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${isActive(item.href) ? 'text-blue-700 bg-blue-50 border border-blue-200' : 'text-blue-700 hover:text-blue-800 hover:bg-blue-50'}`}
                           >
                             <span>{item.name}</span>
                           </Link>
@@ -172,7 +172,7 @@ export function Header() {
                           <div className="flex items-center gap-3 px-4">
                             <Avatar className="h-10 w-10">
                               <AvatarImage src="/placeholder-user.jpg" alt={user ? user.fullName : "User"} />
-                              <AvatarFallback className="bg-slate-400 text-white">{user ? user.fullName?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : "U"}</AvatarFallback>
+                              <AvatarFallback className="bg-blue-400 text-white">{user ? user.fullName?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : "U"}</AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-medium text-gray-900">{user ? user.fullName : "User"}</p>
@@ -180,16 +180,16 @@ export function Header() {
                             </div>
                           </div>
                           <nav className="space-y-1">
-                            <Link href="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-slate-900 font-semibold hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors duration-200"><User className="h-5 w-5 text-emerald-600" /><span>View Profile</span></Link>
-                            <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-slate-900 font-semibold hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors duration-200"><Award className="h-5 w-5 text-emerald-600" /><span>Dashboard</span></Link>
-                            <Link href="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-slate-900 font-semibold hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors duration-200"><Settings className="h-5 w-5 text-emerald-600" /><span>Account Settings</span></Link>
+                            <Link href="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-blue-900 font-semibold hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"><User className="h-5 w-5 text-blue-600" /><span>View Profile</span></Link>
+                            <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-blue-900 font-semibold hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"><Award className="h-5 w-5 text-blue-600" /><span>Dashboard</span></Link>
+                            <Link href="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 text-blue-900 font-semibold hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"><Settings className="h-5 w-5 text-blue-600" /><span>Account Settings</span></Link>
                             <button onClick={() => { logout(); setIsOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-red-700 font-semibold hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"><LogOut className="h-5 w-5" /><span>Log out</span></button>
                           </nav>
                         </div>
                       ) : (
                         <div className="space-y-3 pt-6 border-t border-gray-200/50">
-                          <Button variant="outline" onClick={() => { router.push("/login"); setIsOpen(false); }} className="w-full justify-start text-slate-700 border-slate-300 hover:bg-slate-50 hover:text-emerald-600"><User className="h-4 w-4 mr-2" />Sign in</Button>
-                          <Button onClick={() => { router.push("/register"); setIsOpen(false); }} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm border border-emerald-500">Get started</Button>
+                          <Button variant="outline" onClick={() => { router.push("/login"); setIsOpen(false); }} className="w-full justify-start text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"><User className="h-4 w-4 mr-2" />Sign in</Button>
+                          <Button onClick={() => { router.push("/register"); setIsOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-500">Get started</Button>
                         </div>
                       )}
                     </div>

@@ -19,8 +19,8 @@ import type { Provider, Student } from "@/lib/types"
 interface WhatsAppCTAProps {
   provider: Provider
   student: Student
-  serviceType?: "skill_learning" | "direct_service"
-  skillTitle?: string
+  serviceType?: "service_booking" | "direct_service"
+  serviceTitle?: string
   variant?: "default" | "outline" | "secondary"
   size?: "default" | "sm" | "lg"
   className?: string
@@ -31,7 +31,7 @@ export function WhatsAppCTA({
   provider,
   student,
   serviceType = "direct_service",
-  skillTitle,
+  serviceTitle,
   variant = "default",
   size = "default",
   className = "",
@@ -42,19 +42,19 @@ export function WhatsAppCTA({
   const [customMessage, setCustomMessage] = useState("")
 
   const handleDirectContact = () => {
-    contactProvider(provider, student, serviceType, skillTitle)
+    contactProvider(provider, student, serviceType, serviceTitle)
   }
 
   const handleContactWithCustomMessage = () => {
     // If custom message is provided, we'd need to modify the WhatsApp service
     // For now, just use the standard contact
-    contactProvider(provider, student, serviceType, skillTitle)
+    contactProvider(provider, student, serviceType, serviceTitle)
     setIsDialogOpen(false)
   }
 
   const getButtonText = () => {
-    if (serviceType === "skill_learning" && skillTitle) {
-      return `Learn ${skillTitle}`
+    if (serviceType === "service_booking" && serviceTitle) {
+      return `Book ${serviceTitle}`
     }
     return `Contact ${provider.businessName || provider.firstName}`
   }
@@ -64,8 +64,8 @@ export function WhatsAppCTA({
       return { text: "Currently Unavailable", color: "destructive" as const }
     }
     
-    if (serviceType === "skill_learning" && !provider.availability?.availableForLearning) {
-      return { text: "Not Teaching Currently", color: "secondary" as const }
+    if (serviceType === "service_booking" && !provider.availability?.availableForLearning) {
+      return { text: "Not Available Currently", color: "secondary" as const }
     }
     
     return { text: "Available", color: "default" as const }
@@ -98,9 +98,9 @@ export function WhatsAppCTA({
           </Badge>
         )}
         
-        {serviceType === "skill_learning" && provider.availability?.availableForLearning && (
+        {serviceType === "service_booking" && provider.availability?.availableForLearning && (
           <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-            Available for Teaching
+            Available for Services
           </Badge>
         )}
       </div>
@@ -113,7 +113,7 @@ export function WhatsAppCTA({
           size={size}
           className={`flex-1 ${className}`}
           disabled={!provider.availability?.isAvailable || 
-                   (serviceType === "skill_learning" && !provider.availability?.availableForLearning)}
+                   (serviceType === "service_booking" && !provider.availability?.availableForWork)}
         >
           <MessageCircle className="h-4 w-4 mr-2" />
           {getButtonText()}
@@ -142,15 +142,15 @@ export function WhatsAppCTA({
                     <p className="whitespace-pre-wrap">
                       {`Hi ${provider.businessName || provider.firstName}! 👋
 
-I'm ${student.fullName || `${student.firstName} ${student.lastName}`}, a student at UNILORIN. I found your profile on the Artisan Platform and I'm interested in ${serviceType === "skill_learning" && skillTitle ? `learning "${skillTitle}"` : `your ${provider.specialization?.join(", ")} services`}.
+I'm ${student.fullName || `${student.firstName} ${student.lastName}`}, a student at UNILORIN. I found your profile on the Service Provider Platform and I'm interested in ${serviceType === "service_booking" && serviceTitle ? `booking "${serviceTitle}"` : `your ${provider.specialization?.join(", ")} services`}.
 
-${serviceType === "skill_learning" && skillTitle ?
-  provider.availability?.availableForLearning ?
-    `I saw that you're available for teaching. Could you please share more details about:
-- Training schedule and duration  
-- Learning approach and materials
-- Pricing for the training sessions` :
-    `Could you please let me know if you're available to teach this skill?`
+${serviceType === "service_booking" && serviceTitle ?
+  provider.availability?.availableForWork ?
+    `I saw that you're available for service bookings. Could you please share more details about:
+- Service schedule and duration  
+- Approach and materials needed
+- Pricing for the service sessions` :
+    `Could you please let me know if you're available to provide this service?`
   :
   `Could you please share more details about:
 - Your availability
@@ -158,7 +158,7 @@ ${serviceType === "skill_learning" && skillTitle ?
 - Pricing and timeline`
 }
 
-Looking forward to ${serviceType === "skill_learning" ? "learning from your expertise" : "working with you"}!
+Looking forward to ${serviceType === "service_booking" ? "working with your expertise" : "working with you"}!
 
 Best regards,
 ${student.fullName || `${student.firstName} ${student.lastName}`}
@@ -196,14 +196,14 @@ UNILORIN Student`}
       </div>
 
       {/* Pricing info */}
-      {provider.pricing && (serviceType === "skill_learning" ? 
-        provider.pricing.learningRate : 
-        provider.pricing.baseRate) && (
+      {provider.pricing && (serviceType === "service_booking" ? 
+        provider.pricing.serviceRate : 
+        provider.pricing.serviceRate) && (
         <div className="text-sm text-muted-foreground">
-          Starting from ₦{(serviceType === "skill_learning" ? 
-            provider.pricing.learningRate : 
-            provider.pricing.baseRate)?.toLocaleString()}
-          {serviceType === "skill_learning" ? " per session" : " per project"}
+          Starting from ₦{(serviceType === "service_booking" ? 
+            provider.pricing.serviceRate : 
+            provider.pricing.serviceRate)?.toLocaleString()}
+          {serviceType === "service_booking" ? " per session" : " per project"}
         </div>
       )}
     </div>
@@ -215,7 +215,7 @@ export function WhatsAppCTACompact({
   provider,
   student,
   serviceType = "direct_service",
-  skillTitle,
+  serviceTitle,
   className = ""
 }: Omit<WhatsAppCTAProps, "showPreview" | "variant" | "size">) {
   const { contactProvider, isWhatsAppAvailable } = useWhatsApp()
@@ -226,10 +226,10 @@ export function WhatsAppCTACompact({
 
   return (
     <Button
-      onClick={() => contactProvider(provider, student, serviceType, skillTitle)}
+      onClick={() => contactProvider(provider, student, serviceType, serviceTitle)}
       size="sm"
       className={`w-full flex items-center justify-center gap-1 sm:gap-2 ${className}`}
-      disabled={serviceType === "skill_learning" && !provider.availability?.availableForLearning}
+      disabled={serviceType === "service_booking" && !provider.availability?.availableForWork}
     >
       <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
       <span className="text-xs sm:text-sm font-medium">Contact</span>

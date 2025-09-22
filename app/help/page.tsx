@@ -84,14 +84,14 @@ export default function HelpPage() {
             <h2 className="text-2xl font-bold mb-6">Popular Topics</h2>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="login-issues">
-                <AccordionTrigger>I'm having trouble logging in</AccordionTrigger>
+                <AccordionTrigger>I&apos;m having trouble logging in</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-4">
                     <p className="text-muted-foreground">
-                      If you're having trouble logging in, try these solutions:
+                      If you&apos;re having trouble logging in, try these solutions:
                     </p>
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                      <li>Make sure you're using the correct email and password</li>
+                      <li>Make sure you&apos;re using the correct email and password</li>
                       <li>Check if your account is verified</li>
                       <li>Try resetting your password</li>
                       <li>Clear your browser cache and cookies</li>
@@ -113,8 +113,8 @@ export default function HelpPage() {
                     </p>
                     <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-4">
                       <li>Browse skills on the Skills page</li>
-                      <li>Click on a skill you're interested in</li>
-                      <li>Review the details and click "Enroll Now"</li>
+                      <li>Click on a skill you&apos;re interested in</li>
+                      <li>Review the details and click &quot;Enroll Now&quot;</li>
                       <li>Complete the payment process</li>
                       <li>Access the skill from your Dashboard</li>
                     </ol>
@@ -134,7 +134,7 @@ export default function HelpPage() {
                       <li>Upload proof of your skills and experience</li>
                       <li>Submit identification documents</li>
                       <li>Wait for admin review (2-3 business days)</li>
-                      <li>You'll receive a notification once verified</li>
+                      <li>You&apos;ll receive a notification once verified</li>
                     </ul>
                   </div>
                 </AccordionContent>
@@ -168,8 +168,8 @@ export default function HelpPage() {
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                       <li>Page not loading: Try refreshing or clearing cache</li>
                       <li>Slow performance: Check your internet connection</li>
-                      <li>Mobile issues: Ensure you're using a supported browser</li>
-                      <li>Video not playing: Check your browser's video settings</li>
+                      <li>Mobile issues: Ensure you&apos;re using a supported browser</li>
+                      <li>Video not playing: Check your browser&apos;s video settings</li>
                     </ul>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/contact">Report Issue</Link>
@@ -184,7 +184,7 @@ export default function HelpPage() {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-6">Still Need Help?</h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Can't find the answer you're looking for? Our support team is here to help.
+              Can&apos;t find the answer you&apos;re looking for? Our support team is here to help.
             </p>
 
             <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -26,16 +26,18 @@ export interface SearchFiltersProps {
 
 const categories = [
   "All Categories",
-  "Fashion & Tailoring",
-  "Electronics & Technology",
+  "Creative Services",
+  "Tech & Digital",
   "Beauty & Wellness",
-  "Arts & Crafts",
+  "Fashion & Style",
+  "Home Services",
   "Food & Catering",
-  "Construction & Repair",
-  "Photography & Media",
-  "Agriculture & Farming",
-  "Business & Finance",
-  "Other"
+  "Tutoring & Education",
+  "Event Services",
+  "Writing & Content",
+  "Business Support",
+  "Fitness & Sports",
+  "Other Services"
 ]
 
 const locations = [
@@ -67,13 +69,6 @@ const experienceLevels = [
   "10+ years"
 ]
 
-const availabilityOptions = [
-  "All",
-  "Available Now",
-  "Available This Week",
-  "Available This Month"
-]
-
 export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [filters, setFilters] = useState({
@@ -90,7 +85,7 @@ export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps
   // Initial call to parent component with default filters
   useEffect(() => {
     onFiltersChange(filters)
-  }, []) // Only run on mount
+  }, [onFiltersChange, filters])
 
   useEffect(() => {
     // Update active filters for badge display
@@ -105,16 +100,16 @@ export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps
     setActiveFilters(active)
   }, [filters])
 
-  const handleFilterChange = (key: string, value: string | number) => {
+  const handleFilterChange = useCallback((key: string, value: string | number) => {
     const newFilters = {
       ...filters,
       [key]: value
     }
     setFilters(newFilters)
     onFiltersChange(newFilters)
-  }
+  }, [filters, onFiltersChange])
 
-  const clearFilter = (filterText: string) => {
+  const clearFilter = useCallback((filterText: string) => {
     if (filterText.startsWith("Search:")) {
       handleFilterChange("search", "")
     } else if (filterText.startsWith("Category:")) {
@@ -128,9 +123,9 @@ export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps
     } else if (filterText.startsWith("Availability:")) {
       handleFilterChange("availability", "All")
     }
-  }
+  }, [handleFilterChange])
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     const newFilters = {
       search: "",
       category: "All Categories",
@@ -141,7 +136,7 @@ export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps
     }
     setFilters(newFilters)
     onFiltersChange(newFilters)
-  }
+  }, [onFiltersChange])
 
   const hasActiveFilters = activeFilters.length > 0
 
@@ -151,7 +146,7 @@ export function SearchFilters({ onFiltersChange, className }: SearchFiltersProps
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Search artisans, skills, or services..."
+          placeholder="Search service providers, services, or categories..."
           value={filters.search}
           onChange={(e) => handleFilterChange("search", e.target.value)}
           className="pl-10 pr-4 h-12 text-base bg-white border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-xl shadow-sm"

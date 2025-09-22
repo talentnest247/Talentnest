@@ -11,40 +11,21 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get("limit")
     const offset = searchParams.get("offset")
 
-    // Build filters
-    const filters: any = {}
-
-    if (search) {
-      filters.search = search
-    }
-
-    if (category && category !== "all") {
-      filters.category = category
-    }
-
-    if (location && location !== "all") {
-      filters.location = location
-    }
-
-    if (verified === "true") {
-      filters.verified = true
-    }
-
-    if (limit) {
-      filters.limit = parseInt(limit)
-    }
-
-    if (offset) {
-      filters.offset = parseInt(offset)
-    }
+    // Parse and validate parameters
+    const searchTerm = search || ""
+    const categoryFilter = category && category !== "all" ? category : ""
+    const locationFilter = location && location !== "all" ? location : ""
+    const verifiedFilter = verified === "true"
+    const limitNum = limit ? parseInt(limit) : 20
+    const offsetNum = offset ? parseInt(offset) : 0
 
     const providers = await getAllProviders()
 
     // Apply filters client-side for now
     let filteredProviders = providers
 
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
       filteredProviders = filteredProviders.filter(provider =>
         provider.businessName?.toLowerCase().includes(searchLower) ||
         provider.description?.toLowerCase().includes(searchLower) ||
@@ -52,32 +33,32 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (filters.category) {
+    if (categoryFilter) {
       filteredProviders = filteredProviders.filter(provider =>
-        provider.specialization?.some(spec => spec.toLowerCase().includes(filters.category.toLowerCase()))
+        provider.specialization?.some(spec => spec.toLowerCase().includes(categoryFilter.toLowerCase()))
       )
     }
 
-    if (filters.location) {
+    if (locationFilter) {
       filteredProviders = filteredProviders.filter(provider =>
-        provider.location?.toLowerCase().includes(filters.location.toLowerCase())
+        provider.location?.toLowerCase().includes(locationFilter.toLowerCase())
       )
     }
 
-    if (filters.verified) {
+    if (verifiedFilter) {
       filteredProviders = filteredProviders.filter(provider => provider.verified)
     }
 
     // Apply pagination
-    const startIndex = filters.offset || 0
-    const endIndex = startIndex + (filters.limit || 20)
+    const startIndex = offsetNum
+    const endIndex = startIndex + limitNum
     const paginatedProviders = filteredProviders.slice(startIndex, endIndex)
 
     return NextResponse.json({
       providers: paginatedProviders,
       total: filteredProviders.length,
-      limit: filters.limit || 20,
-      offset: filters.offset || 0
+      limit: limitNum,
+      offset: offsetNum
     })
   } catch (error) {
     console.error("Providers API error:", error)

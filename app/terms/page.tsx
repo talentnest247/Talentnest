@@ -40,10 +40,10 @@ export default function TermsPage() {
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
                   TalentNest is an online marketplace that connects students of the University of Ilorin
-                  with skilled students for learning opportunities and services. Our platform includes:
+                  with professional service providers for business opportunities and services. Our platform includes:
                 </p>
                 <ul>
-                  <li>Skill learning and enrollment system</li>
+                  <li>Service booking and management system</li>
                   <li>Artisan verification and profile management</li>
                   <li>Communication tools between students and artisans</li>
                   <li>Payment processing for services</li>

@@ -15,7 +15,8 @@ import {
   MoreHorizontal,
   Users,
   TrendingUp,
-  Star
+  Star,
+  LucideIcon
 } from "lucide-react"
 import Link from "next/link"
 
@@ -24,7 +25,7 @@ interface CategoryGridProps {
 }
 
 const getCategoryIcon = (name: string) => {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, LucideIcon> = {
     "Fashion & Tailoring": Scissors,
     "Electronics & Technology": Laptop,
     "Beauty & Wellness": Sparkles,
@@ -78,7 +79,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                     variant="secondary" 
                     className="bg-primary/10 text-primary text-xs px-2 py-1 font-medium"
                   >
-                    {category.artisanCount || category.providerCount || 0} artisans
+                    {category.providerCount || 0} providers
                   </Badge>
                 </div>
                 
@@ -99,8 +100,8 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                     <div className="flex items-center justify-center">
                       <Users className="h-3 w-3 text-gray-400" />
                     </div>
-                    <div className="text-xs font-semibold text-gray-700">{category.artisanCount || category.providerCount || 0}</div>
-                    <div className="text-xs text-gray-500">Artisans</div>
+                    <div className="text-xs font-semibold text-gray-700">{category.providerCount || 0}</div>
+                    <div className="text-xs text-gray-500">Providers</div>
                   </div>
                   
                   <div className="space-y-1">
@@ -119,32 +120,6 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                     <div className="text-xs text-gray-500">Active</div>
                   </div>
                 </div>
-
-                {/* Skills Preview */}
-                {category.skills && category.skills.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-700">Popular Skills:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {category.skills.slice(0, 3).map((skill: string, index: number) => (
-                        <Badge 
-                          key={index}
-                          variant="outline" 
-                          className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-200 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                      {category.skills.length > 3 && (
-                        <Badge 
-                          variant="outline" 
-                          className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 border-gray-300"
-                        >
-                          +{category.skills.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* Action Button */}
                 <Button 
@@ -166,7 +141,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
         <div className="text-center space-y-4 mb-6">
           <h3 className="text-xl font-bold text-gray-900">Category Overview</h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover the diverse range of skills and services available in our artisan community
+            Discover the diverse range of skills and services available in our service provider community
           </p>
         </div>
 
@@ -176,12 +151,12 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Users className="h-6 w-6 text-blue-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Professional Artisans</h4>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Professional Service Providers</h4>
               <p className="text-sm text-gray-600 mb-4">
-                All artisans are verified students and professionals with proven skills
+                All service providers are verified students and professionals with proven skills
               </p>
               <div className="text-2xl font-bold text-blue-600">
-                {categories.reduce((sum, cat) => sum + (cat.artisanCount || cat.providerCount || 0), 0)}+
+                                {categories.reduce((sum, cat) => sum + (cat.providerCount || 0), 0)}+ providers
               </div>
               <div className="text-xs text-gray-500">Total Registered</div>
             </CardContent>

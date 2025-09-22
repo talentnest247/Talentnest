@@ -44,7 +44,7 @@ export function FeaturesSection() {
     {
       icon: Users,
       title: "Expert Student Artisans",
-      description: "Connect with skilled UNILORIN students who excel in their crafts and creative skills",
+      description: "Connect with experienced UNILORIN service providers who excel in their crafts and professional services",
       badge: "Verified",
       color: "from-blue-600 to-cyan-600"
     },
@@ -72,14 +72,14 @@ export function FeaturesSection() {
     {
       icon: Award,
       title: "University Certification",
-      description: "Earn recognized certificates backed by UNILORIN and build a portfolio showcasing your skills",
+      description: "Earn recognized certificates backed by UNILORIN and build a portfolio showcasing your services",
       badge: "Accredited",
       color: "from-indigo-600 to-blue-700"
     },
     {
       icon: Globe,
       title: "Campus Community",
-      description: "Join UNILORIN's vibrant community of student creators and skilled artisans",
+      description: "Join UNILORIN's vibrant community of student creators and professional service providers",
       badge: "Connected",
       color: "from-teal-600 to-cyan-600"
     }
@@ -117,8 +117,8 @@ export function FeaturesSection() {
             </span>
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
-            Our platform provides everything you need to master traditional and modern skills, 
-            connect with expert artisans, and build a successful career in the creative industry.
+                        Our platform provides everything you need to find professional services, 
+            connect with verified service providers, and grow your business within the University of Ilorin community.
           </p>
         </div>
 
