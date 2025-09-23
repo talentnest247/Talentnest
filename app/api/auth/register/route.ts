@@ -22,8 +22,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize email
+    const normalizedEmail = String(email).trim().toLowerCase()
+
     // Check if user already exists
-    const existingUser = await authUtils.getUserByEmail(email)
+    const existingUser = await authUtils.getUserByEmail(normalizedEmail)
     if (existingUser) {
       console.log("User already exists:", email)
       return NextResponse.json(
@@ -36,8 +39,10 @@ export async function POST(request: NextRequest) {
     
     // Create user using Supabase Auth
     const fullName = `${firstName} ${lastName}`
-    const newUser = await authUtils.createUser({
-      email,
+    let newUser
+    try {
+      newUser = await authUtils.createUser({
+      email: normalizedEmail,
       password,
       firstName,
       lastName,
@@ -48,6 +53,15 @@ export async function POST(request: NextRequest) {
       department: role === "student" ? userData.department || null : null,
       level: role === "student" ? userData.level || null : null,
     })
+    } catch (err: unknown) {
+      const e = err as Error & { code?: string }
+      console.error(`createUser error code=${e?.code ?? 'unknown'} message=${e?.message ?? ''}`)
+      // Supabase auth returns code 'email_exists' for duplicate emails
+      if (e?.code === 'email_exists' || e?.code === '23505' || /email_exists/i.test(e?.message || '')) {
+        return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
+      }
+      return NextResponse.json({ error: 'Failed to create user', details: e?.message || String(err) }, { status: 500 })
+    }
 
     if (!newUser) {
       console.error("Failed to create user - authUtils.createUser returned null")

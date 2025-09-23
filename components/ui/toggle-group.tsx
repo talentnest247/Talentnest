@@ -7,10 +7,7 @@ import type { VariantProps } from "@/lib/cva"
 import { cn } from "@/lib/utils"
 import { toggleVariants } from "@/components/ui/toggle"
 
-const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
-  size: "default",
-  variant: "default",
-})
+const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants> | undefined>(undefined)
 
 function ToggleGroup({
   className,
@@ -42,7 +39,7 @@ function ToggleGroupItem({
   size,
   ...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Item> & VariantProps<typeof toggleVariants>) {
-  const context = React.useContext(ToggleGroupContext)
+  const context = React.useContext(ToggleGroupContext) || { variant: undefined, size: undefined }
 
   return (
     <ToggleGroupPrimitive.Item

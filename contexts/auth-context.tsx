@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import { authUtils, type AuthUser } from "@/lib/auth-utils"
+import type { AuthUser } from "@/lib/auth-utils"
 
 interface AuthContextType {
   user: AuthUser | null
@@ -47,30 +47,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for existing session on mount
     const checkAuth = async () => {
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("auth-token="))
-          ?.split("=")[1]
-
-        if (token) {
-          // Verify JWT token
-          const verifiedUser = await authUtils.verifyToken(token)
-          if (verifiedUser) {
-            // If token doesn't have complete data, fetch from database
-            if (!verifiedUser.firstName || !verifiedUser.department) {
-              const fullUser = await authUtils.getUserById(verifiedUser.id)
-              if (fullUser) {
-                setUser(fullUser)
-              } else {
-                setUser(verifiedUser)
-              }
-            } else {
-              setUser(verifiedUser)
-            }
-          } else {
-            // Clear invalid token
-            document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+        // Call server-side endpoint which reads the httpOnly auth cookie and
+        // returns the full user if the session is valid. This avoids trying to
+        // read httpOnly cookies from document.cookie (not accessible from JS).
+        const res = await fetch('/api/auth/me')
+        if (res.ok) {
+          const body = await res.json()
+          if (body && body.user) {
+            setUser(body.user)
           }
+        } else {
+          // No valid session found; ensure user is null
+          setUser(null)
         }
       } catch (error) {
         console.error("Auth check failed:", error)
@@ -101,7 +89,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("Login successful:", data)
-      setUser(data.user)
+      // Fetch full user from server (reads httpOnly cookie) to ensure we have
+      // complete profile data and role information.
+      try {
+        const me = await fetch('/api/auth/me')
+        if (me.ok) {
+          const body = await me.json()
+          if (body.user) setUser(body.user)
+        } else {
+          // fallback to using the returned user (if any)
+          if (data.user) setUser(data.user)
+        }
+      } catch {
+        if (data.user) setUser(data.user)
+      }
       
       return true
     } catch (error) {
@@ -149,7 +150,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok && data.user) {
         console.log("Registration successful:", data)
-        setUser(data.user)
+        // After register, server sets the httpOnly cookie. Fetch /api/auth/me
+        // to obtain the canonical user object with role and profile fields.
+        try {
+          const me = await fetch('/api/auth/me')
+          if (me.ok) {
+            const body = await me.json()
+            if (body.user) setUser(body.user)
+            else setUser(data.user)
+          } else {
+            setUser(data.user)
+          }
+        } catch {
+          setUser(data.user)
+        }
         return true
       }
       console.error("Registration failed:", data.error || "Unknown error")

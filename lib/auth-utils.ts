@@ -7,7 +7,7 @@ export interface AuthUser {
   fullName: string
   firstName?: string
   lastName?: string
-  userType: "student" | "artisan"
+  userType: "student" | "artisan" | "admin"
   role: "student" | "artisan" | "admin"
   studentId?: string
   department?: string
@@ -72,21 +72,45 @@ function base64UrlDecode(str: string): string {
 
 // Web Crypto API compatible HMAC signature
 async function createSignature(data: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const keyData = encoder.encode(secret)
-  const messageData = encoder.encode(data)
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  )
-  
-  const signature = await crypto.subtle.sign('HMAC', key, messageData)
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  // Use Web Crypto if available (Node 18+ / browser). If not available,
+  // fallback to Node's crypto module. Always return URL-safe Base64.
+  try {
+    // Prefer Web Crypto (SubtleCrypto) when available (Node 18+ or browser).
+    const subtle = (typeof crypto !== 'undefined' && (crypto as unknown as { subtle?: SubtleCrypto }).subtle) ? (crypto as unknown as { subtle?: SubtleCrypto }).subtle : undefined
+    if (subtle && typeof subtle.importKey === 'function') {
+      const encoder = new TextEncoder()
+      const keyData = encoder.encode(secret)
+      const messageData = encoder.encode(data)
+      // Use SubtleCrypto types directly
+      const key = await subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' } as HmacImportParams,
+        false,
+        ['sign'],
+      )
+
+      const signature = await subtle.sign('HMAC', key, messageData)
+      const base64 = Buffer.from(new Uint8Array(signature)).toString('base64')
+      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+    }
+  } catch {
+    // fall through to Node crypto fallback
+    console.warn('[v0] WebCrypto HMAC not available, falling back to Node crypto')
+  }
+
+  // Node crypto fallback (synchronous)
+  try {
+    // dynamic import so bundlers don't rewrite in browser
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const nodeCrypto = await import('crypto')
+    const hmac = nodeCrypto.createHmac('sha256', secret)
+    hmac.update(data)
+    const base64 = hmac.digest('base64')
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  } catch {
+    throw new Error('No available crypto implementation for creating signature')
+  }
 }
 
 export const authUtils = {
@@ -222,19 +246,97 @@ export const authUtils = {
         return null
       }
 
-      console.log("Searching for user with email:", email)
+      const normalizedEmail = String(email).trim().toLowerCase()
+      console.log("Searching for user with email:", normalizedEmail)
       const { data, error } = await supabaseAdmin
         .from('profiles')
         .select('id, email, full_name, first_name, last_name, role, phone')
-        .eq('email', email)
+        .eq('email', normalizedEmail)
         .single()
       
       if (error) {
-        console.error("Supabase error fetching user:", error)
-        return null
+        // PostgREST returns PGRST116 when no rows match a .single() query.
+        // Treat that as "not found" without noisy logging.
+        const errObj = error as unknown as { code?: string }
+        if (errObj.code === 'PGRST116') {
+          // continue to check auth.users below
+        } else {
+          console.error("Supabase error fetching user:", error)
+          return null
+        }
       }
       
       if (!data) {
+        console.log("No profile found with email in profiles table:", email)
+        // Check auth.users for a user created in Supabase Auth but without a profile
+        try {
+          // Use the Supabase Admin auth API to list users and find a matching email.
+          // Some projects do not expose `auth.users` via PostgREST, so use the admin SDK.
+          type AdminUser = { id: string; email?: string }
+          type AdminApi = {
+            listUsers?: (params: { perPage?: number; page?: number }) => Promise<{ data?: { users?: AdminUser[] } | AdminUser[] }>
+          }
+
+          const adminAuth = (supabaseAdmin as unknown as { auth?: unknown }).auth as unknown
+          const adminApi = adminAuth as unknown as AdminApi
+          if (adminApi && typeof adminApi.listUsers === 'function') {
+            // Page through admin users to find a matching email to avoid missing users on later pages.
+            const perPage = 200
+            const maxPages = 20 // search up to perPage * maxPages users
+            for (let page = 1; page <= maxPages; page++) {
+              try {
+                const res = await adminApi.listUsers({ perPage, page })
+                const usersList = (res as unknown as { data?: { users?: AdminUser[] } | AdminUser[] })?.data || []
+                const found = (usersList as AdminUser[]).find((u) => typeof u?.email === 'string' && u.email!.toLowerCase() === normalizedEmail)
+                if (found) {
+                  console.log(`Found auth-only user via admin API for email on page ${page}:`, normalizedEmail)
+                  return {
+                    id: found.id,
+                    // Coerce possibly-undefined email to the normalized email string
+                    email: found.email ?? normalizedEmail,
+                    fullName: '',
+                    firstName: undefined,
+                    lastName: undefined,
+                    userType: 'student',
+                    role: 'student',
+                    phone: undefined,
+                    password: ''
+                  }
+                }
+                // If fewer users returned than perPage, no more pages to check
+                const listLength = Array.isArray(usersList) ? usersList.length : 0
+                if (listLength < perPage) break
+              } catch (pageErr) {
+                console.error('Error paging admin users list:', pageErr)
+                break
+              }
+            }
+          } else {
+            // Fallback: try querying `auth.users` via PostgREST (may not be available)
+            const { data: authUser } = await supabaseAdmin
+              .from('auth.users')
+              .select('id, email')
+              .eq('email', normalizedEmail)
+              .single()
+            if (authUser) {
+              console.log('Found auth-only user in auth.users for email:', normalizedEmail)
+              return {
+                id: authUser.id,
+                email: authUser.email ?? normalizedEmail,
+                fullName: '',
+                firstName: undefined,
+                lastName: undefined,
+                userType: 'student',
+                role: 'student',
+                phone: undefined,
+                password: ''
+              }
+            }
+          }
+        } catch (_err) {
+          console.error('Error checking auth users for email (admin list fallback):', _err)
+        }
+
         console.log("No user found with email:", email)
         return null
       }
@@ -306,8 +408,18 @@ export const authUtils = {
       })
 
       if (authError) {
-        console.error("Supabase auth error:", authError)
-        return null
+        // Avoid printing the entire SDK error (stack) which is noisy for expected cases
+        const authErrObj = authError as unknown as Record<string, unknown>
+        const errMessage = typeof authErrObj.message === 'string' ? authErrObj.message : 'Supabase auth error'
+        const err = new Error(errMessage) as Error & { code?: string }
+        if (typeof authErrObj.code === 'string') {
+          err.code = authErrObj.code
+        } else if (typeof authErrObj.status === 'string') {
+          err.code = authErrObj.status
+        } else {
+          err.code = 'auth_error'
+        }
+        throw err
       }
 
       if (!authData.user) {
@@ -349,7 +461,8 @@ export const authUtils = {
       }
     } catch (error) {
       console.error("Error creating user:", error)
-      return null
+      // Surface the error to callers so they can respond appropriately
+      throw error
     }
   },
 

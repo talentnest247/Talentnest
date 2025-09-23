@@ -1,6 +1,7 @@
 "use client"
 
-import { useToast } from "@/hooks/use-toast"
+import * as React from "react"
+import { useToast, type ToasterToast } from "@/hooks/use-toast"
 import {
   Toast,
   ToastClose,
@@ -15,18 +16,25 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
+      {toasts.map(function ({ id, title, description, action, open, onOpenChange, variant }: ToasterToast) {
+        const ToastEl = Toast as unknown as React.ComponentType<ToasterToast & { children?: React.ReactNode }>
+        const content = (
+          <>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && <ToastTitle>{title as React.ReactNode}</ToastTitle>}
               {description && (
-                <ToastDescription>{description}</ToastDescription>
+                <ToastDescription>{description as React.ReactNode}</ToastDescription>
               )}
             </div>
-            {action}
+            {action as React.ReactNode}
             <ToastClose />
-          </Toast>
+          </>
+        )
+
+        return (
+          <ToastEl key={id} id={id} open={open} onOpenChange={onOpenChange} variant={variant}>
+            {content}
+          </ToastEl>
         )
       })}
       <ToastViewport />

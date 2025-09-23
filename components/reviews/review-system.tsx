@@ -25,7 +25,8 @@ interface Review {
 }
 
 interface ReviewSystemProps {
-  providerId: string
+  providerId?: string
+  artisanId?: string
   reviews: Review[]
   onAddReview?: (review: Omit<Review, "id" | "date" | "helpful">) => void
   canReview?: boolean
