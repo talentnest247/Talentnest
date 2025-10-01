@@ -46,8 +46,8 @@ export function Header() {
             <Link href="/" className="flex items-center gap-3 group">
               <Image src="/images/unilorin-logo.png" alt="UNILORIN Logo" width={40} height={40} className="rounded-full" />
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-slate-900">TalentNest</span>
-                <span className="text-xs text-slate-600 font-medium leading-tight">UNILORIN Services Platform</span>
+                <span className="text-lg font-bold text-slate-900">UniLorin Portal</span>
+                <span className="text-xs text-slate-600 font-medium leading-tight">University of Ilorin Services Platform</span>
               </div>
             </Link>
 
@@ -148,7 +148,7 @@ export function Header() {
                         <div className="flex items-center gap-3">
                           <Image src="/images/unilorin-logo.png" alt="UNILORIN" width={32} height={32} className="rounded-full" />
                           <div>
-                            <h2 className="text-lg font-bold text-blue-700">TalentNest</h2>
+                            <h2 className="text-lg font-bold text-blue-700">UniLorin Portal</h2>
                             <p className="text-xs text-slate-600">UNILORIN Services Platform</p>
                           </div>
                         </div>

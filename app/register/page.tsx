@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import Image from "next/image"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import StudentRegistrationForm from "@/components/auth/student-registration-form"
@@ -26,16 +27,20 @@ export default function RegisterPage() {
           
           {/* Content */}
           <div className="relative w-full max-w-2xl space-y-8">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg font-bold">UniLorin</span>
-              </div>
-              <h1 className="text-3xl font-bold text-blue-900 mb-2">
-                UniLorin Registration
-              </h1>
-              <p className="text-blue-700 font-medium">University of Ilorin Services Platform</p>
-              
-              <Button 
+          <div className="text-center">
+            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <Image 
+                src="/images/unilorin-logo.png" 
+                alt="University of Ilorin Logo" 
+                width={80}
+                height={80}
+                className="w-full h-full"
+              />
+            </div>
+            <h1 className="text-3xl font-bold text-blue-900 mb-2">
+              UniLorin Registration
+            </h1>
+            <p className="text-blue-700 font-medium">University of Ilorin Services Platform</p>              <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleBackToSelection}
@@ -69,8 +74,14 @@ export default function RegisterPage() {
         {/* Content */}
         <div className="relative w-full max-w-4xl space-y-8">
           <div className="text-center space-y-4">
-            <div className="w-24 h-24 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg font-bold">UniLorin</span>
+            <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <Image 
+                src="/images/unilorin-logo.png" 
+                alt="University of Ilorin Logo" 
+                width={96}
+                height={96}
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-blue-900">
               Join UniLorin

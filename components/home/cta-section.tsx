@@ -56,7 +56,7 @@ export function CTASection() {
             <div className={`inline-flex transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             <Badge className="bg-white/20 text-white border border-white/30 px-4 py-2 hover:bg-white/30 transition-all duration-300 hover:scale-105">
               <Sparkles className="h-4 w-4 mr-2" />
-              Join TalentNest Today
+              Join UniLorin Portal Today
             </Badge>
             </div>
 

@@ -1,38 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server"
-
-// Simple session verification for demo purposes
-function verifySessionToken(token: string): boolean {
-  if (!token || !token.startsWith('session_')) {
-    return false
-  }
-  
-  // Simple validation - in production you'd check against a database
-  const parts = token.split('_')
-  return parts.length === 3 && parts[0] === 'session'
-}
+import { checkAccess } from './middleware/access-control'
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next()
-
-  // Get token from cookies
-  const token = request.cookies.get("auth-token")?.value
-
-  // Protected routes
-  const protectedRoutes = ["/dashboard", "/profile", "/providers/dashboard"]
-  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
-
-  if (isProtectedRoute) {
-    if (!token || !verifySessionToken(token)) {
-      return NextResponse.redirect(new URL("/login", request.url))
-    }
+  // Check access control first
+  const accessResponse = await checkAccess(request)
+  if (accessResponse) {
+    return accessResponse
   }
+
+  // Original middleware logic for backwards compatibility
+  const response = NextResponse.next()
+  const token = request.cookies.get("auth-token")?.value
 
   // Redirect authenticated users away from auth pages
   const authRoutes = ["/login", "/register"]
   const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
 
-  if (isAuthRoute && token && verifySessionToken(token)) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+  if (isAuthRoute && token) {
+    // Simple token check - just verify it exists and has proper format
+    if (token.startsWith('session_') || token.includes('.')) {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
+    }
   }
 
   return response

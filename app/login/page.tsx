@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 import { LoginForm } from "@/components/auth/login-form"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -21,8 +22,14 @@ export default function LoginPage() {
         {/* Content */}
         <div className="relative w-full max-w-md space-y-8">
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg font-bold">UniLorin</span>
+            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <Image 
+                src="/images/unilorin-logo.png" 
+                alt="University of Ilorin Logo" 
+                width={80}
+                height={80}
+                className="w-full h-full"
+              />
             </div>
             <h1 className="text-3xl font-bold text-blue-900 mb-2">
               UniLorin Portal

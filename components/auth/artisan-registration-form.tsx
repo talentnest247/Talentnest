@@ -60,13 +60,6 @@ export default function ArtisanRegistrationForm() {
     portfolio: [],
   })
 
-  // Preview URLs for display (object URLs)
-  const [previews, setPreviews] = useState({
-    certificates: [] as string[],
-    workSamples: [] as string[],
-    portfolio: [] as string[],
-  })
-
   // UI state
   const [errors, setErrors] = useState<FormErrors>({})
   const [showPassword, setShowPassword] = useState(false)
@@ -129,7 +122,6 @@ export default function ArtisanRegistrationForm() {
   // Handle certificate uploads
   const handleCertificatesUpload = (files: File[], urls: string[]) => {
     setFormData(prev => ({ ...prev, certificates: [...prev.certificates, ...files] }))
-    setPreviews(prev => ({ ...prev, certificates: [...prev.certificates, ...urls] }))
     if (errors.certificates) {
       setErrors(prev => ({ ...prev, certificates: "" }))
     }
@@ -138,7 +130,6 @@ export default function ArtisanRegistrationForm() {
   // Handle work sample uploads
   const handleWorkSamplesUpload = (files: File[], urls: string[]) => {
     setFormData(prev => ({ ...prev, workSamples: [...prev.workSamples, ...files] }))
-    setPreviews(prev => ({ ...prev, workSamples: [...prev.workSamples, ...urls] }))
     if (errors.workSamples) {
       setErrors(prev => ({ ...prev, workSamples: "" }))
     }
@@ -147,7 +138,6 @@ export default function ArtisanRegistrationForm() {
   // Handle portfolio uploads
   const handlePortfolioUpload = (files: File[], urls: string[]) => {
     setFormData(prev => ({ ...prev, portfolio: [...prev.portfolio, ...files] }))
-    setPreviews(prev => ({ ...prev, portfolio: [...prev.portfolio, ...urls] }))
     if (errors.portfolio) {
       setErrors(prev => ({ ...prev, portfolio: "" }))
     }
@@ -653,144 +643,363 @@ export default function ArtisanRegistrationForm() {
                   )}
                 </div>
 
-                  {/* Certificates/Portfolio Upload Section */}
+                  {/* Documents Upload Section */}
                   <div className="pt-8 pb-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="text-blue-600"><path d="M12 16v-4m0 0V8m0 4h4m-4 0H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/></svg>
-                      <span className="text-lg font-semibold text-blue-900">Upload Documents <span className="text-red-500">*</span></span>
+                    <div className="mb-6 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-white">
+                          <path d="M12 16v-4m0 0V8m0 4h4m-4 0H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-900">Upload Documents</h3>
+                        <p className="text-sm text-blue-600">Please upload at least one document to verify your expertise</p>
+                      </div>
+                      <span className="text-red-500 text-lg">*</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       {/* Certificates Upload */}
-                      <div className="border rounded-lg p-4 bg-white">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">Certificates</h4>
-                        <p className="text-xs text-blue-600 mb-3">Upload qualification certificates (PDF, JPG). Max 5 files.</p>
-                        <label className="w-full block">
-                          <input
-                            aria-label="Upload certificates"
-                            type="file"
-                            multiple
-                            accept=".pdf,.jpg,.jpeg"
-                            onChange={e => {
-                              const files = Array.from(e.target.files || [])
-                              if (files.length + formData.certificates.length > 5) {
-                                setErrors(prev => ({ ...prev, certificates: "Maximum 5 files allowed." }))
-                                return
-                              }
-                              const validFiles = files.filter(file => ["application/pdf","image/jpeg"].includes(file.type))
-                              if (validFiles.length !== files.length) {
-                                setErrors(prev => ({ ...prev, certificates: "Only PDF and JPG allowed for certificates." }))
-                                return
-                              }
-                              const urls = validFiles.map(file => URL.createObjectURL(file))
-                              handleCertificatesUpload(validFiles, urls)
-                            }}
-                            className="w-full text-sm text-blue-600"
-                          />
-                        </label>
-                        {previews.certificates.length > 0 && (
-                          <ul className="mt-3 text-sm text-blue-700">
-                            {previews.certificates.map((url, idx) => (
-                              <li key={idx} className="flex items-center justify-between py-1 border-b last:border-b-0">
-                                <a href={url} target="_blank" rel="noreferrer" className="truncate underline">{url.split('/').pop()}</a>
-                                <button className="text-xs text-red-600" onClick={() => {
-                                  setFormData(prev => ({ ...prev, certificates: prev.certificates.filter((_, i) => i !== idx) }))
-                                  setPreviews(prev => ({ ...prev, certificates: prev.certificates.filter((_, i) => i !== idx) }))
-                                }}>Remove</button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        {errors.certificates && <p className="text-sm text-red-600 mt-2">{errors.certificates}</p>}
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg p-6">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-white">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-green-900">Certificates & Qualifications</h4>
+                              <p className="text-xs text-green-700">Academic certificates, professional certifications</p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="text-xs text-green-700 bg-green-50 p-2 rounded border">
+                              <p><strong>Accepted:</strong> PDF, JPG • <strong>Max size:</strong> 10MB each • <strong>Max files:</strong> 5</p>
+                            </div>
+                            
+                            <label className="relative">
+                              <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.jpg,.jpeg"
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files || [])
+                                  if (files.length + formData.certificates.length > 5) {
+                                    setErrors(prev => ({ ...prev, certificates: "Maximum 5 files allowed." }))
+                                    return
+                                  }
+                                  const validFiles = files.filter(file => 
+                                    ["application/pdf", "image/jpeg"].includes(file.type) && file.size <= 10 * 1024 * 1024
+                                  )
+                                  if (validFiles.length !== files.length) {
+                                    setErrors(prev => ({ ...prev, certificates: "Only PDF and JPG files under 10MB allowed." }))
+                                    return
+                                  }
+                                  const urls = validFiles.map(file => URL.createObjectURL(file))
+                                  handleCertificatesUpload(validFiles, urls)
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                aria-label="Upload certificates"
+                              />
+                              <div className="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-400 hover:bg-green-25 transition-colors">
+                                <svg className="mx-auto h-8 w-8 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p className="text-sm font-medium text-green-700">Click to upload certificates</p>
+                                <p className="text-xs text-green-600">or drag and drop files here</p>
+                              </div>
+                            </label>
+
+                            {/* Certificate Previews */}
+                            {formData.certificates.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {formData.certificates.map((file, idx) => (
+                                  <div key={idx} className="relative group bg-white border border-green-200 rounded-lg p-2">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
+                                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        title="Remove certificate"
+                                        onClick={() => {
+                                          setFormData(prev => ({ ...prev, certificates: prev.certificates.filter((_, i) => i !== idx) }))
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                                      >
+                                        <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {errors.certificates && (
+                              <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                                {errors.certificates}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       {/* Work Samples Upload */}
-                      <div className="border rounded-lg p-4 bg-white">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">Work Samples</h4>
-                        <p className="text-xs text-blue-600 mb-3">Upload images or PDFs of your work samples. Max 5 files.</p>
-                        <label className="w-full block">
-                          <input
-                            aria-label="Upload work samples"
-                            type="file"
-                            multiple
-                            accept=".pdf,.jpg,.jpeg,.png,.webp"
-                            onChange={e => {
-                              const files = Array.from(e.target.files || [])
-                              if (files.length + formData.workSamples.length > 5) {
-                                setErrors(prev => ({ ...prev, workSamples: "Maximum 5 files allowed." }))
-                                return
-                              }
-                              const validFiles = files.filter(file => ["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type))
-                              if (validFiles.length !== files.length) {
-                                setErrors(prev => ({ ...prev, workSamples: "Only PDF, JPG, PNG, WEBP allowed for work samples." }))
-                                return
-                              }
-                              const urls = validFiles.map(file => URL.createObjectURL(file))
-                              handleWorkSamplesUpload(validFiles, urls)
-                            }}
-                            className="w-full text-sm text-blue-600"
-                          />
-                        </label>
-                        {previews.workSamples.length > 0 && (
-                          <ul className="mt-3 text-sm text-blue-700">
-                            {previews.workSamples.map((url, idx) => (
-                              <li key={idx} className="flex items-center justify-between py-1 border-b last:border-b-0">
-                                <a href={url} target="_blank" rel="noreferrer" className="truncate underline">{url.split('/').pop()}</a>
-                                <button className="text-xs text-red-600" onClick={() => {
-                                  setFormData(prev => ({ ...prev, workSamples: prev.workSamples.filter((_, i) => i !== idx) }))
-                                  setPreviews(prev => ({ ...prev, workSamples: prev.workSamples.filter((_, i) => i !== idx) }))
-                                }}>Remove</button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        {errors.workSamples && <p className="text-sm text-red-600 mt-2">{errors.workSamples}</p>}
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg p-6">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-white">
+                                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-blue-900">Work Samples</h4>
+                              <p className="text-xs text-blue-700">Examples of your previous work and projects</p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="text-xs text-blue-700 bg-blue-50 p-2 rounded border">
+                              <p><strong>Accepted:</strong> PDF, JPG, PNG, WEBP • <strong>Max size:</strong> 10MB each • <strong>Max files:</strong> 5</p>
+                            </div>
+                            
+                            <label className="relative">
+                              <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files || [])
+                                  if (files.length + formData.workSamples.length > 5) {
+                                    setErrors(prev => ({ ...prev, workSamples: "Maximum 5 files allowed." }))
+                                    return
+                                  }
+                                  const validFiles = files.filter(file => 
+                                    ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 10 * 1024 * 1024
+                                  )
+                                  if (validFiles.length !== files.length) {
+                                    setErrors(prev => ({ ...prev, workSamples: "Only PDF, JPG, PNG, WEBP files under 10MB allowed." }))
+                                    return
+                                  }
+                                  const urls = validFiles.map(file => URL.createObjectURL(file))
+                                  handleWorkSamplesUpload(validFiles, urls)
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                aria-label="Upload work samples"
+                              />
+                              <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-25 transition-colors">
+                                <svg className="mx-auto h-8 w-8 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p className="text-sm font-medium text-blue-700">Click to upload work samples</p>
+                                <p className="text-xs text-blue-600">or drag and drop files here</p>
+                              </div>
+                            </label>
+
+                            {/* Work Samples Previews */}
+                            {formData.workSamples.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {formData.workSamples.map((file, idx) => (
+                                  <div key={idx} className="relative group bg-white border border-blue-200 rounded-lg p-2">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                                        {file.type.startsWith('image/') ? (
+                                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                          </svg>
+                                        ) : (
+                                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
+                                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        title="Remove work sample"
+                                        onClick={() => {
+                                          setFormData(prev => ({ ...prev, workSamples: prev.workSamples.filter((_, i) => i !== idx) }))
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                                      >
+                                        <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {errors.workSamples && (
+                              <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                                {errors.workSamples}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       {/* Portfolio Upload */}
-                      <div className="border rounded-lg p-4 bg-white">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">Portfolio</h4>
-                        <p className="text-xs text-blue-600 mb-3">Upload your portfolio items (images or PDFs). Max 10 files.</p>
-                        <label className="w-full block">
-                          <input
-                            aria-label="Upload portfolio items"
-                            type="file"
-                            multiple
-                            accept=".pdf,.jpg,.jpeg,.png,.webp"
-                            onChange={e => {
-                              const files = Array.from(e.target.files || [])
-                              if (files.length + formData.portfolio.length > 10) {
-                                setErrors(prev => ({ ...prev, portfolio: "Maximum 10 files allowed." }))
-                                return
-                              }
-                              const validFiles = files.filter(file => ["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type))
-                              if (validFiles.length !== files.length) {
-                                setErrors(prev => ({ ...prev, portfolio: "Only PDF, JPG, PNG, WEBP allowed for portfolio." }))
-                                return
-                              }
-                              const urls = validFiles.map(file => URL.createObjectURL(file))
-                              handlePortfolioUpload(validFiles, urls)
-                            }}
-                            className="w-full text-sm text-blue-600"
-                          />
-                        </label>
-                        {previews.portfolio.length > 0 && (
-                          <ul className="mt-3 text-sm text-blue-700">
-                            {previews.portfolio.map((url, idx) => (
-                              <li key={idx} className="flex items-center justify-between py-1 border-b last:border-b-0">
-                                <a href={url} target="_blank" rel="noreferrer" className="truncate underline">{url.split('/').pop()}</a>
-                                <button className="text-xs text-red-600" onClick={() => {
-                                  setFormData(prev => ({ ...prev, portfolio: prev.portfolio.filter((_, i) => i !== idx) }))
-                                  setPreviews(prev => ({ ...prev, portfolio: prev.portfolio.filter((_, i) => i !== idx) }))
-                                }}>Remove</button>
-                              </li>
-                            ))}
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 rounded-lg p-6">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-white">
+                                <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-purple-900">Portfolio Items</h4>
+                              <p className="text-xs text-purple-700">Your best work, business documents, testimonials</p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="text-xs text-purple-700 bg-purple-50 p-2 rounded border">
+                              <p><strong>Accepted:</strong> PDF, JPG, PNG, WEBP • <strong>Max size:</strong> 10MB each • <strong>Max files:</strong> 5</p>
+                            </div>
+                            
+                            <label className="relative">
+                              <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files || [])
+                                  if (files.length + formData.portfolio.length > 5) {
+                                    setErrors(prev => ({ ...prev, portfolio: "Maximum 5 files allowed." }))
+                                    return
+                                  }
+                                  const validFiles = files.filter(file => 
+                                    ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 10 * 1024 * 1024
+                                  )
+                                  if (validFiles.length !== files.length) {
+                                    setErrors(prev => ({ ...prev, portfolio: "Only PDF, JPG, PNG, WEBP files under 10MB allowed." }))
+                                    return
+                                  }
+                                  const urls = validFiles.map(file => URL.createObjectURL(file))
+                                  handlePortfolioUpload(validFiles, urls)
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                aria-label="Upload portfolio items"
+                              />
+                              <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center hover:border-purple-400 hover:bg-purple-25 transition-colors">
+                                <svg className="mx-auto h-8 w-8 text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p className="text-sm font-medium text-purple-700">Click to upload portfolio</p>
+                                <p className="text-xs text-purple-600">or drag and drop files here</p>
+                              </div>
+                            </label>
+
+                            {/* Portfolio Previews */}
+                            {formData.portfolio.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {formData.portfolio.map((file, idx) => (
+                                  <div key={idx} className="relative group bg-white border border-purple-200 rounded-lg p-2">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-8 h-8 bg-purple-100 rounded flex items-center justify-center flex-shrink-0">
+                                        {file.type.startsWith('image/') ? (
+                                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                          </svg>
+                                        ) : (
+                                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
+                                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        title="Remove portfolio item"
+                                        onClick={() => {
+                                          setFormData(prev => ({ ...prev, portfolio: prev.portfolio.filter((_, i) => i !== idx) }))
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                                      >
+                                        <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {errors.portfolio && (
+                              <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                                {errors.portfolio}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Upload Guidelines */}
+                    <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </div>
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-semibold text-blue-900">Upload Guidelines</h4>
+                          <ul className="text-xs text-blue-700 space-y-1">
+                            <li>• <strong>Certificates:</strong> Academic degrees, professional certifications, training certificates</li>
+                            <li>• <strong>Work Samples:</strong> Photos of completed projects, before/after images, product photos</li>
+                            <li>• <strong>Portfolio:</strong> Business registration, testimonials, awards, media coverage</li>
+                            <li>• <strong>Quality:</strong> Use high-resolution images with clear, readable text</li>
+                            <li>• <strong>Privacy:</strong> Remove sensitive personal information like national ID numbers</li>
                           </ul>
-                        )}
-                        {errors.portfolio && <p className="text-sm text-red-600 mt-2">{errors.portfolio}</p>}
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                {/* Upload Guidelines */}
+                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-blue-900">Upload Guidelines</h4>
+                      <ul className="text-xs text-blue-700 space-y-1">
+                        <li>• <strong>Certificates:</strong> Academic degrees, professional certifications, training certificates</li>
+                        <li>• <strong>Work Samples:</strong> Photos of completed projects, before/after images, product photos</li>
+                        <li>• <strong>Portfolio:</strong> Business registration, testimonials, awards, media coverage</li>
+                        <li>• <strong>Quality:</strong> Use high-resolution images with clear, readable text</li>
+                        <li>• <strong>Privacy:</strong> Remove sensitive personal information like national ID numbers</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Submit Button */}

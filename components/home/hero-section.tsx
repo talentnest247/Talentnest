@@ -59,7 +59,7 @@ export function HeroSection() {
             <div className={`inline-flex transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white px-4 py-2 text-sm font-medium shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Sparkles className="h-4 w-4 mr-2" />
-                University of Ilorin - TalentNest
+                University of Ilorin - Portal
               </Badge>
             </div>
 

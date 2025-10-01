@@ -70,7 +70,7 @@ export function Footer() {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur-md opacity-50"></div>
                   <Image
                     src="/images/unilorin-logo.png"
-                    alt="TalentNest - UNILORIN Platform"
+                    alt="UniLorin Portal"
                     width={48}
                     height={48}
                     className="relative rounded-full ring-2 ring-white/20"
@@ -78,7 +78,7 @@ export function Footer() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                    TalentNest
+                    UniLorin Portal
                   </h3>
                   <p className="text-sm text-gray-400">UNILORIN Services Platform</p>
                 </div>
@@ -200,7 +200,7 @@ export function Footer() {
             <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
               <div className="text-center md:text-left">
                 <p className="text-gray-400 text-sm">
-                  © 2025 TalentNest - UNILORIN Platform. All rights reserved.
+                  © 2025 UniLorin Portal - UNILORIN Platform. All rights reserved.
                 </p>
                 <p className="text-gray-500 text-xs mt-1">
                   Built with{" "}

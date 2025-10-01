@@ -14,6 +14,21 @@ export interface AuthUser {
   department?: string
   level?: number
   phone?: string
+  // Extended properties for marketplace functionality
+  avatar_url?: string
+  verification_status?: 'pending' | 'verified' | 'rejected'
+  available_for_learning?: boolean
+  availability_status?: 'online' | 'offline' | 'busy' | 'away'
+  location_on_campus?: string
+  hourly_rate?: number
+  skills_offered?: string[]
+  specializations?: string[]
+  bio?: string
+  experience_years?: number
+  portfolio_url?: string
+  social_links?: Record<string, string>
+  rating?: number
+  total_reviews?: number
 }
 
 async function hashPassword(password: string): Promise<string> {
@@ -690,4 +705,32 @@ export const authUtils = {
       return null
     }
   },
+}
+
+// Export standalone functions for easier import
+export const verifyToken = authUtils.verifyToken.bind(authUtils)
+export const getUserById = authUtils.getUserById.bind(authUtils)
+export const getUserByEmail = authUtils.getUserByEmail.bind(authUtils)
+export const createUser = authUtils.createUser.bind(authUtils)
+export const createProvider = authUtils.createProvider.bind(authUtils)
+
+// Helper function to extract and verify token from request
+export async function authenticateRequest(request: { headers: Headers }): Promise<{ valid: boolean; payload?: AuthUser; error?: string }> {
+  try {
+    const authHeader = request.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { valid: false, error: 'No valid authorization header' }
+    }
+
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    const payload = await verifyToken(token)
+    
+    if (!payload) {
+      return { valid: false, error: 'Invalid or expired token' }
+    }
+
+    return { valid: true, payload }
+  } catch {
+    return { valid: false, error: 'Authentication failed' }
+  }
 }

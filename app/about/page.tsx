@@ -15,14 +15,14 @@ export default function AboutPage() {
         <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              About TalentNest Platform
+              About UniLorin Platform
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-                            Empowering students and service providers at the University of Ilorin through service marketing,
+              Empowering students and service providers at the University of Ilorin through service marketing,
               professional connections, and a thriving services ecosystem.
             </p>
             <Badge variant="secondary" className="text-lg px-4 py-2">
-              Since 2024
+              Since 2025
             </Badge>
           </div>
         </section>
@@ -132,25 +132,25 @@ export default function AboutPage() {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4 text-blue-800">Our Impact</h2>
               <p className="text-lg text-blue-600">
-                Growing together, one service at a time
+                Building the future of University of Ilorin services
               </p>
             </div>
 
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-4xl font-bold text-blue-600 mb-2">500+</div>
+                <div className="text-4xl font-bold text-blue-600 mb-2">-</div>
                 <p className="text-muted-foreground">Students Enrolled</p>
               </div>
               <div>
-                <div className="text-4xl font-bold text-green-600 mb-2">100+</div>
+                <div className="text-4xl font-bold text-green-600 mb-2">-</div>
                 <p className="text-muted-foreground">Service Providers</p>
               </div>
               <div>
-                <div className="text-4xl font-bold text-purple-600 mb-2">50+</div>
+                <div className="text-4xl font-bold text-purple-600 mb-2">-</div>
                 <p className="text-muted-foreground">Services Offered</p>
               </div>
               <div>
-                <div className="text-4xl font-bold text-orange-600 mb-2">95%</div>
+                <div className="text-4xl font-bold text-orange-600 mb-2">-</div>
                 <p className="text-muted-foreground">Satisfaction Rate</p>
               </div>
             </div>
