@@ -8,9 +8,21 @@ import type {
   UpdateVerificationData 
 } from './types'
 
+// Re-export select types for consumers that import from this module
+export type { UpdateVerificationData }
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+// Runtime sanity check: log whether Supabase env vars are present (do not log secrets)
+if (typeof process !== 'undefined' && process.env) {
+  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+  const hasAnon = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const hasService = !!process.env.SUPABASE_SERVICE_ROLE_KEY
+  // Use console.debug so it doesn't spam normal logs; useful while debugging locally
+  console.debug(`[supabase] env presence -> URL:${hasUrl} ANON:${hasAnon} SERVICE:${hasService}`)
+}
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required')
@@ -140,11 +152,11 @@ export async function createProvider(providerData: CreateProviderData) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('providers')
+  .from('artisans')
       .insert(providerData)
       .select(`
         *,
-        user:users(*)
+        user:profiles(*)
       `)
       .single()
     
@@ -165,10 +177,10 @@ export async function getProviders(filters?: {
   try {
     const client = getClient()
     let query = client
-      .from('providers')
+  .from('artisans')
       .select(`
         *,
-        user:users(first_name, last_name, profile_image)
+        user:profiles(first_name, last_name, profile_image, student_id, email, phone, full_name)
       `)
       .eq('availability_is_available', true)
     
@@ -202,10 +214,10 @@ export async function getProviderById(id: string) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('providers')
+  .from('artisans')
       .select(`
         *,
-        user:users(*),
+        user:profiles(*),
         skills(*)
       `)
       .eq('id', id)
@@ -230,7 +242,7 @@ export async function createPortfolioItem(portfolioData: CreatePortfolioData) {
         *,
         provider:providers(
           *,
-          user:users(first_name, last_name, profile_image)
+          user:profiles(first_name, last_name, profile_image, student_id, email)
         )
       `)
       .single()
@@ -280,8 +292,8 @@ export async function createBooking(bookingData: {
       })
       .select(`
         *,
-        student:users(first_name, last_name, email),
-        provider:providers(*, user:users(first_name, last_name))
+        student:profiles(first_name, last_name, email, student_id, phone),
+        provider:providers(*, user:profiles(first_name, last_name, email))
       `)
       .single()
     
@@ -300,7 +312,7 @@ export async function getUserBookings(userId: string) {
       .from('bookings')
       .select(`
         *,
-        provider:providers(*, user:users(first_name, last_name))
+        provider:providers(*, user:profiles(first_name, last_name, email, student_id))
       `)
       .eq('student_id', userId)
       .order('booked_at', { ascending: false })
@@ -320,7 +332,7 @@ export async function getProviderBookings(providerId: string) {
       .from('bookings')
       .select(`
         *,
-        student:users(first_name, last_name, email, phone)
+        student:profiles(first_name, last_name, email, phone, student_id)
       `)
       .eq('provider_id', providerId)
       .order('booked_at', { ascending: false })
@@ -342,8 +354,8 @@ export async function createContactRequest(contactData: CreateContactData) {
       .insert(contactData)
       .select(`
         *,
-        student:users!contact_requests_student_id_fkey(first_name, last_name, email),
-        provider:providers(*, user:users(first_name, last_name))
+        student:profiles!contact_requests_student_id_fkey(first_name, last_name, email, student_id),
+        provider:providers(*, user:profiles(first_name, last_name, email))
       `)
       .single()
     
@@ -364,7 +376,7 @@ export async function createVerificationRequest(verificationData: CreateVerifica
       .insert(verificationData)
       .select(`
         *,
-        provider:providers(*, user:users(first_name, last_name))
+        provider:providers(*, user:profiles(first_name, last_name, email, student_id))
       `)
       .single()
     
@@ -379,13 +391,13 @@ export async function createVerificationRequest(verificationData: CreateVerifica
 export async function getVerificationRequests(status?: 'pending' | 'approved' | 'rejected') {
   try {
     const client = getClient()
-    let query = client
+      let query = client
       .from('verification_requests')
       .select(`
         *,
         provider:providers(
           *,
-          user:users(first_name, last_name, email)
+          user:profiles(first_name, last_name, email, student_id)
         )
       `)
     
@@ -439,6 +451,98 @@ export async function getCategories() {
     return uniqueCategories
   } catch (error) {
     console.error('Error getting categories:', error)
+    throw error
+  }
+}
+
+// Reviews
+export async function createReview(reviewData: {
+  studentId: string
+  providerId: string
+  bookingId?: string | null
+  rating: number
+  comment?: string
+  serviceType: 'direct_service' | 'training'
+}) {
+  try {
+    const client = getClient()
+    const { data, error } = await client
+      .from('reviews')
+      .insert({
+        student_id: reviewData.studentId,
+        provider_id: reviewData.providerId,
+        booking_id: reviewData.bookingId || null,
+        rating: reviewData.rating,
+        comment: reviewData.comment || null,
+        service_type: reviewData.serviceType,
+        reviewed_at: new Date().toISOString(),
+        verified: true
+      })
+      .select()
+      .single()
+
+    if (error) throw new Error(handleSupabaseError(error))
+    return data
+  } catch (error) {
+    console.error('Error creating review:', error)
+    throw error
+  }
+}
+
+export async function getReviews(providerId?: string, limit?: number) {
+  try {
+    const client = getClient()
+    let query = client.from('reviews').select('*')
+    if (providerId) query = query.eq('provider_id', providerId)
+    if (limit) query = query.limit(limit)
+    const { data, error } = await query.order('reviewed_at', { ascending: false })
+    if (error) throw new Error(handleSupabaseError(error))
+    return data || []
+  } catch (error) {
+    console.error('Error getting reviews:', error)
+    throw error
+  }
+}
+
+// Presign uploads (simple helper for storage or external S3)
+export async function createPresignedUpload(params: { bucket: string; key: string; expiresInSeconds?: number }) {
+  // If Supabase storage is configured, return a signed URL using supabase Admin or client
+  try {
+    const { bucket, key, expiresInSeconds } = params
+    if (supabaseAdmin) {
+      const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(key, expiresInSeconds || 3600)
+      if (error) throw new Error(handleSupabaseError(error))
+      return data
+    }
+
+    // Fallback: return a mock URL (caller should handle this in dev)
+    return { signedUrl: `https://mock-storage.local/${bucket}/${key}`, expiresAt: new Date(Date.now() + (expiresInSeconds || 3600) * 1000).toISOString() }
+  } catch (error) {
+    console.error('Error creating presigned upload:', error)
+    throw error
+  }
+}
+
+// Admin actions log
+export async function logAdminAction(action: { adminId: string; actionType: string; targetId?: string; details?: string }) {
+  try {
+    const client = getClient()
+    const { data, error } = await client
+      .from('admin_actions_log')
+      .insert({
+        admin_id: action.adminId,
+        action_type: action.actionType,
+        target_id: action.targetId || null,
+        details: action.details || null,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) throw new Error(handleSupabaseError(error))
+    return data
+  } catch (error) {
+    console.error('Error logging admin action:', error)
     throw error
   }
 }

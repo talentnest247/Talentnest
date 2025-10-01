@@ -63,7 +63,7 @@ export default function ArtisanProfilePage() {
             <h1 className="text-2xl font-bold mb-4">Service Provider Not Found</h1>
             <p className="text-muted-foreground mb-4">The service provider you&apos;re looking for doesn&apos;t exist.</p>
             <Button asChild>
-              <Link href="/marketplace">Back to Marketplace</Link>
+              <Link href="/services">Back to Services</Link>
             </Button>
           </div>
         </div>

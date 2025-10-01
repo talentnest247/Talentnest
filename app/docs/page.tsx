@@ -161,7 +161,7 @@ export default function DocsPage() {
                     Browse services, connect with providers, and book what you need.
                   </p>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Explore the marketplace</li>
+                    <li>• Explore the services</li>
                     <li>• Book services</li>
                     <li>• Connect with providers</li>
                   </ul>

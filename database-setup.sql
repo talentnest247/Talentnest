@@ -220,7 +220,7 @@ CREATE POLICY "Users can update their own profile" ON public.profiles
 CREATE POLICY "Users can insert their own profile" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
 
--- Allow viewing basic profile info for verified artisans (needed for marketplace)
+-- Allow viewing basic profile info for verified artisans (needed for services)
 CREATE POLICY "Public can view verified artisan profiles" ON public.profiles
     FOR SELECT USING (
         role = 'artisan' AND 

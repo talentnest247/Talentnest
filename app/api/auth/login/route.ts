@@ -40,19 +40,37 @@ export async function POST(request: NextRequest) {
 
     console.log("User authenticated, fetching profile...")
 
-    // Get user profile data
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, email, full_name, first_name, last_name, role, phone')
-      .eq('id', authData.user.id)
-      .single()
+    // Prefer using the auth user metadata returned by Supabase to avoid
+    // hitting Row Level Security policies that can cause recursion errors
+    // when querying `profiles` directly. Fall back to querying `profiles`
+    // only if necessary.
+    let profile: Record<string, unknown> | null = null
+    // Try to use user_metadata returned by the auth response (when present)
+    const userObj = authData.user as unknown
+    const metadata = (userObj && typeof userObj === 'object' && (userObj as Record<string, unknown>)['user_metadata']) ?? null
+    if (metadata && typeof metadata === 'object') {
+      profile = { ...(metadata as Record<string, unknown>) }
+      if (!profile.id) profile.id = authData.user.id
+      if (!profile.email) profile.email = authData.user.email
+    }
 
-    if (profileError || !profile) {
-      console.error("Error fetching profile:", profileError)
-      return NextResponse.json(
-        { error: "Profile not found" },
-        { status: 404 }
-      )
+    // If metadata not available, attempt to fetch from profiles table (guarded)
+    if (!profile) {
+      const { data: fetchedProfile, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, email, full_name, first_name, last_name, role, phone')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile from DB:", profileError)
+        return NextResponse.json(
+          { error: "Profile not found" },
+          { status: 404 }
+        )
+      }
+
+      profile = fetchedProfile
     }
 
     // Get additional data based on role
@@ -74,15 +92,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user object for token generation
+    const p = profile as Record<string, unknown>
     const user = {
-      id: profile.id,
-      email: profile.email,
-      fullName: profile.full_name,
-      firstName: profile.first_name,
-      lastName: profile.last_name,
-      userType: profile.role as "student" | "artisan",
-      role: profile.role as "student" | "artisan" | "admin",
-      phone: profile.phone,
+      id: String(p.id),
+      email: String(p.email),
+      fullName: String(p['full_name'] ?? ''),
+      firstName: String(p['first_name'] ?? ''),
+      lastName: String(p['last_name'] ?? ''),
+      userType: (String(p['role']) as unknown) as "student" | "artisan",
+      role: (String(p['role']) as unknown) as "student" | "artisan" | "admin",
+      phone: String(p['phone'] ?? ''),
       ...additionalData
     }
 

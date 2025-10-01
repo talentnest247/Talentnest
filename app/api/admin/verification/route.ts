@@ -7,44 +7,47 @@ const supabase = createClient(
 )
 
 // Type definitions for the query result
-interface ProviderWithUser {
+type JoinedUser = {
+  id: string
+  email?: string
+  first_name?: string
+  last_name?: string
+  full_name?: string
+  student_id?: string | null
+  department?: string | null
+}
+
+type ArtisanRow = {
   id: string
   user_id: string
-  business_name: string
-  description: string
-  bio: string | null
-  specialization: string[]
-  experience: number
-  location: string
-  certificates: string[]
-  verification_status: 'pending' | 'approved' | 'rejected'
-  verification_evidence: string[]
-  verification_submitted_at: string
-  verification_reviewed_at: string | null
-  verification_reviewed_by: string | null
-  verification_notes: string | null
-  matric_number_verified: boolean
-  business_name_verified: boolean
-  certificates_verified: boolean
-  bio_verified: boolean
-  created_at: string
-  updated_at: string
-  users: {
-    id: string
-    email: string
-    first_name: string
-    last_name: string
-    full_name: string
-    student_id: string | null
-    department: string | null
-  }[]
+  business_name?: string
+  description?: string
+  bio?: string | null
+  specialization?: string[]
+  experience?: number
+  location?: string
+  certificates?: string[]
+  verification_status?: 'pending' | 'approved' | 'rejected'
+  verification_evidence?: string[]
+  verification_submitted_at?: string
+  verification_reviewed_at?: string | null
+  verification_reviewed_by?: string | null
+  verification_notes?: string | null
+  matric_number_verified?: boolean
+  business_name_verified?: boolean
+  certificates_verified?: boolean
+  bio_verified?: boolean
+  created_at?: string
+  updated_at?: string
+  // Note: PostgREST returns joined relations as arrays, e.g. `user:profiles (...)` will be an array
+  user?: JoinedUser[]
 }
 
 export async function GET() {
   try {
     // Get verification requests by fetching pending providers
     const { data: providers, error } = await supabase
-      .from('providers')
+      .from('artisans')
       .select(`
         id,
         user_id,
@@ -67,7 +70,7 @@ export async function GET() {
         bio_verified,
         created_at,
         updated_at,
-        users (
+        user:profiles (
           id,
           email,
           first_name,
@@ -89,18 +92,19 @@ export async function GET() {
     }
 
     // Transform the data to match the VerificationRequest interface
-    const verificationRequests = (providers as ProviderWithUser[])?.map(provider => {
-      // Get the first user from the array (should only be one due to foreign key relationship)
-      const user = provider.users?.[0];
-      
+    const verificationRequests = (providers as ArtisanRow[])?.map(provider => {
+      // user is returned as `user` (joined profiles row) and comes back as an array
+      const rawUser = provider.user ?? null
+      const user = Array.isArray(rawUser) ? rawUser[0] : rawUser
+
       return {
         id: `vr-${provider.id}`,
         providerId: provider.id,
-        providerName: user?.full_name || 'Unknown',
-        providerEmail: user?.email || '',
-        studentId: user?.student_id || '',
-        matricNumber: user?.student_id || '', // Matric number for verification
-        department: user?.department || '',
+  providerName: user?.full_name || 'Unknown',
+  providerEmail: user?.email || '',
+  studentId: user?.student_id || '',
+  matricNumber: user?.student_id || '', // Matric number for verification
+  department: user?.department || '',
         businessName: provider.business_name,
         businessDescription: provider.description,
         bio: provider.bio,
@@ -112,21 +116,25 @@ export async function GET() {
           type: url.includes('.pdf') ? 'certificate' as const : 'portfolio' as const
         })),
         status: provider.verification_status,
-        submittedAt: new Date(provider.verification_submitted_at || provider.created_at),
+        // Make date construction safe: pick the submitted timestamp if present, otherwise created_at
+        submittedAt: (() => {
+          const submitted = provider.verification_submitted_at ?? provider.created_at
+          return submitted ? new Date(submitted) : undefined
+        })(),
         reviewedAt: provider.verification_reviewed_at ? new Date(provider.verification_reviewed_at) : undefined,
         reviewedBy: provider.verification_reviewed_by || undefined,
         adminNotes: provider.verification_notes || undefined,
         // Individual verification tracking
-        matricNumberVerified: provider.matric_number_verified || false,
-        businessNameVerified: provider.business_name_verified || false,
-        certificatesVerified: provider.certificates_verified || false,
-        bioVerified: provider.bio_verified || false,
+        matricNumberVerified: !!provider.matric_number_verified,
+        businessNameVerified: !!provider.business_name_verified,
+        certificatesVerified: !!provider.certificates_verified,
+        bioVerified: !!provider.bio_verified,
         verificationComplete: (
-          provider.matric_number_verified &&
-          provider.business_name_verified &&
-          provider.certificates_verified &&
-          provider.bio_verified
-        ) || false
+          !!provider.matric_number_verified &&
+          !!provider.business_name_verified &&
+          !!provider.certificates_verified &&
+          !!provider.bio_verified
+        )
       }
     }) || []
 
@@ -167,7 +175,7 @@ export async function POST(request: NextRequest) {
     if (action === 'approve') {
       // When approving, mark all verification fields as verified
       const { data, error } = await supabase
-        .from('providers')
+        .from('artisans')
         .update({
           verification_status: 'approved',
           verified: true,
@@ -200,7 +208,7 @@ export async function POST(request: NextRequest) {
     } else {
       // When rejecting, provide detailed verification feedback
       const { data, error } = await supabase
-        .from('providers')
+        .from('artisans')
         .update({
           verification_status: 'rejected',
           verified: false,

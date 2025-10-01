@@ -15,11 +15,11 @@ import {
 } from "lucide-react"
 
 export function Footer() {
-  const footerLinks = {
+      const footerLinks = {
     platform: [
-      { name: "Marketplace", href: "/marketplace" },
       { name: "Services", href: "/services" },
-      { name: "Service Providers", href: "/marketplace" },
+      { name: "Services Home", href: "/services" },
+      { name: "Service Providers", href: "/services" },
       { name: "Dashboard", href: "/dashboard" },
     ],
     support: [

@@ -39,17 +39,17 @@ export default function NotFound() {
                 <span>Go Home</span>
               </Link>
             </Button>
-            <Button 
-              asChild
-              variant="outline"
-              size="lg"
-              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 hover:scale-105"
-            >
-              <Link href="/marketplace" className="flex items-center space-x-2">
-                <ShoppingBag className="h-5 w-5" />
-                <span>Browse Marketplace</span>
-              </Link>
-            </Button>
+              <Button 
+                asChild
+                variant="outline"
+                size="lg"
+                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 hover:scale-105"
+              >
+                <Link href="/services" className="flex items-center space-x-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  <span>Browse Services</span>
+                </Link>
+              </Button>
           </div>
           
           <div className="pt-8">

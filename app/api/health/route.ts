@@ -8,9 +8,10 @@ export async function GET() {
     }
 
     // Test basic connectivity
+    // Check a lightweight, existing public table (profiles) instead of `users`.
     const { error } = await supabaseAdmin
-      .from('users')
-      .select('count')
+      .from('profiles')
+      .select('id')
       .limit(1);
 
     if (error) {

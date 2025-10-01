@@ -159,14 +159,14 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white h-12">
-              <Link href="/marketplace">
+              <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white h-12">
+                <Link href="/services">
                 <Search className="h-4 w-4 mr-2" />
                 Find Service Providers
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 h-12">
-              <Link href="/marketplace?category=trending">
+              <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 h-12">
+                <Link href="/services?category=trending">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Trending Services
               </Link>
@@ -274,7 +274,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
                     {service.category}
                   </Badge>
                   <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Link href={`/marketplace?service=${service.id}`}>
+                    <Link href={`/services?service=${service.id}`}>
                       Find Providers
                     </Link>
                   </Button>

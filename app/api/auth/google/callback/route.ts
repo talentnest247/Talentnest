@@ -59,34 +59,53 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user exists
+    // Look up by profiles table first
     const { data: userData, error } = await supabaseAdmin
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('email', googleUser.email)
       .single()
 
     let user = userData
 
-    if (!user && !error?.code?.includes('PGRST116')) {
-      // Create new user
-      const { data: newUser, error: createError } = await supabaseAdmin
-        .from('users')
-        .insert([{
-          email: googleUser.email,
-          first_name: googleUser.given_name || '',
-          last_name: googleUser.family_name || '',
-          full_name: googleUser.name || `${googleUser.given_name} ${googleUser.family_name}`,
-          role: 'student',
-          password: 'google_oauth_user', // Placeholder for OAuth users
-        }])
+    const getErrorCode = (e: unknown): string | null => {
+      try {
+        if (!e || typeof e !== 'object') return null
+        const maybe = e as Record<string, unknown>
+        return typeof maybe['code'] === 'string' ? String(maybe['code']) : null
+      } catch {
+        return null
+      }
+    }
+
+    if (!user && getErrorCode(error) !== 'PGRST116') {
+      // If a non-not-found error happened, throw
+      console.error('Error querying profiles for Google user:', error)
+      throw new Error('Failed to query user')
+    }
+
+    // If no profile exists, create a lightweight profile record (if allowed)
+    if (!user) {
+      const insertPayload = {
+        email: googleUser.email,
+        first_name: googleUser.given_name || '',
+        last_name: googleUser.family_name || '',
+        full_name: googleUser.name || `${googleUser.given_name} ${googleUser.family_name}`,
+        role: 'student'
+      }
+
+      const { data: newProfile, error: createError } = await supabaseAdmin
+        .from('profiles')
+        .insert([insertPayload])
         .select()
         .single()
 
       if (createError) {
-        throw new Error(`Failed to create user: ${createError.message}`)
+        console.error('Failed to create profile for Google user:', createError)
+        throw new Error('Failed to create user profile')
       }
 
-      user = newUser
+      user = newProfile
     }
 
     // Generate JWT token for the user

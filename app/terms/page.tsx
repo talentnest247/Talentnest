@@ -39,8 +39,8 @@ export default function TermsPage() {
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  TalentNest is an online marketplace that connects students of the University of Ilorin
-                  with professional service providers for business opportunities and services. Our platform includes:
+                  TalentNest connects students of the University of Ilorin with professional service providers
+                  for business opportunities and services. Our platform includes:
                 </p>
                 <ul>
                   <li>Service booking and management system</li>

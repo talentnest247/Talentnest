@@ -19,7 +19,7 @@ export default function AboutPage() {
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
                             Empowering students and service providers at the University of Ilorin through service marketing,
-              professional connections, and a thriving marketplace ecosystem.
+              professional connections, and a thriving services ecosystem.
             </p>
             <Badge variant="secondary" className="text-lg px-4 py-2">
               Since 2024
@@ -170,7 +170,7 @@ export default function AboutPage() {
                 <Link href="/register">Get Started</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/marketplace">Explore Services</Link>
+                <Link href="/services">Explore Services</Link>
               </Button>
             </div>
           </div>

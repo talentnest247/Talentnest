@@ -75,7 +75,7 @@ export function HeroSection() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
-                Connect with talented service providers across every field, access professional services, and become part of UNILORIN&apos;s most inclusive marketplace community.
+                Connect with talented service providers across every field, access professional services, and become part of UNILORIN&apos;s most inclusive services community.
               </p>
             </div>
 
@@ -96,8 +96,8 @@ export function HeroSection() {
                 size="lg"
                 className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
-                <Link href="/marketplace" className="flex items-center space-x-2">
-                  <span className="text-white">Explore Marketplace</span>
+                <Link href="/services" className="flex items-center space-x-2">
+                  <span className="text-white">Explore Services</span>
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>

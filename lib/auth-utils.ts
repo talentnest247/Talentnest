@@ -17,7 +17,27 @@ export interface AuthUser {
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
-  const salt = crypto.getRandomValues(new Uint8Array(16))
+  // Generate a 16-byte salt. Prefer Web Crypto's getRandomValues if available,
+  // otherwise fall back to Node's crypto.randomBytes.
+  let salt: Uint8Array
+  try {
+    const getRandomValues = (typeof crypto !== 'undefined' && (crypto as unknown as { getRandomValues?: (arr: Uint8Array) => Uint8Array }).getRandomValues)
+      ? (crypto as unknown as { getRandomValues?: (arr: Uint8Array) => Uint8Array }).getRandomValues
+      : undefined
+
+    if (getRandomValues) {
+      salt = getRandomValues(new Uint8Array(16))
+    } else {
+      // dynamic import so bundlers don't rewrite in browser
+      const { randomBytes } = await import('crypto')
+      salt = Uint8Array.from(randomBytes(16))
+    }
+  } catch (err) {
+    // As a last resort, create a (less secure) pseudo-random salt. This should
+    // rarely happen; log for visibility.
+    console.warn('[v0] Falling back to pseudo-random salt generation', err)
+    salt = Uint8Array.from(Array.from({ length: 16 }, () => Math.floor(Math.random() * 256)))
+  }
   const passwordData = encoder.encode(
     password +
       Array.from(salt)
@@ -25,8 +45,32 @@ async function hashPassword(password: string): Promise<string> {
         .join(""),
   )
 
-  const hashBuffer = await crypto.subtle.digest("SHA-256", passwordData)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  // Compute SHA-256 digest using SubtleCrypto when available, otherwise fall back to Node's crypto
+  async function sha256(data: Uint8Array): Promise<Uint8Array> {
+    try {
+      const subtle = (typeof crypto !== 'undefined' && (crypto as unknown as { subtle?: SubtleCrypto }).subtle)
+        ? (crypto as unknown as { subtle?: SubtleCrypto }).subtle
+        : undefined
+      if (subtle && typeof subtle.digest === 'function') {
+  const buf = await subtle.digest('SHA-256', data.buffer as unknown as ArrayBuffer)
+        return new Uint8Array(buf)
+      }
+    } catch {
+      // fall through to Node fallback
+    }
+
+    // Node fallback
+    try {
+      const { createHash } = await import('crypto')
+      const hash = createHash('sha256').update(Buffer.from(data)).digest()
+      return new Uint8Array(hash)
+    } catch {
+      throw new Error('No available crypto implementation for SHA-256 digest')
+    }
+  }
+
+  const hashBuffer = await sha256(passwordData)
+  const hashArray = Array.from(hashBuffer)
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
   const saltHex = Array.from(salt)
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -49,8 +93,31 @@ async function verifyPassword(password: string, hashedPassword: string): Promise
         .join("")
     )
 
-    const hashBuffer = await crypto.subtle.digest("SHA-256", passwordData)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    // Use the same sha256 helper as in hashPassword
+    async function sha256(data: Uint8Array): Promise<Uint8Array> {
+      try {
+        const subtle = (typeof crypto !== 'undefined' && (crypto as unknown as { subtle?: SubtleCrypto }).subtle)
+          ? (crypto as unknown as { subtle?: SubtleCrypto }).subtle
+          : undefined
+        if (subtle && typeof subtle.digest === 'function') {
+    const buf = await subtle.digest('SHA-256', data.buffer as unknown as ArrayBuffer)
+          return new Uint8Array(buf)
+        }
+      } catch {
+        // fall through to Node fallback
+      }
+
+      try {
+        const { createHash } = await import('crypto')
+        const hash = createHash('sha256').update(Buffer.from(data)).digest()
+        return new Uint8Array(hash)
+      } catch {
+        throw new Error('No available crypto implementation for SHA-256 digest')
+      }
+    }
+
+    const hashBuffer = await sha256(passwordData)
+    const hashArray = Array.from(hashBuffer)
     const computedHashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
 
     return computedHashHex === hashHex
@@ -85,13 +152,37 @@ async function createSignature(data: string, secret: string): Promise<string> {
       const key = await subtle.importKey(
         'raw',
         keyData,
-        { name: 'HMAC', hash: 'SHA-256' } as HmacImportParams,
+        // SubtleCrypto expects the hash to be an object: { name: 'SHA-256' }
+        { name: 'HMAC', hash: { name: 'SHA-256' } } as HmacImportParams,
         false,
         ['sign'],
       )
-
-      const signature = await subtle.sign('HMAC', key, messageData)
-      const base64 = Buffer.from(new Uint8Array(signature)).toString('base64')
+      // Ensure the imported key is a CryptoKey (avoid implicit any) and sign using SubtleCrypto.
+      // Return URL-safe base64 signature immediately so the Node fallback below is not reached.
+      const cryptoKey = key as CryptoKey
+      if (!cryptoKey) {
+        throw new Error('Failed to import HMAC key (invalid CryptoKey)')
+      }
+      const sigBuffer = await (subtle as SubtleCrypto).sign('HMAC', cryptoKey, messageData)
+      // Buffer may not be present in some runtimes; use a safe fallback
+      let BufferLib: typeof Buffer
+      try {
+        BufferLib = (typeof Buffer !== 'undefined') ? Buffer : (await import('buffer')).Buffer
+      } catch {
+        // As a final fallback, convert via Uint8Array -> base64 manually. Prefer
+        // `btoa` if available (browsers/Edge), otherwise dynamically import
+        // `buffer` to produce the base64 string in Node-like runtimes.
+        const arr = Array.from(new Uint8Array(sigBuffer))
+        const binary = arr.map((b) => String.fromCharCode(b)).join('')
+        if (typeof btoa === 'function') {
+          const base64 = btoa(binary)
+          return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+        }
+        const { Buffer: Buf } = await import('buffer')
+        const base64 = Buf.from(binary, 'binary').toString('base64')
+        return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+      }
+      const base64 = BufferLib.from(new Uint8Array(sigBuffer)).toString('base64')
       return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
     }
   } catch {
@@ -207,9 +298,11 @@ export const authUtils = {
         return null
       }
 
+      // Query the public profiles table (some projects expose user profiles in `profiles`)
+      // This avoids referencing a non-existent `public.users` table in some setups.
       const { data, error } = await supabaseAdmin
-        .from('users')
-        .select('id, email, full_name, first_name, last_name, role, student_id, department, level, phone')
+        .from('profiles')
+        .select('id, email, full_name, first_name, last_name, role, phone')
         .eq('id', id)
         .single()
       
@@ -220,6 +313,22 @@ export const authUtils = {
       
       if (!data) return null
       
+      // If user is a student, fetch the student-specific details from `students` table
+      type StudentRecord = {
+        student_id?: string | null
+        department?: string | null
+        level?: number | null
+      } | null
+      let studentData: StudentRecord = null
+      if (data.role === 'student') {
+        const { data: sData } = await supabaseAdmin
+          .from('students')
+          .select('student_id, department, level')
+          .eq('user_id', data.id)
+          .single()
+        studentData = sData as StudentRecord
+      }
+
       return {
         id: data.id,
         email: data.email,
@@ -228,10 +337,10 @@ export const authUtils = {
         lastName: data.last_name,
         userType: data.role,
         role: data.role,
-        studentId: data.student_id,
-        department: data.department,
-        level: data.level,
-        phone: data.phone,
+        studentId: studentData?.student_id ?? undefined,
+        department: studentData?.department ?? undefined,
+        level: studentData?.level ?? undefined,
+        phone: data.phone ?? undefined,
       }
     } catch (error) {
       console.error("Error fetching user:", error)
@@ -362,10 +471,10 @@ export const authUtils = {
         lastName: data.last_name,
         userType: data.role,
         role: data.role,
-        studentId: studentData?.student_id,
-        department: studentData?.department,
-        level: studentData?.level,
-        phone: data.phone,
+        studentId: studentData?.student_id ?? undefined,
+        department: studentData?.department ?? undefined,
+        level: studentData?.level ?? undefined,
+        phone: data.phone ?? undefined,
         password: '', // Password not stored in profiles table
       }
     } catch (error) {
@@ -497,7 +606,7 @@ export const authUtils = {
       console.log("Creating provider profile:", providerData.business_name)
 
       const { data, error } = await supabaseAdmin
-        .from('providers')
+        .from('artisans')
         .insert([providerData])
         .select('id')
         .single()

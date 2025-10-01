@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -46,7 +46,7 @@ export default function ContactPage() {
         category: "",
         message: ""
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
@@ -68,7 +68,7 @@ export default function ContactPage() {
               Get Support
             </h1>
             <p className="text-xl text-blue-100 mb-8">
-              Need help? We're here to assist you. Contact our support team for any questions about TalentNest.
+              Need help? We&#39;re here to assist you. Contact our support team for any questions about TalentNest.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <div className="bg-white text-blue-600 px-4 py-2 rounded-full flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function ContactPage() {
                     <SelectContent>
                       <SelectItem value="account">Account Issues</SelectItem>
                       <SelectItem value="technical">Technical Support</SelectItem>
-                      <SelectItem value="marketplace">Marketplace Help</SelectItem>
+                      <SelectItem value="services">Services Help</SelectItem>
                       <SelectItem value="payment">Payment Issues</SelectItem>
                       <SelectItem value="general">General Inquiry</SelectItem>
                     </SelectContent>

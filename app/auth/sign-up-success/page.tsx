@@ -84,7 +84,7 @@ export default function SignUpSuccessPage() {
                 </Button>
 
                 <Button asChild variant="outline" className="flex-1 border-sky-200 text-sky-700">
-                  <Link href="/marketplace" className="flex items-center justify-center">Explore Marketplace</Link>
+                  <Link href="/services" className="flex items-center justify-center">Explore Services</Link>
                 </Button>
               </div>
 
