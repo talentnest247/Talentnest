@@ -43,7 +43,7 @@ export function ProviderDashboard() {
         firstName: user.firstName || "John",
         lastName: user.lastName || "Doe",
         fullName: user.fullName,
-        role: "provider",
+        role: "artisan",
         businessName: "Custom Tailoring Services",
         description: "Professional tailoring and fashion design services specializing in traditional and modern Nigerian attire.",
         specialization: ["Fashion Design", "Tailoring", "Traditional Wear"],

@@ -8,7 +8,7 @@ export interface User {
   lastName: string
   fullName: string
   phone: string
-  role: "student" | "provider" | "admin"
+  role: "student" | "artisan" | "admin"
   profileImage?: string
   studentId?: string // For student verification
   department?: string
@@ -26,7 +26,7 @@ export interface Student extends User {
 
 // PRD-aligned Provider (Service Provider) with portfolio and verification
 export interface Provider extends User {
-  role: "provider"
+  role: "artisan"
   businessName: string
   description: string
   bio?: string // Professional bio/background
@@ -201,28 +201,38 @@ export interface WhatsAppMessage {
 // Supabase function parameter interfaces
 export interface CreateUserData {
   email: string
-  password: string
-  firstName: string
-  lastName: string
+  password?: string
+  first_name: string
+  last_name: string
+  full_name: string
   phone: string
-  role: "student" | "provider" | "admin"
-  profileImage?: string
-  studentId?: string
+  role: "student" | "artisan" | "admin"
+  profile_image?: string
+  student_id?: string
   department?: string
   level?: string
 }
 
 export interface CreateProviderData {
-  userId: string
-  businessName: string
+  user_id: string
+  business_name: string
   description: string
   bio?: string
   specialization: string[]
   experience: number
   location: string
-  whatsappNumber: string
-  verificationEvidence?: string[]
-  certificates?: string[]
+  verification_status?: 'pending' | 'approved' | 'rejected'
+  verified?: boolean
+  rating?: number
+  total_reviews?: number
+  verification_evidence?: string[]
+  availability_is_available?: boolean
+  availability_available_for_work?: boolean
+  availability_available_for_learning?: boolean
+  availability_response_time?: string
+  pricing_base_rate?: number | null
+  pricing_learning_rate?: number | null
+  pricing_currency?: string
 }
 
 export interface CreatePortfolioData {

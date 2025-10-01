@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "./supabase"
+import { mockAPI } from "./mock-data"
 const JWT_SECRET = process.env.JWT_SECRET || "unilorin-artisan-platform-jwt-secret-key-minimum-32-chars-2024"
 
 export interface AuthUser {
@@ -293,8 +294,25 @@ export const authUtils = {
 
   async getUserById(id: string): Promise<AuthUser | null> {
     try {
+      // Try Supabase first, fallback to mock data
       if (!supabaseAdmin) {
-        console.error("Supabase admin client not available")
+        console.warn("Using mock data - supabaseAdmin not available")
+        const mockUser = await mockAPI.getUserById(id)
+        if (mockUser) {
+          return {
+            id: mockUser.id,
+            email: mockUser.email,
+            fullName: mockUser.fullName,
+            firstName: mockUser.firstName,
+            lastName: mockUser.lastName,
+            userType: mockUser.role,
+            role: mockUser.role,
+            studentId: mockUser.studentId,
+            department: mockUser.department,
+            level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+            phone: mockUser.phone,
+          }
+        }
         return null
       }
 
@@ -350,8 +368,26 @@ export const authUtils = {
 
   async getUserByEmail(email: string): Promise<(AuthUser & { password: string }) | null> {
     try {
+      // Try Supabase first, fallback to mock data
       if (!supabaseAdmin) {
-        console.error("Supabase admin client not available")
+        console.warn("Using mock data - supabaseAdmin not available")
+        const mockUser = await mockAPI.getUserByEmail(email)
+        if (mockUser) {
+          return {
+            id: mockUser.id,
+            email: mockUser.email,
+            fullName: mockUser.fullName,
+            firstName: mockUser.firstName,
+            lastName: mockUser.lastName,
+            userType: mockUser.role,
+            role: mockUser.role,
+            studentId: mockUser.studentId,
+            department: mockUser.department,
+            level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+            phone: mockUser.phone,
+            password: mockUser.password || '',
+          }
+        }
         return null
       }
 
@@ -496,9 +532,35 @@ export const authUtils = {
     level?: string,
   }): Promise<AuthUser | null> {
     try {
+      // Try Supabase first, fallback to mock data
       if (!supabaseAdmin) {
-        console.error("Supabase admin client not available")
-        return null
+        console.warn("Using mock data - supabaseAdmin not available")
+        const mockUser = await mockAPI.createUser({
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          full_name: user.fullName,
+          phone: user.phone,
+          role: user.role,
+          student_id: user.studentId,
+          department: user.department,
+          level: user.level ? Number(user.level) : undefined,
+          password: user.password
+        })
+        
+        return {
+          id: mockUser.id,
+          email: user.email,
+          fullName: user.fullName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userType: user.role,
+          role: user.role,
+          studentId: user.studentId,
+          department: user.department,
+          level: user.level ? Number(user.level) : undefined,
+          phone: user.phone,
+        }
       }
 
       // Use Supabase Auth to create user

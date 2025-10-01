@@ -1,24 +1,19 @@
 "use client"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/contexts/auth-context"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   Search, 
-  MapPin, 
-  Star, 
-  Clock, 
-  MessageSquare,
-  ExternalLink,
   Briefcase
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import ServiceProviderCard from "@/components/services/service-provider-card"
 
 interface ServiceProvider {
   id: string
@@ -39,11 +34,21 @@ interface ServiceProvider {
 }
 
 export default function ServicesPage() {
+  const { user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
   const [services, setServices] = useState<ServiceProvider[]>([])
   const [filteredServices, setFilteredServices] = useState<ServiceProvider[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
+
+  // Redirect non-authenticated users to registration
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/register?message=Please register as a student to access services")
+      return
+    }
+  }, [user, authLoading, router])
 
   // Mock data for services according to PRD
   useEffect(() => {
@@ -107,7 +112,8 @@ export default function ServicesPage() {
         service.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.specialization.some(spec => 
           spec.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        ) ||
+        service.location.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -120,7 +126,38 @@ export default function ServicesPage() {
     }
 
     setFilteredServices(filtered)
-  }, [searchTerm, selectedCategory, services])
+  }, [services, searchTerm, selectedCategory])
+
+  // Show loading state while checking authentication
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if user is not a student
+  if (user.role !== 'student') {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Restricted</h2>
+            <p className="text-gray-600 mb-4">Services are only available for registered students.</p>
+            <Link href="/dashboard" className="text-blue-600 hover:underline">
+              Return to Dashboard
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -194,88 +231,19 @@ export default function ServicesPage() {
           {/* Services Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredServices.map((service) => (
-              <Card key={service.id} className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-blue-100 text-blue-700">
-                          {service.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg text-blue-700">{service.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{service.businessName}</p>
-                      </div>
-                    </div>
-                    {service.verified && (
-                      <Badge className="bg-green-100 text-green-700">Verified</Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Specializations */}
-                  <div className="flex flex-wrap gap-2">
-                    {service.specialization.slice(0, 3).map((spec, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {spec}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Rating and Reviews */}
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="ml-1 text-sm font-medium">{service.rating}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      ({service.totalReviews} reviews)
-                    </span>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{service.location}</span>
-                  </div>
-
-                  {/* Response Time */}
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{service.responseTime}</span>
-                  </div>
-
-                  {/* Pricing */}
-                  {service.pricing.serviceRate && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Briefcase className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium">From ₦{service.pricing.serviceRate.toLocaleString()}</span>
-                    </div>
-                  )}
-
-                  {/* Available for Learning Badge */}
-                  {service.availableForLearning && (
-                    <Badge className="bg-purple-100 text-purple-700">
-                      Available for Training
-                    </Badge>
-                  )}
-
-                  {/* CTA Buttons */}
-                  <div className="flex space-x-2 pt-2">
-                    <Button asChild className="flex-1 bg-blue-600 hover:bg-blue-700">
-                      <Link href={`/providers/${service.id}`}>
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Profile
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ServiceProviderCard
+                key={service.id}
+                provider={service}
+                onContact={(providerId) => {
+                  console.log("Contact provider:", providerId)
+                  // Handle contact functionality
+                }}
+                onFavorite={(providerId) => {
+                  console.log("Favorite provider:", providerId)
+                  // Handle favorite functionality
+                }}
+                isFavorited={false} // Would come from user's favorites
+              />
             ))}
           </div>
 

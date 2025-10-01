@@ -22,10 +22,10 @@ export default function LoginPage() {
         <div className="relative w-full max-w-md space-y-8">
           <div className="text-center">
             <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">TN</span>
+              <span className="text-white text-lg font-bold">UniLorin</span>
             </div>
             <h1 className="text-3xl font-bold text-blue-900 mb-2">
-              TalentNest
+              UniLorin Portal
             </h1>
             <p className="text-blue-700 font-medium">University of Ilorin Services Platform</p>
             <p className="text-blue-600 mt-2">Sign in to your account</p>

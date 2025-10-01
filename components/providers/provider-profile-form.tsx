@@ -163,7 +163,7 @@ export function ProviderProfileForm({
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
-        role: "provider" as const,
+        role: "artisan" as const,
         rating: existingProfile?.rating || 0,
         totalReviews: existingProfile?.totalReviews || 0,
         verified: existingProfile?.verified || false,

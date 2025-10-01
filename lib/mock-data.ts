@@ -55,7 +55,7 @@ export const mockProviders: Provider[] = [
     lastName: "Adebayo",
     fullName: "Fatima Adebayo",
     phone: "+234 803 123 4567",
-    role: "provider",
+    role: "artisan",
     businessName: "Fatima's Fashion House",
     description: "Professional fashion designer and tailor specializing in traditional and modern clothing. Expert in custom designs, alterations, and embroidery work.",
     specialization: ["Fashion Design", "Tailoring", "Embroidery"],
@@ -102,7 +102,7 @@ export const mockProviders: Provider[] = [
     lastName: "Suleiman",
     fullName: "Ibrahim Suleiman",
     phone: "+234 807 987 6543",
-    role: "provider",
+    role: "artisan",
     businessName: "TechFix Solutions",
     description: "Experienced technician specializing in phone repairs, computer maintenance, and software solutions. Quick and reliable service with warranty.",
     specialization: ["Phone Repair", "Computer Maintenance", "Software Installation"],
@@ -165,11 +165,53 @@ export const mockDatabase = {
 
   // Provider operations
   async getProviders(): Promise<Provider[]> {
-    return this.users.filter((user) => user.role === "provider") as Provider[]
+    return this.users.filter((user) => user.role === "artisan") as Provider[]
   },
 
   async getProviderById(id: string): Promise<Provider | null> {
     const user = this.users.find((user) => user.id === id)
     return (user as Provider) || null
   },
+}
+
+// Additional mock API for auth operations
+export const mockAPI = {
+  async getUserByEmail(email: string): Promise<User | null> {
+    return mockDatabase.users.find(user => user.email.toLowerCase() === email.toLowerCase()) || null
+  },
+
+  async getUserById(id: string): Promise<User | null> {
+    return mockDatabase.users.find(user => user.id === id) || null
+  },
+
+  async createUser(userData: {
+    email: string
+    first_name: string
+    last_name: string
+    full_name: string
+    phone: string
+    role: "student" | "artisan" | "admin"
+    student_id?: string
+    department?: string
+    level?: number
+    password: string
+  }): Promise<User> {
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      email: userData.email,
+      password: userData.password,
+      firstName: userData.first_name,
+      lastName: userData.last_name,
+      fullName: userData.full_name,
+      phone: userData.phone,
+      role: userData.role,
+      studentId: userData.student_id,
+      department: userData.department,
+      level: userData.level?.toString(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+    mockDatabase.users.push(newUser)
+    return newUser
+  }
 }

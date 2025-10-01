@@ -11,24 +11,11 @@ import type {
 // Re-export select types for consumers that import from this module
 export type { UpdateVerificationData }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Runtime sanity check: log whether Supabase env vars are present (do not log secrets)
-if (typeof process !== 'undefined' && process.env) {
-  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-  const hasAnon = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  const hasService = !!process.env.SUPABASE_SERVICE_ROLE_KEY
-  // Use console.debug so it doesn't spam normal logs; useful while debugging locally
-  console.debug(`[supabase] env presence -> URL:${hasUrl} ANON:${hasAnon} SERVICE:${hasService}`)
-}
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required')
-}
-
-// Create Supabase client (for client-side operations)
+// Always create clients (even with placeholder values for development)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
@@ -37,19 +24,31 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Create admin client for server-side operations that bypass RLS
-export const supabaseAdmin = supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
-  : null
+export const supabaseAdmin = createClient(
+  supabaseUrl, 
+  supabaseServiceKey || supabaseAnonKey,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
+
+// Log configuration status
+if (typeof window === 'undefined') {
+  const hasRealUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+  const hasRealKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (!hasRealUrl || !hasRealKey) {
+    console.warn('[supabase] Using placeholder values - configure .env.local for real database access')
+  } else {
+    console.log('[supabase] Configured with real database')
+  }
+}
 
 // Helper function to handle Supabase errors
 export function handleSupabaseError(error: unknown): string {
-  // Type guard for error objects with expected properties
   const isSupabaseError = (err: unknown): err is { code?: string; message?: string } => {
     return typeof err === 'object' && err !== null
   }
@@ -88,6 +87,24 @@ function getClient() {
     return supabaseAdmin
   }
   return supabase
+}
+
+// Database operation wrappers with error handling
+export async function safeDbOperation<T>(
+  operation: () => Promise<{ data: T | null; error: unknown }>,
+  errorMessage: string = 'Database operation failed'
+): Promise<T | null> {
+  try {
+    const { data, error } = await operation()
+    if (error) {
+      console.error(errorMessage, error)
+      return null
+    }
+    return data
+  } catch (err) {
+    console.error(errorMessage, err)
+    return null
+  }
 }
 
 // User operations
@@ -152,7 +169,7 @@ export async function createProvider(providerData: CreateProviderData) {
   try {
     const client = getClient()
     const { data, error } = await client
-  .from('artisans')
+      .from('artisans')
       .insert(providerData)
       .select(`
         *,
@@ -177,7 +194,7 @@ export async function getProviders(filters?: {
   try {
     const client = getClient()
     let query = client
-  .from('artisans')
+      .from('artisans')
       .select(`
         *,
         user:profiles(first_name, last_name, profile_image, student_id, email, phone, full_name)
@@ -214,7 +231,7 @@ export async function getProviderById(id: string) {
   try {
     const client = getClient()
     const { data, error } = await client
-  .from('artisans')
+      .from('artisans')
       .select(`
         *,
         user:profiles(*),
@@ -391,7 +408,7 @@ export async function createVerificationRequest(verificationData: CreateVerifica
 export async function getVerificationRequests(status?: 'pending' | 'approved' | 'rejected') {
   try {
     const client = getClient()
-      let query = client
+    let query = client
       .from('verification_requests')
       .select(`
         *,
@@ -506,7 +523,6 @@ export async function getReviews(providerId?: string, limit?: number) {
 
 // Presign uploads (simple helper for storage or external S3)
 export async function createPresignedUpload(params: { bucket: string; key: string; expiresInSeconds?: number }) {
-  // If Supabase storage is configured, return a signed URL using supabase Admin or client
   try {
     const { bucket, key, expiresInSeconds } = params
     if (supabaseAdmin) {
