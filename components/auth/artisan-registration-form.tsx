@@ -120,7 +120,7 @@ export default function ArtisanRegistrationForm() {
   }
 
   // Handle certificate uploads
-  const handleCertificatesUpload = (files: File[], urls: string[]) => {
+  const handleCertificatesUpload = (files: File[]) => {
     setFormData(prev => ({ ...prev, certificates: [...prev.certificates, ...files] }))
     if (errors.certificates) {
       setErrors(prev => ({ ...prev, certificates: "" }))
@@ -128,7 +128,7 @@ export default function ArtisanRegistrationForm() {
   }
 
   // Handle work sample uploads
-  const handleWorkSamplesUpload = (files: File[], urls: string[]) => {
+  const handleWorkSamplesUpload = (files: File[]) => {
     setFormData(prev => ({ ...prev, workSamples: [...prev.workSamples, ...files] }))
     if (errors.workSamples) {
       setErrors(prev => ({ ...prev, workSamples: "" }))
@@ -136,7 +136,7 @@ export default function ArtisanRegistrationForm() {
   }
 
   // Handle portfolio uploads
-  const handlePortfolioUpload = (files: File[], urls: string[]) => {
+  const handlePortfolioUpload = (files: File[]) => {
     setFormData(prev => ({ ...prev, portfolio: [...prev.portfolio, ...files] }))
     if (errors.portfolio) {
       setErrors(prev => ({ ...prev, portfolio: "" }))
@@ -698,8 +698,7 @@ export default function ArtisanRegistrationForm() {
                                     setErrors(prev => ({ ...prev, certificates: "Only PDF and JPG files under 10MB allowed." }))
                                     return
                                   }
-                                  const urls = validFiles.map(file => URL.createObjectURL(file))
-                                  handleCertificatesUpload(validFiles, urls)
+                                  handleCertificatesUpload(validFiles)
                                 }}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 aria-label="Upload certificates"
@@ -793,8 +792,7 @@ export default function ArtisanRegistrationForm() {
                                     setErrors(prev => ({ ...prev, workSamples: "Only PDF, JPG, PNG, WEBP files under 10MB allowed." }))
                                     return
                                   }
-                                  const urls = validFiles.map(file => URL.createObjectURL(file))
-                                  handleWorkSamplesUpload(validFiles, urls)
+                                  handleWorkSamplesUpload(validFiles)
                                 }}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 aria-label="Upload work samples"
@@ -894,8 +892,7 @@ export default function ArtisanRegistrationForm() {
                                     setErrors(prev => ({ ...prev, portfolio: "Only PDF, JPG, PNG, WEBP files under 10MB allowed." }))
                                     return
                                   }
-                                  const urls = validFiles.map(file => URL.createObjectURL(file))
-                                  handlePortfolioUpload(validFiles, urls)
+                                  handlePortfolioUpload(validFiles)
                                 }}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 aria-label="Upload portfolio items"

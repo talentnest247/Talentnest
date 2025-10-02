@@ -1,34 +1,20 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, logAdminAction } from '@/lib/supabase'
-
-type VerificationStatus = 'approved' | 'rejected'
-
-interface VerificationUpdate {
-  verification_reviewed_at: string
-  verification_reviewed_by: string
-  verification_notes: string | null
-  verification_status: VerificationStatus
-  verified: boolean
-  matric_number_verified?: boolean
-  business_name_verified?: boolean
-  certificates_verified?: boolean
-  bio_verified?: boolean
-    }
 
 /**
  * POST /api/admin/verification/approve
  * Body: { id: string, action: 'approve' | 'reject', adminId: string, adminNotes?: string, verificationDetails?: object }
  */
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await request.json()
     const { id, action, adminId, adminNotes, verificationDetails } = body
     if (!id || !action || !adminId) return NextResponse.json({ error: 'id, action and adminId are required' }, { status: 400 })
 
     if (!['approve', 'reject'].includes(action)) return NextResponse.json({ error: 'action must be approve or reject' }, { status: 400 })
 
     // build a loose updates object first to avoid direct incompatible casting
-    const updates: Record<string, any> = {
+    const updates: Record<string, string | boolean | null> = {
       verification_reviewed_at: new Date().toISOString(),
       verification_reviewed_by: adminId,
       verification_notes: adminNotes || null,

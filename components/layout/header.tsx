@@ -77,6 +77,13 @@ export function Header() {
                 <>
                   <Button variant="ghost" onClick={() => router.push("/login")} className="text-blue-700 hover:text-blue-800 hover:bg-blue-50">Sign In</Button>
                   <Button onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-500">Get Started</Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => router.push("/admin/login")} 
+                    className="text-blue-700 border-blue-300 hover:bg-blue-50 text-xs px-3"
+                  >
+                    Admin
+                  </Button>
                 </>
               ) : (
                 // Desktop-only avatar dropdown. Mobile still uses the sheet menu above.

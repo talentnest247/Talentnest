@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 export const useTheme = () => {
   return {
     theme: "light" as "light" | "dark" | "system",
-    setTheme: (_: "dark" | "light" | "system") => {},
+    setTheme: () => {},
   }
 }
 

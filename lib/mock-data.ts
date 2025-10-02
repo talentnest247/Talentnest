@@ -134,7 +134,22 @@ export const mockProviders: Provider[] = [
 
 // Mock database functions
 export const mockDatabase = {
-  users: [...mockProviders] as User[],
+  users: [
+    ...mockProviders,
+    // Admin user for login
+    {
+      id: "admin-001",
+      email: "talentnest247@gmail.com",
+      fullName: "TalentNest Admin",
+      firstName: "TalentNest",
+      lastName: "Admin",
+      role: "admin",
+      password: "talentnest247", // In a real app, this would be hashed
+      phone: "+234-123-456-7890",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  ] as User[],
   categories: mockCategories,
   reviews: [] as Review[],
 

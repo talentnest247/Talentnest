@@ -1,191 +1,173 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { X, Upload, FileText, Camera } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 interface FileUploadProps {
-  accept?: string
-  multiple?: boolean
-  maxFiles?: number
-  maxSize?: number // in MB
-  onUpload: (files: string[]) => void
-  onRemove: (file: string) => void
-  uploadedFiles: string[]
-  label: string
-  description?: string
-  type: "portfolio" | "certificate" | "document"
+  title: string
+  description: string
+  acceptedTypes: string[]
+  maxFiles: number
+  maxFileSize?: number
+  files: File[]
+  previews: string[]
+  onFilesChange: (files: File[], urls: string[]) => void
+  disabled?: boolean
+  className?: string
 }
 
 export function FileUpload({
-  accept = "image/*",
-  multiple = true,
-  maxFiles = 5,
-  maxSize = 5,
-  onUpload,
-  onRemove,
-  uploadedFiles,
-  label,
+  title,
   description,
-  type
+  acceptedTypes,
+  maxFiles,
+  maxFileSize = 10,
+  files,
+  previews,
+  onFilesChange,
+  disabled = false,
+  className = ""
 }: FileUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
 
-  const getIcon = () => {
-    switch (type) {
-      case "portfolio":
-        return <Camera className="h-8 w-8 text-blue-500" />
-      case "certificate":
-        return <FileText className="h-8 w-8 text-blue-500" />
-      default:
-        return <Upload className="h-8 w-8 text-blue-500" />
+  const handleFileSelect = (selectedFiles: FileList | null) => {
+    if (!selectedFiles) return
+
+    const validFiles: File[] = []
+    const newPreviews: string[] = []
+
+    Array.from(selectedFiles).forEach((file) => {
+      if (files.length + validFiles.length >= maxFiles) return
+      if (file.size > maxFileSize * 1024 * 1024) return
+
+      const fileType = file.type
+      const isValidType = acceptedTypes.some(type => {
+        if (type === 'image/*') return fileType.startsWith('image/')
+        if (type === 'application/*') return fileType.startsWith('application/')
+        return fileType === type
+      })
+
+      if (!isValidType) return
+
+      validFiles.push(file)
+      
+      if (fileType.startsWith('image/')) {
+        newPreviews.push(URL.createObjectURL(file))
+      } else {
+        newPreviews.push('')
+      }
+    })
+
+    if (validFiles.length > 0) {
+      onFilesChange([...files, ...validFiles], [...previews, ...newPreviews])
     }
   }
 
-  const handleFiles = useCallback(async (files: File[]) => {
-    if (uploadedFiles.length + files.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`)
-      return
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    if (disabled) return
+    handleFileSelect(e.dataTransfer.files)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (!disabled) setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const removeFile = (index: number) => {
+    const newFiles = files.filter((_, i) => i !== index)
+    const newPreviews = previews.filter((_, i) => i !== index)
+    
+    if (previews[index]) {
+      URL.revokeObjectURL(previews[index])
     }
-
-    const validFiles = files.filter(file => {
-      if (file.size > maxSize * 1024 * 1024) {
-        alert(`File ${file.name} is too large. Maximum size is ${maxSize}MB`)
-        return false
-      }
-      return true
-    })
-
-    if (validFiles.length === 0) return
-
-    setIsUploading(true)
-
-    try {
-      // Simulate file upload - replace with actual upload logic
-      const urls = validFiles.map(file => {
-        // In a real app, you would upload to Supabase Storage or similar
-        return URL.createObjectURL(file)
-      })
-
-      onUpload(urls)
-    } catch (error) {
-      console.error("Upload failed:", error)
-      alert("Upload failed. Please try again.")
-    } finally {
-      setIsUploading(false)
-    }
-  }, [maxFiles, maxSize, onUpload, uploadedFiles])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      setIsDragging(false)
-
-      const files = Array.from(e.dataTransfer.files)
-      handleFiles(files)
-    },
-    [handleFiles]
-  )
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    handleFiles(files)
+    
+    onFilesChange(newFiles, newPreviews)
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="text-white text-sm font-medium">{label}</Label>
-        {description && (
-          <p className="text-white/80 text-xs mt-1">{description}</p>
-        )}
-      </div>
-
-      {/* Upload Area */}
-      <div
-        className={cn(
-          "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
-          isDragging
-            ? "border-white bg-blue-700"
-            : "border-blue-300 hover:border-white hover:bg-blue-700",
-          isUploading && "opacity-50 pointer-events-none"
-        )}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setIsDragging(true)
-        }}
-        onDragLeave={() => setIsDragging(false)}
+    <div className={className}>
+      <h4 className="font-medium text-blue-900 mb-2">{title}</h4>
+      <p className="text-sm text-gray-600 mb-4">{description}</p>
+      
+      <div 
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+          isDragOver 
+            ? 'border-blue-500 bg-blue-50' 
+            : disabled 
+            ? 'border-gray-200 bg-gray-50' 
+            : 'border-gray-300 hover:border-blue-400'
+        }`}
         onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => !disabled && document.getElementById(`file-input-${title}`)?.click()}
       >
-        <div className="flex flex-col items-center space-y-3">
-          {getIcon()}
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-white">
-              {isUploading ? "Uploading..." : `Drag & drop ${type} files here`}
+        <div className="space-y-4">
+          <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center ${
+            disabled ? 'bg-gray-200' : 'bg-blue-100'
+          }`}>
+            <svg className={`w-6 h-6 ${disabled ? 'text-gray-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+          </div>
+          
+          <div>
+            <p className={`font-medium ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>
+              {isDragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
             </p>
-            <p className="text-xs text-white/80">
-              or{" "}
-              <label className="text-white underline cursor-pointer hover:text-blue-100">
-                browse files
-                <input
-                  type="file"
-                  accept={accept}
-                  multiple={multiple}
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-              </label>
+            <p className="text-sm text-gray-500 mt-1">
+              {acceptedTypes.join(', ')} • Max {maxFileSize}MB • Up to {maxFiles} files
             </p>
           </div>
-          <p className="text-xs text-white/60">
-            Max {maxFiles} files, {maxSize}MB each
-          </p>
         </div>
       </div>
 
-      {/* Uploaded Files */}
-      {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-white">
-            Uploaded Files ({uploadedFiles.length}/{maxFiles})
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {uploadedFiles.map((file, index) => (
-              <div
-                key={index}
-                className="relative group bg-white rounded-lg p-2 border border-blue-200"
-              >
-                {type === "portfolio" ? (
-                  <div className="aspect-video bg-gray-100 rounded flex items-center justify-center overflow-hidden">
-                    <Image
-                      src={file}
-                      alt={`Portfolio ${index + 1}`}
-                      width={200}
-                      height={150}
-                      className="w-full h-full object-cover"
-                    />
+      <input
+        id={`file-input-${title}`}
+        type="file"
+        multiple
+        accept={acceptedTypes.join(',')}
+        onChange={(e) => handleFileSelect(e.target.files)}
+        className="hidden"
+        disabled={disabled}
+        aria-label={`Upload ${title}`}
+      />
+
+      {files.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <h5 className="font-medium text-gray-700">Selected Files ({files.length}/{maxFiles})</h5>
+          
+          <div className="space-y-2">
+            {files.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
                   </div>
-                ) : (
-                  <div className="aspect-video bg-gray-100 rounded flex items-center justify-center">
-                    <FileText className="h-8 w-8 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                    <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
                   </div>
-                )}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="absolute -top-2 -right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => onRemove(file)}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="p-1 hover:bg-red-100 rounded text-red-600"
+                  title="Remove file"
+                  aria-label={`Remove ${file.name}`}
                 >
-                  <X className="h-3 w-3" />
-                </Button>
-                <p className="text-xs text-gray-600 mt-1 truncate">
-                  {type} {index + 1}
-                </p>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
             ))}
           </div>

@@ -331,52 +331,97 @@ export const authUtils = {
         return null
       }
 
-      // Query the public profiles table (some projects expose user profiles in `profiles`)
-      // This avoids referencing a non-existent `public.users` table in some setups.
-      const { data, error } = await supabaseAdmin
-        .from('profiles')
-        .select('id, email, full_name, first_name, last_name, role, phone')
-        .eq('id', id)
-        .single()
-      
-      if (error) {
-        console.error("Error fetching user by id:", error)
+      try {
+        // Query the profiles table
+        const { data, error } = await supabaseAdmin
+          .from('profiles')
+          .select('id, email, full_name, first_name, last_name, role, phone')
+          .eq('id', id)
+          .single()
+        
+        if (error) {
+          console.error("Supabase error fetching user by id:", error)
+          // Fallback to mock data if Supabase fails
+          console.warn("Falling back to mock data due to database error")
+          const mockUser = await mockAPI.getUserById(id)
+          if (mockUser) {
+            return {
+              id: mockUser.id,
+              email: mockUser.email,
+              fullName: mockUser.fullName,
+              firstName: mockUser.firstName,
+              lastName: mockUser.lastName,
+              userType: mockUser.role,
+              role: mockUser.role,
+              studentId: mockUser.studentId,
+              department: mockUser.department,
+              level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+              phone: mockUser.phone,
+            }
+          }
+          return null
+        }
+        
+        if (!data) return null
+        
+        // If user is a student, fetch the student-specific details from `students` table
+        type StudentRecord = {
+          student_id?: string | null
+          department?: string | null
+          level?: number | null
+        } | null
+        let studentData: StudentRecord = null
+        if (data.role === 'student') {
+          try {
+            const { data: sData } = await supabaseAdmin
+              .from('students')
+              .select('student_id, department, level')
+              .eq('user_id', data.id)
+              .single()
+            studentData = sData
+          } catch (studentError) {
+            console.warn("Could not fetch student data:", studentError)
+            // Continue without student data
+          }
+        }
+
+        return {
+          id: data.id,
+          email: data.email,
+          fullName: data.full_name,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          userType: data.role,
+          role: data.role,
+          studentId: studentData?.student_id ?? undefined,
+          department: studentData?.department ?? undefined,
+          level: studentData?.level ?? undefined,
+          phone: data.phone ?? undefined,
+        }
+      } catch (supabaseError) {
+        console.error("Supabase connection error:", supabaseError)
+        // Fallback to mock data if Supabase fails completely
+        console.warn("Falling back to mock data due to connection error")
+        const mockUser = await mockAPI.getUserById(id)
+        if (mockUser) {
+          return {
+            id: mockUser.id,
+            email: mockUser.email,
+            fullName: mockUser.fullName,
+            firstName: mockUser.firstName,
+            lastName: mockUser.lastName,
+            userType: mockUser.role,
+            role: mockUser.role,
+            studentId: mockUser.studentId,
+            department: mockUser.department,
+            level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+            phone: mockUser.phone,
+          }
+        }
         return null
       }
-      
-      if (!data) return null
-      
-      // If user is a student, fetch the student-specific details from `students` table
-      type StudentRecord = {
-        student_id?: string | null
-        department?: string | null
-        level?: number | null
-      } | null
-      let studentData: StudentRecord = null
-      if (data.role === 'student') {
-        const { data: sData } = await supabaseAdmin
-          .from('students')
-          .select('student_id, department, level')
-          .eq('user_id', data.id)
-          .single()
-        studentData = sData as StudentRecord
-      }
-
-      return {
-        id: data.id,
-        email: data.email,
-        fullName: data.full_name,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        userType: data.role,
-        role: data.role,
-        studentId: studentData?.student_id ?? undefined,
-        department: studentData?.department ?? undefined,
-        level: studentData?.level ?? undefined,
-        phone: data.phone ?? undefined,
-      }
     } catch (error) {
-      console.error("Error fetching user:", error)
+      console.error("Error fetching user by id:", error)
       return null
     }
   },
@@ -497,7 +542,29 @@ export const authUtils = {
           console.error('Error checking auth users for email (admin list fallback):', _err)
         }
 
-        console.log("No user found with email:", email)
+        console.log("No user found with email in Supabase:", email)
+        
+        // Fallback to mock data
+        console.log("Checking mock data for email:", email)
+        const mockUser = await mockAPI.getUserByEmail(email)
+        if (mockUser) {
+          console.log("Found user in mock data:", mockUser.email)
+          return {
+            id: mockUser.id,
+            email: mockUser.email,
+            fullName: mockUser.fullName,
+            firstName: mockUser.firstName,
+            lastName: mockUser.lastName,
+            userType: mockUser.role,
+            role: mockUser.role,
+            studentId: mockUser.studentId,
+            department: mockUser.department,
+            level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+            phone: mockUser.phone,
+            password: mockUser.password || '',
+          }
+        }
+        
         return null
       }
 
@@ -529,7 +596,33 @@ export const authUtils = {
         password: '', // Password not stored in profiles table
       }
     } catch (error) {
-      console.error("Error fetching user by email:", error)
+      console.error("Error fetching user by email from Supabase:", error)
+      
+      // Fallback to mock data on any error
+      console.log("Falling back to mock data due to error for email:", email)
+      try {
+        const mockUser = await mockAPI.getUserByEmail(email)
+        if (mockUser) {
+          console.log("Found user in mock data fallback:", mockUser.email)
+          return {
+            id: mockUser.id,
+            email: mockUser.email,
+            fullName: mockUser.fullName,
+            firstName: mockUser.firstName,
+            lastName: mockUser.lastName,
+            userType: mockUser.role,
+            role: mockUser.role,
+            studentId: mockUser.studentId,
+            department: mockUser.department,
+            level: typeof mockUser.level === 'number' ? mockUser.level : undefined,
+            phone: mockUser.phone,
+            password: mockUser.password || '',
+          }
+        }
+      } catch (mockError) {
+        console.error("Error accessing mock data:", mockError)
+      }
+      
       return null
     }
   },

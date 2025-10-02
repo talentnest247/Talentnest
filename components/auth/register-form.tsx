@@ -40,6 +40,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     location: "",
     bio: "",
     certificates: [] as string[],
+    // File upload fields
+    portfolioFiles: [] as File[],
+    portfolioPreviews: [] as string[],
+    certificateFiles: [] as File[],
+    certificatePreviews: [] as string[],
+    documentFiles: [] as File[],
+    documentPreviews: [] as string[],
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -48,20 +55,6 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleCertificateUpload = (urls: string[]) => {
-    setFormData((prev) => ({ 
-      ...prev, 
-      certificates: [...prev.certificates, ...urls] 
-    }))
-  }
-
-  const handleCertificateRemove = (url: string) => {
-    setFormData((prev) => ({ 
-      ...prev, 
-      certificates: prev.certificates.filter(cert => cert !== url) 
-    }))
   }
 
   const validateForm = () => {
@@ -662,48 +655,48 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                 {/* Portfolio Upload */}
                 <div className="space-y-2">
                   <FileUpload
-                    accept="image/*"
-                    multiple={true}
-                    maxFiles={6}
-                    maxSize={5}
-                    onUpload={handleCertificateUpload}
-                    onRemove={handleCertificateRemove}
-                    uploadedFiles={formData.certificates}
-                    label="Portfolio Images *"
+                    title="Portfolio Images *"
                     description="Upload high-quality images of your work to showcase your services"
-                    type="portfolio"
+                    acceptedTypes={['image/*']}
+                    maxFiles={6}
+                    maxFileSize={5}
+                    files={formData.portfolioFiles || []}
+                    previews={formData.portfolioPreviews || []}
+                    onFilesChange={(files, previews) => {
+                      setFormData(prev => ({ ...prev, portfolioFiles: files, portfolioPreviews: previews }))
+                    }}
                   />
                 </div>
 
                 {/* Certificates Upload */}
                 <div className="space-y-2">
                   <FileUpload
-                    accept="image/*,application/pdf"
-                    multiple={true}
-                    maxFiles={3}
-                    maxSize={5}
-                    onUpload={handleCertificateUpload}
-                    onRemove={handleCertificateRemove}
-                    uploadedFiles={formData.certificates}
-                    label="Certificates & Credentials"
+                    title="Certificates & Credentials"
                     description="Upload certificates, diplomas, or other credentials that verify your expertise"
-                    type="certificate"
+                    acceptedTypes={['image/*', 'application/pdf']}
+                    maxFiles={3}
+                    maxFileSize={5}
+                    files={formData.certificateFiles || []}
+                    previews={formData.certificatePreviews || []}
+                    onFilesChange={(files, previews) => {
+                      setFormData(prev => ({ ...prev, certificateFiles: files, certificatePreviews: previews }))
+                    }}
                   />
                 </div>
 
                 {/* Verification Documents */}
                 <div className="space-y-2">
                   <FileUpload
-                    accept="image/*,application/pdf"
-                    multiple={true}
-                    maxFiles={2}
-                    maxSize={5}
-                    onUpload={handleCertificateUpload}
-                    onRemove={handleCertificateRemove}
-                    uploadedFiles={formData.certificates}
-                    label="Verification Documents"
+                    title="Verification Documents"
                     description="Upload ID card, business registration, or other verification documents"
-                    type="document"
+                    acceptedTypes={['image/*', 'application/pdf']}
+                    maxFiles={2}
+                    maxFileSize={5}
+                    files={formData.documentFiles || []}
+                    previews={formData.documentPreviews || []}
+                    onFilesChange={(files, previews) => {
+                      setFormData(prev => ({ ...prev, documentFiles: files, documentPreviews: previews }))
+                    }}
                   />
                 </div>
               </div>

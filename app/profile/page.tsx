@@ -181,7 +181,7 @@ function ProfileContent() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -189,15 +189,15 @@ function ProfileContent() {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-blue-800 mb-2">Student Profile</h1>
-              <p className="text-blue-600">Manage your academic profile and learning journey</p>
+              <h1 className="text-4xl font-bold text-black mb-2">Student Profile</h1>
+              <p className="text-blue-700 font-semibold">Manage your academic profile and learning journey</p>
             </div>
             <div className="flex space-x-3 mt-4 md:mt-0">
-              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50">
+              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50 font-semibold">
                 <Download className="h-4 w-4 mr-2" />
                 Export Profile
               </Button>
-              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50">
+              <Button variant="outline" className="border-blue-400 text-blue-600 hover:bg-blue-50 font-semibold">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Profile
               </Button>
@@ -205,13 +205,13 @@ function ProfileContent() {
           </div>
 
           {/* Profile Summary Card */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
                 <div className="relative">
-                  <Avatar className="h-24 w-24 border-4 border-white/20">
+                  <Avatar className="h-24 w-24 border-4 border-blue-200">
                     <AvatarImage src="/placeholder-user.jpg" alt={user?.fullName ?? "User avatar"} />
-                    <AvatarFallback className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xl font-bold">
                       {(() => {
                         const name = user?.fullName ?? ""
                         const initials = name
@@ -235,33 +235,33 @@ function ProfileContent() {
                 </div>
                 
                 <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-2xl font-bold text-white mb-1">{user?.fullName}</h2>
-                  <p className="text-blue-200 mb-2">{user?.email}</p>
+                  <h2 className="text-2xl font-bold text-black mb-1">{user?.fullName}</h2>
+                  <p className="text-blue-700 font-semibold mb-2">{user?.email}</p>
                   <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
-                    <Badge variant="secondary" className="bg-blue-600 text-white">
+                    <Badge variant="secondary" className="bg-blue-600 text-white font-semibold">
                       {user?.department || "Department Not Set"}
                     </Badge>
-                    <Badge variant="secondary" className="bg-green-600 text-white">
+                    <Badge variant="secondary" className="bg-blue-500 text-white font-semibold">
                       Level {user?.level || "Not Set"}
                     </Badge>
-                    <Badge variant="secondary" className="bg-purple-600 text-white">
+                    <Badge variant="secondary" className="bg-blue-700 text-white font-semibold">
                       Student ID: {user?.studentId || "Not Set"}
                     </Badge>
                   </div>
                   
                   {/* Profile Completion */}
                   <div className="max-w-md">
-                    <div className="flex justify-between text-sm text-blue-200 mb-1">
+                    <div className="flex justify-between text-sm text-black font-semibold mb-1">
                       <span>Profile Completion</span>
                       <span>{profileCompleteness()}%</span>
                     </div>
-                    <Progress value={profileCompleteness()} className="h-2 bg-white/20" />
+                    <Progress value={profileCompleteness()} className="h-2 bg-blue-200" />
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center text-center">
-                  <div className="text-3xl font-bold text-white">3</div>
-                  <div className="text-sm text-blue-200">Active Skills</div>
+                  <div className="text-3xl font-bold text-black">3</div>
+                  <div className="text-sm text-blue-700 font-semibold">Active Skills</div>
                 </div>
               </div>
             </CardContent>
@@ -270,28 +270,28 @@ function ProfileContent() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-white/10 backdrop-blur-md border-white/20">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-white/90 backdrop-blur-sm border-blue-200">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <Eye className="h-4 w-4 mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="personal" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="personal" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <User className="h-4 w-4 mr-2" />
               Personal
             </TabsTrigger>
-            <TabsTrigger value="academic" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="academic" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <GraduationCap className="h-4 w-4 mr-2" />
               Academic
             </TabsTrigger>
-            <TabsTrigger value="security" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="security" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <Shield className="h-4 w-4 mr-2" />
               Security
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="activity" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <Activity className="h-4 w-4 mr-2" />
               Activity
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </TabsTrigger>
@@ -302,32 +302,32 @@ function ProfileContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Current Enrollments */}
               <div className="lg:col-span-2">
-                <Card className="bg-white/10 backdrop-blur-md border-white/20">
+                <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <BookOpen className="h-5 w-5 mr-2" />
+                    <CardTitle className="text-black font-bold flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
                       Current Enrollments
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {mockEnrollments.map((enrollment) => (
-                      <div key={enrollment.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                      <div key={enrollment.id} className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-white">{enrollment.skill}</h4>
+                          <h4 className="font-bold text-black">{enrollment.skill}</h4>
                           <Badge 
                             variant={enrollment.status === "Completed" ? "default" : "secondary"}
-                            className={enrollment.status === "Completed" ? "bg-green-600" : "bg-blue-600"}
+                            className={enrollment.status === "Completed" ? "bg-green-600 font-semibold" : "bg-blue-600 font-semibold"}
                           >
                             {enrollment.status}
                           </Badge>
                         </div>
-                        <p className="text-blue-200 text-sm mb-2">Instructor: {enrollment.instructor}</p>
-                        <div className="flex justify-between text-sm text-blue-200 mb-1">
+                        <p className="text-blue-700 font-semibold text-sm mb-2">Instructor: {enrollment.instructor}</p>
+                        <div className="flex justify-between text-sm text-black font-semibold mb-1">
                           <span>Progress</span>
                           <span>{enrollment.progress}%</span>
                         </div>
-                        <Progress value={enrollment.progress} className="h-2 mb-2 bg-white/20" />
-                        <p className="text-blue-200 text-sm">
+                        <Progress value={enrollment.progress} className="h-2 mb-2 bg-blue-200" />
+                        <p className="text-blue-700 font-semibold text-sm">
                           {enrollment.status === "Completed" 
                             ? `Completed: ${enrollment.completedDate}`
                             : `Next Class: ${enrollment.nextClass}`
@@ -341,20 +341,20 @@ function ProfileContent() {
 
               {/* Achievements */}
               <div>
-                <Card className="bg-white/10 backdrop-blur-md border-white/20">
+                <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <Trophy className="h-5 w-5 mr-2" />
+                    <CardTitle className="text-black font-bold flex items-center">
+                      <Trophy className="h-5 w-5 mr-2 text-blue-600" />
                       Achievements
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {mockAchievements.map((achievement, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                      <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <achievement.icon className={`h-5 w-5 ${achievement.color} mt-0.5`} />
                         <div>
-                          <h5 className="font-medium text-white text-sm">{achievement.title}</h5>
-                          <p className="text-blue-200 text-xs">{achievement.description}</p>
+                          <h5 className="font-bold text-black text-sm">{achievement.title}</h5>
+                          <p className="text-blue-700 font-semibold text-xs">{achievement.description}</p>
                         </div>
                       </div>
                     ))}
@@ -364,21 +364,21 @@ function ProfileContent() {
             </div>
 
             {/* Recent Activity */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Clock className="h-5 w-5 mr-2" />
+                <CardTitle className="text-black font-bold flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-blue-600" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {recentActivities.map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
-                      <activity.icon className="h-4 w-4 text-blue-400" />
+                    <div key={index} className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <activity.icon className="h-4 w-4 text-blue-600" />
                       <div className="flex-1">
-                        <p className="text-white text-sm">{activity.action}</p>
-                        <p className="text-blue-200 text-xs">{activity.time}</p>
+                        <p className="text-black font-semibold text-sm">{activity.action}</p>
+                        <p className="text-blue-700 font-semibold text-xs">{activity.time}</p>
                       </div>
                     </div>
                   ))}
@@ -389,12 +389,12 @@ function ProfileContent() {
 
           {/* Personal Information Tab */}
           <TabsContent value="personal" className="space-y-6">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle className="text-white">Personal Information</CardTitle>
-                    <CardDescription className="text-blue-200">
+                    <CardTitle className="text-black font-bold">Personal Information</CardTitle>
+                    <CardDescription className="text-blue-700 font-semibold">
                       Manage your personal details and contact information
                     </CardDescription>
                   </div>

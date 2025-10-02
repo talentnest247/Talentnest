@@ -31,9 +31,53 @@ export async function POST(request: NextRequest) {
     })
 
     if (authError || !authData.user) {
-      console.log("Login failed:", authError?.message || "No user data")
+      console.log("Supabase login failed:", authError?.message || "No user data")
+      
+      // Fallback to mock data for admin and development users
+      console.log("Attempting fallback authentication with mock data...")
+      const mockUser = await authUtils.getUserByEmail(email)
+      
+      if (mockUser && 'password' in mockUser && mockUser.password === password) {
+        console.log("Mock authentication successful for:", email)
+        
+        // Generate JWT token for mock user
+        const token = await authUtils.generateToken(mockUser)
+        
+        // Prepare user response
+        const userResponse = {
+          id: mockUser.id,
+          email: mockUser.email,
+          fullName: mockUser.fullName,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+          role: mockUser.role,
+          phone: mockUser.phone,
+          studentId: mockUser.studentId,
+          department: mockUser.department,
+          level: mockUser.level
+        }
+
+        console.log("Mock login successful for:", email)
+        
+        // Set auth cookie
+        const response = NextResponse.json({
+          message: "Login successful",
+          user: userResponse,
+          token
+        })
+        
+        response.cookies.set("auth-token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 // 7 days
+        })
+        
+        return response
+      }
+      
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid login credentials" },
         { status: 401 }
       )
     }

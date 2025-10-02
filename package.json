@@ -1,7 +1,6 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
   "name": "talentnest",
-  "version": "1.0.0",
+  "version": "",
   "private": true,
   "scripts": {
     "build": "next build",
