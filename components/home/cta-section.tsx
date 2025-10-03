@@ -8,16 +8,22 @@ import { ArrowRight, Sparkles, Users, Star, CheckCircle2 } from "lucide-react"
 export function CTASection() {
 
   return (
-    <section id="cta-section" className="relative py-24 bg-gradient-to-b from-slate-100 via-blue-50 to-slate-100 overflow-hidden">
+    <section id="cta-section" className="relative py-24 bg-gradient-to-br from-gray-100 via-slate-100 to-gray-200 overflow-hidden">
       {/* Gradient Edges for Smooth Transition */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Top edge - subtle blue fade from features section */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-50/40 to-transparent"></div>
-        {/* Bottom edge - fade to dark for footer transition */}
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent via-gray-100/50 to-gray-200/70"></div>
-        {/* Decorative blur circles */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-indigo-100/30 rounded-full blur-3xl"></div>
+        {/* Top edge - grey gradient fade from features section */}
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-slate-200 via-gray-100 to-transparent"></div>
+        {/* Bottom edge - grey fade to footer */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent via-slate-200 to-gray-300"></div>
+        {/* Left edge grey */}
+        <div className="absolute top-0 left-0 bottom-0 w-48 bg-gradient-to-r from-gray-200 to-transparent"></div>
+        {/* Right edge grey */}
+        <div className="absolute top-0 right-0 bottom-0 w-48 bg-gradient-to-l from-gray-200 to-transparent"></div>
+        {/* Decorative blur circles - visible grey blend */}
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-slate-200/60 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gray-300/50 rounded-full blur-3xl"></div>
+        {/* Center white glow for contrast */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-radial from-white via-gray-50 to-transparent rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
