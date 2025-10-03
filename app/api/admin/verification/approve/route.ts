@@ -8,7 +8,7 @@ import { supabaseAdmin, logAdminAction } from '@/lib/supabase'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, action, adminId, adminNotes, verificationDetails } = body
+    const { id, action, adminId, adminNotes } = body
     if (!id || !action || !adminId) return NextResponse.json({ error: 'id, action and adminId are required' }, { status: 400 })
 
     if (!['approve', 'reject'].includes(action)) return NextResponse.json({ error: 'action must be approve or reject' }, { status: 400 })
@@ -22,23 +22,6 @@ export async function POST(request: NextRequest) {
       verified: action === 'approve'
     }
 
-    // If rejecting, allow passing back details for individual flags (optional)
-    if (action === 'reject' && verificationDetails) {
-      updates.matric_number_verified = verificationDetails?.matric_number_verified ?? false
-      updates.business_name_verified = verificationDetails?.business_name_verified ?? false
-      updates.certificates_verified = verificationDetails?.certificates_verified ?? false
-      updates.bio_verified = verificationDetails?.bio_verified ?? false
-    }
-
-    // normalize individual verification flags
-    const details = verificationDetails ?? {}
-    const flags = {
-      matric_number_verified: details.matric_number_verified ?? (action === 'approve'),
-      business_name_verified: details.business_name_verified ?? (action === 'approve'),
-      certificates_verified: details.certificates_verified ?? (action === 'approve'),
-      bio_verified: details.bio_verified ?? (action === 'approve'),
-    }
-
     // Normalize id - frontend earlier used `vr-<providerId>` for listing. Accept either form.
     const providerId = (typeof id === 'string' && id.startsWith('vr-')) ? id.slice(3) : id
 
@@ -47,13 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
-    // Build final payload and update the artisans (provider) record to match the GET listing
-    const payload = { ...updates, ...flags }
+    // Build final payload and update the providers record to match the GET listing
+    // Note: providers table in PRD schema doesn't have individual verification flags
+    const payload = { ...updates }
 
     let updated
     try {
       const { data, error } = await supabaseAdmin
-        .from('artisans')
+        .from('providers')
         .update(payload)
         .eq('id', providerId)
         .select()

@@ -198,16 +198,14 @@ export class SearchManager {
   static async getTopProviders(limit: number = 10): Promise<ApiResponse<EnhancedProfile[]>> {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select(`
           *,
           services!inner(id),
           reviews!reviewee_id(rating)
         `)
-        .eq('role', 'artisan')
-        .eq('verification_status', 'verified')
-        .order('rating_average', { ascending: false })
-        .order('total_bookings', { ascending: false })
+        .eq('role', 'provider')
+        .order('created_at', { ascending: false })
         .limit(limit)
 
       if (error) throw error
@@ -402,13 +400,14 @@ export class ReviewManager {
         const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0)
         const avgRating = totalRating / reviews.length
 
+        // Update provider rating in providers/artisans table
         await supabase
-          .from('profiles')
+          .from('providers')
           .update({
-            rating_average: Number(avgRating.toFixed(2)),
+            rating: Number(avgRating.toFixed(2)),
             total_reviews: reviews.length
           })
-          .eq('id', providerId)
+          .eq('user_id', providerId)
       }
     } catch (error) {
       console.error('Error updating provider rating:', error)

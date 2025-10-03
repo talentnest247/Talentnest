@@ -17,29 +17,25 @@ type JoinedUser = {
   department?: string | null
 }
 
-type ArtisanRow = {
+type ProviderRow = {
   id: string
   user_id: string
   business_name?: string
   description?: string
   bio?: string | null
   specialization?: string[]
-  experience?: number
+  experience_years?: number
   location?: string
   certificates?: string[]
   verification_status?: 'pending' | 'approved' | 'rejected'
   verification_evidence?: string[]
-  verification_submitted_at?: string
+  verified?: boolean
   verification_reviewed_at?: string | null
   verification_reviewed_by?: string | null
   verification_notes?: string | null
-  matric_number_verified?: boolean
-  business_name_verified?: boolean
-  certificates_verified?: boolean
-  bio_verified?: boolean
   created_at?: string
   updated_at?: string
-  // Note: PostgREST returns joined relations as arrays, e.g. `user:profiles (...)` will be an array
+  // Note: PostgREST returns joined relations as arrays, e.g. `user:users (...)` will be an array
   user?: JoinedUser[]
 }
 
@@ -47,7 +43,7 @@ export async function GET() {
   try {
     // Get verification requests by fetching pending providers
     const { data: providers, error } = await supabase
-      .from('artisans')
+      .from('providers')
       .select(`
         id,
         user_id,
@@ -55,22 +51,18 @@ export async function GET() {
         description,
         bio,
         specialization,
-        experience,
+        experience_years,
         location,
         certificates,
         verification_status,
         verification_evidence,
-        verification_submitted_at,
+        verified,
         verification_reviewed_at,
         verification_reviewed_by,
         verification_notes,
-        matric_number_verified,
-        business_name_verified,
-        certificates_verified,
-        bio_verified,
         created_at,
         updated_at,
-        user:profiles (
+        user:users (
           id,
           email,
           first_name,
@@ -81,7 +73,7 @@ export async function GET() {
         )
       `)
       .eq('verification_status', 'pending')
-      .order('verification_submitted_at', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error("Error fetching verification requests:", error)
@@ -92,49 +84,40 @@ export async function GET() {
     }
 
     // Transform the data to match the VerificationRequest interface
-    const verificationRequests = (providers as ArtisanRow[])?.map(provider => {
-      // user is returned as `user` (joined profiles row) and comes back as an array
+    const verificationRequests = (providers as ProviderRow[])?.map(provider => {
+      // user is returned as `user` (joined users row) and comes back as an array
       const rawUser = provider.user ?? null
       const user = Array.isArray(rawUser) ? rawUser[0] : rawUser
 
       return {
         id: `vr-${provider.id}`,
         providerId: provider.id,
-  providerName: user?.full_name || 'Unknown',
-  providerEmail: user?.email || '',
-  studentId: user?.student_id || '',
-  matricNumber: user?.student_id || '', // Matric number for verification
-  department: user?.department || '',
+        providerName: user?.full_name || 'Unknown',
+        providerEmail: user?.email || '',
+        studentId: user?.student_id || '',
+        matricNumber: user?.student_id || '', // Matric number for verification
+        department: user?.department || '',
         businessName: provider.business_name,
         businessDescription: provider.description,
         bio: provider.bio,
         specializations: provider.specialization || [],
-        experienceYears: provider.experience,
+        experienceYears: provider.experience_years,
         certificates: provider.certificates || [],
         evidenceFiles: (provider.verification_evidence || []).map((url: string) => ({
           url,
           type: url.includes('.pdf') ? 'certificate' as const : 'portfolio' as const
         })),
         status: provider.verification_status,
-        // Make date construction safe: pick the submitted timestamp if present, otherwise created_at
-        submittedAt: (() => {
-          const submitted = provider.verification_submitted_at ?? provider.created_at
-          return submitted ? new Date(submitted) : undefined
-        })(),
+        submittedAt: provider.created_at ? new Date(provider.created_at) : undefined,
         reviewedAt: provider.verification_reviewed_at ? new Date(provider.verification_reviewed_at) : undefined,
         reviewedBy: provider.verification_reviewed_by || undefined,
         adminNotes: provider.verification_notes || undefined,
-        // Individual verification tracking
-        matricNumberVerified: !!provider.matric_number_verified,
-        businessNameVerified: !!provider.business_name_verified,
-        certificatesVerified: !!provider.certificates_verified,
-        bioVerified: !!provider.bio_verified,
-        verificationComplete: (
-          !!provider.matric_number_verified &&
-          !!provider.business_name_verified &&
-          !!provider.certificates_verified &&
-          !!provider.bio_verified
-        )
+        // For PRD schema, use simple verification flags
+        matricNumberVerified: provider.verification_status === 'approved',
+        businessNameVerified: provider.verification_status === 'approved',
+        certificatesVerified: provider.verification_status === 'approved',
+        bioVerified: provider.verification_status === 'approved',
+        verificationComplete: provider.verification_status === 'approved'
       }
     }) || []
 
@@ -154,7 +137,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { action, providerId, adminNotes, verificationDetails } = await request.json()
+    const { action, providerId, adminNotes } = await request.json()
 
     if (!action || !providerId) {
       return NextResponse.json(
@@ -175,17 +158,13 @@ export async function POST(request: NextRequest) {
     if (action === 'approve') {
       // When approving, mark all verification fields as verified
       const { data, error } = await supabase
-        .from('artisans')
+        .from('providers')
         .update({
           verification_status: 'approved',
           verified: true,
           verification_reviewed_at: new Date().toISOString(),
           verification_reviewed_by: adminUserId,
           verification_notes: adminNotes || 'Application approved after comprehensive review.',
-          matric_number_verified: true,
-          business_name_verified: true,
-          certificates_verified: true,
-          bio_verified: true,
           updated_at: new Date().toISOString()
         })
         .eq('id', providerId)
@@ -208,18 +187,13 @@ export async function POST(request: NextRequest) {
     } else {
       // When rejecting, provide detailed verification feedback
       const { data, error } = await supabase
-        .from('artisans')
+        .from('providers')
         .update({
           verification_status: 'rejected',
           verified: false,
           verification_reviewed_at: new Date().toISOString(),
           verification_reviewed_by: adminUserId,
           verification_notes: adminNotes || 'Application rejected after review.',
-          // Keep individual verification flags as they were for feedback
-          matric_number_verified: verificationDetails?.matric_number_verified || false,
-          business_name_verified: verificationDetails?.business_name_verified || false,
-          certificates_verified: verificationDetails?.certificates_verified || false,
-          bio_verified: verificationDetails?.bio_verified || false,
           updated_at: new Date().toISOString()
         })
         .eq('id', providerId)

@@ -59,9 +59,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user exists
-    // Look up by profiles table first
+    // Look up by users table first
     const { data: userData, error } = await supabaseAdmin
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('email', googleUser.email)
       .single()
@@ -80,22 +80,21 @@ export async function GET(request: NextRequest) {
 
     if (!user && getErrorCode(error) !== 'PGRST116') {
       // If a non-not-found error happened, throw
-      console.error('Error querying profiles for Google user:', error)
+      console.error('Error querying users for Google user:', error)
       throw new Error('Failed to query user')
     }
 
-    // If no profile exists, create a lightweight profile record (if allowed)
+    // If no user exists, create a lightweight user record (if allowed)
     if (!user) {
       const insertPayload = {
         email: googleUser.email,
         first_name: googleUser.given_name || '',
         last_name: googleUser.family_name || '',
-        full_name: googleUser.name || `${googleUser.given_name} ${googleUser.family_name}`,
         role: 'student'
       }
 
       const { data: newProfile, error: createError } = await supabaseAdmin
-        .from('profiles')
+        .from('users')
         .insert([insertPayload])
         .select()
         .single()

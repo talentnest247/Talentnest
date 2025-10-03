@@ -98,11 +98,11 @@ export async function POST(request: NextRequest) {
       if (!profile.email) profile.email = authData.user.email
     }
 
-    // If metadata not available, attempt to fetch from profiles table (guarded)
+    // If metadata not available, attempt to fetch from users table (guarded)
     if (!profile) {
       const { data: fetchedProfile, error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .select('id, email, full_name, first_name, last_name, role, phone')
+        .from('users')
+        .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
         .eq('id', authData.user.id)
         .single()
 
@@ -117,24 +117,6 @@ export async function POST(request: NextRequest) {
       profile = fetchedProfile
     }
 
-    // Get additional data based on role
-    let additionalData: { studentId?: string; department?: string; level?: number } = {}
-    if (profile.role === 'student') {
-      const { data: student } = await supabaseAdmin
-        .from('students')
-        .select('student_id, department, level')
-        .eq('user_id', profile.id)
-        .single()
-      
-      if (student) {
-        additionalData = {
-          studentId: student.student_id,
-          department: student.department,
-          level: student.level
-        }
-      }
-    }
-
     // Create user object for token generation
     const p = profile as Record<string, unknown>
     const user = {
@@ -146,7 +128,9 @@ export async function POST(request: NextRequest) {
       userType: (String(p['role']) as unknown) as "student" | "artisan",
       role: (String(p['role']) as unknown) as "student" | "artisan" | "admin",
       phone: String(p['phone'] ?? ''),
-      ...additionalData
+      studentId: String(p['student_id'] ?? ''),
+      department: String(p['department'] ?? ''),
+      level: p['level'] ? parseInt(String(p['level'])) : undefined
     }
 
     console.log("Generating token for user:", user.email)

@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { AuthGuard } from "@/components/auth/auth-guard"
+import { VerificationDashboard } from "@/components/admin/verification-dashboard"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,10 +20,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Users, Shield, AlertTriangle, CheckCircle, XCircle,
-  Activity, UserCheck, Calendar, Eye, Flag
+  Users, Shield, AlertTriangle,
+  Activity, UserCheck, Calendar, Flag
 } from "lucide-react"
-import Image from "next/image"
+import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
@@ -431,130 +431,19 @@ function AdminDashboardContent() {
 
           {/* Verifications Tab */}
           <TabsContent value="verifications">
-            <Card className="bg-white/80 backdrop-blur-sm border-white/20">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Provider Verification Requests ({verificationRequests.length})</span>
-                  <Badge className="bg-yellow-100 text-yellow-800">
-                    {verificationRequests.filter(r => r.status === 'pending').length} Pending
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                {verificationRequests.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No Verification Requests</h3>
-                    <p className="text-gray-500">All verification requests have been processed</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {verificationRequests.map((request) => (
-                      <div key={request.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-4">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={request.user.avatar_url} />
-                              <AvatarFallback className="bg-blue-100 text-blue-700">
-                                {request.user.full_name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold text-gray-900">{request.user.full_name}</h3>
-                              <p className="text-sm text-gray-600">{request.user.email}</p>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <Badge variant="outline">{request.user.department}</Badge>
-                                <Badge variant="outline">{request.user.student_id}</Badge>
-                                <Badge className={getStatusColor(request.status)}>
-                                  {request.status}
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Submitted {formatDate(request.submitted_at)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => setSelectedVerification(request)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Review
-                            </Button>
-                            {request.status === 'pending' && (
-                              <>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-green-600 hover:bg-green-700"
-                                  onClick={() => {
-                                    setSelectedVerification(request)
-                                    setVerificationAction('approve')
-                                  }}
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive"
-                                  onClick={() => {
-                                    setSelectedVerification(request)
-                                    setVerificationAction('reject')
-                                  }}
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Reject
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Skills and Portfolio Preview */}
-                        <div className="mt-4">
-                          <div className="mb-2">
-                            <p className="text-sm font-medium text-gray-700">Skills Offered:</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {request.skills_offered?.map((skill, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          {request.portfolio_images && request.portfolio_images.length > 0 && (
-                            <div>
-                              <p className="text-sm font-medium text-gray-700 mb-2">Portfolio:</p>
-                              <div className="flex space-x-2">
-                                {request.portfolio_images.slice(0, 3).map((image, index) => (
-                                  <div key={index} className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden">
-                                    <Image
-                                      src={image}
-                                      alt={`Portfolio ${index + 1}`}
-                                      width={64}
-                                      height={64}
-                                      className="object-cover w-full h-full"
-                                    />
-                                  </div>
-                                ))}
-                                {request.portfolio_images.length > 3 && (
-                                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-xs text-gray-500">+{request.portfolio_images.length - 3}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <VerificationDashboard admin={{ 
+              id: user?.id || '', 
+              email: user?.email || '',
+              password: '',
+              firstName: user?.fullName?.split(' ')[0] || '',
+              lastName: user?.fullName?.split(' ').slice(1).join(' ') || '',
+              fullName: user?.fullName || '',
+              phone: '',
+              role: 'admin',
+              permissions: [],
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }} />
           </TabsContent>
 
           {/* Reports Tab */}
@@ -623,30 +512,50 @@ function AdminDashboardContent() {
 
           {/* Users Tab */}
           <TabsContent value="users">
-            <Card className="bg-white/80 backdrop-blur-sm border-white/20">
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-6 border border-gray-200 rounded-lg">
-                    <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-gray-900 mb-2">Total Users</h3>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.total_users}</p>
+            <div className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border-white/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>User Management</CardTitle>
+                    <Link href="/admin/users">
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Users className="h-4 w-4 mr-2" />
+                        Manage All Users
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="text-center p-6 border border-gray-200 rounded-lg">
-                    <UserCheck className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-gray-900 mb-2">Verified Providers</h3>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.verified_providers}</p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center p-6 border border-gray-200 rounded-lg">
+                      <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-gray-900 mb-2">Total Users</h3>
+                      <p className="text-3xl font-bold text-gray-900">{analytics.total_users}</p>
+                    </div>
+                    <div className="text-center p-6 border border-gray-200 rounded-lg">
+                      <UserCheck className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-gray-900 mb-2">Verified Providers</h3>
+                      <p className="text-3xl font-bold text-gray-900">{analytics.verified_providers}</p>
+                    </div>
+                    <div className="text-center p-6 border border-gray-200 rounded-lg">
+                      <Activity className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-gray-900 mb-2">Active Services</h3>
+                      <p className="text-3xl font-bold text-gray-900">{analytics.total_services}</p>
+                    </div>
                   </div>
-                  <div className="text-center p-6 border border-gray-200 rounded-lg">
-                    <Activity className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-gray-900 mb-2">Active Services</h3>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.total_services}</p>
+                  
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">Quick Actions</h4>
+                    <p className="text-sm text-blue-700 mb-3">Manage all students and artisans, including viewing details and deleting users.</p>
+                    <Link href="/admin/users">
+                      <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                        Go to User Management →
+                      </Button>
+                    </Link>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Analytics Tab */}

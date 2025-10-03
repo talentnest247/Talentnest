@@ -12,9 +12,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const userType = searchParams.get('type') // 'student', 'artisan', or 'all'
 
-    // Fetch all users from profiles table
+    // Fetch all users from users table
     let query = supabase
-      .from('profiles')
+      .from('users')
       .select(`
         id,
         email,
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         student_id,
         department,
         phone,
-        avatar_url,
+        profile_image,
         created_at,
         updated_at
       `)
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     // For artisans, also fetch their business details
     const userIds = users?.map(u => u.id) || []
     const { data: artisans } = await supabase
-      .from('artisans')
+      .from('providers')
       .select('*')
       .in('user_id', userIds)
 
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
 
     // First, check if user exists and get their role
     const { data: user, error: userError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, role, email, full_name')
       .eq('id', userId)
       .single()
@@ -131,11 +131,11 @@ export async function DELETE(request: NextRequest) {
     
     // If artisan, delete artisan-related data
     if (user.role === 'provider') {
-      // Delete services offered by this artisan
+      // Delete services offered by this provider
       await supabase.from('services').delete().eq('provider_id', userId)
       
-      // Delete artisan profile
-      await supabase.from('artisans').delete().eq('user_id', userId)
+      // Delete provider profile
+      await supabase.from('providers').delete().eq('user_id', userId)
       
       // Delete reviews for this artisan
       await supabase.from('reviews').delete().eq('provider_id', userId)
@@ -161,7 +161,7 @@ export async function DELETE(request: NextRequest) {
 
     // Finally, delete the user profile
     const { error: deleteError } = await supabase
-      .from('profiles')
+      .from('users')
       .delete()
       .eq('id', userId)
 

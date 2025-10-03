@@ -332,10 +332,10 @@ export const authUtils = {
       }
 
       try {
-        // Query the profiles table
+        // Query the users table
         const { data, error } = await supabaseAdmin
-          .from('profiles')
-          .select('id, email, full_name, first_name, last_name, role, phone')
+          .from('users')
+          .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
           .eq('id', id)
           .single()
         
@@ -363,27 +363,6 @@ export const authUtils = {
         }
         
         if (!data) return null
-        
-        // If user is a student, fetch the student-specific details from `students` table
-        type StudentRecord = {
-          student_id?: string | null
-          department?: string | null
-          level?: number | null
-        } | null
-        let studentData: StudentRecord = null
-        if (data.role === 'student') {
-          try {
-            const { data: sData } = await supabaseAdmin
-              .from('students')
-              .select('student_id, department, level')
-              .eq('user_id', data.id)
-              .single()
-            studentData = sData
-          } catch (studentError) {
-            console.warn("Could not fetch student data:", studentError)
-            // Continue without student data
-          }
-        }
 
         return {
           id: data.id,
@@ -393,9 +372,9 @@ export const authUtils = {
           lastName: data.last_name,
           userType: data.role,
           role: data.role,
-          studentId: studentData?.student_id ?? undefined,
-          department: studentData?.department ?? undefined,
-          level: studentData?.level ?? undefined,
+          studentId: data.student_id ?? undefined,
+          department: data.department ?? undefined,
+          level: data.level ? parseInt(data.level) : undefined,
           phone: data.phone ?? undefined,
         }
       } catch (supabaseError) {
@@ -454,8 +433,8 @@ export const authUtils = {
       const normalizedEmail = String(email).trim().toLowerCase()
       console.log("Searching for user with email:", normalizedEmail)
       const { data, error } = await supabaseAdmin
-        .from('profiles')
-        .select('id, email, full_name, first_name, last_name, role, phone')
+        .from('users')
+        .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
         .eq('email', normalizedEmail)
         .single()
       
@@ -569,17 +548,6 @@ export const authUtils = {
       }
 
       console.log("User found:", { id: data.id, email: data.email, role: data.role })
-      
-      // Get additional data based on role
-      let studentData = null
-      if (data.role === 'student') {
-        const { data: student } = await supabaseAdmin
-          .from('students')
-          .select('student_id, department, level')
-          .eq('user_id', data.id)
-          .single()
-        studentData = student
-      }
 
       return {
         id: data.id,
@@ -589,11 +557,11 @@ export const authUtils = {
         lastName: data.last_name,
         userType: data.role,
         role: data.role,
-        studentId: studentData?.student_id ?? undefined,
-        department: studentData?.department ?? undefined,
-        level: studentData?.level ?? undefined,
+        studentId: data.student_id ?? undefined,
+        department: data.department ?? undefined,
+        level: data.level ? parseInt(data.level) : undefined,
         phone: data.phone ?? undefined,
-        password: '', // Password not stored in profiles table
+        password: '', // Password not stored in users table
       }
     } catch (error) {
       console.error("Error fetching user by email from Supabase:", error)
