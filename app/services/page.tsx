@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { 
-  Search, Star, MapPin, Phone, Heart, MessageCircle, Send, Shield, Mail
+  Search, Star, MapPin, Phone, Heart, MessageCircle, Send, Shield, Mail, Clock
 } from "lucide-react"
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
@@ -253,13 +253,13 @@ function ServicesContent() {
               <div className="flex-1">
                 <h3 className="text-xl font-bold mb-2">Welcome to TalentNest Marketplace! 🎓</h3>
                 <p className="text-blue-100 text-sm">
-                  <strong className="text-white">Students:</strong> Browse and book skilled artisans for your service needs. 
+                  <strong className="text-white">For Students:</strong> Browse services and book skilled artisans for your needs. 
                   <span className="mx-2">•</span>
-                  <strong className="text-white">Artisans:</strong> Showcase your skills and get hired by students across campus.
+                  <strong className="text-white">For Artisans:</strong> List your services and get hired by students across campus.
                 </p>
               </div>
               <Button variant="outline" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold border-0 shadow-md">
-                Become an Artisan
+                List Your Service
               </Button>
             </div>
           </CardContent>
@@ -269,27 +269,27 @@ function ServicesContent() {
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
             <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 text-sm font-semibold shadow-lg">
-              TalentNest Service Marketplace
+              TalentNest Services Marketplace
             </Badge>
           </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Find Skilled <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Artisans & Service Providers</span>
+            Browse <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Quality Services</span>
           </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Connect with verified student artisans offering quality services across UNILORIN campus. From fashion design to tech repairs - find the perfect match for your needs.
+            Discover a wide range of services offered by talented student artisans across UNILORIN campus. From fashion design to tech repairs, haircuts to graphic design - find what you need.
           </p>
           <div className="flex items-center justify-center gap-8 mt-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-600" />
-              <span className="font-medium">Verified Artisans</span>
+              <span className="font-medium">Verified Services</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              <span className="font-medium">Real Reviews</span>
+              <span className="font-medium">Rated by Students</span>
             </div>
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-green-600" />
-              <span className="font-medium">Direct Chat</span>
+              <span className="font-medium">Easy Booking</span>
             </div>
           </div>
         </div>
@@ -342,14 +342,14 @@ function ServicesContent() {
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-700 font-medium">
-            <span className="text-blue-600 font-bold">{services.length}</span> service providers found
+            <span className="text-blue-600 font-bold">{services.length}</span> services available
           </p>
           <Badge variant="outline" className="text-sm">
-            Showing verified artisans
+            All services verified
           </Badge>
         </div>
 
-        {/* Services Grid - Professional Marketplace Design */}
+        {/* Services Grid - Focused on SERVICES */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
             <Card key={service.id} className="group hover:shadow-2xl transition-all duration-300 bg-white border-2 border-gray-200 hover:border-blue-400 overflow-hidden">
@@ -389,56 +389,56 @@ function ServicesContent() {
                   </Badge>
                 </div>
 
-                {/* Online Status Badge */}
-                {service.provider.availability_status === 'online' && (
-                  <div className="absolute top-3 left-3">
-                    <Badge className="bg-green-500 text-white font-semibold px-3 py-1 shadow-lg">
-                      <span className="w-2 h-2 bg-white rounded-full inline-block mr-2"></span>
-                      Online
-                    </Badge>
-                  </div>
-                )}
+                {/* Delivery Time Badge */}
+                <div className="absolute top-3 left-3">
+                  <Badge className="bg-white/95 text-gray-900 font-semibold px-3 py-1 shadow-lg">
+                    <Clock className="w-3 h-3 mr-1 inline" />
+                    {service.delivery_time} days
+                  </Badge>
+                </div>
               </div>
 
               <CardContent className="p-6">
-                {/* Artisan/Provider Info Header */}
-                <div className="flex items-start space-x-3 mb-4 pb-4 border-b border-gray-200">
-                  <div className="relative flex-shrink-0">
-                    <Avatar className="h-12 w-12 border-3 border-white shadow-lg ring-2 ring-blue-200">
-                      <AvatarImage src={service.provider.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-lg">
-                        {service.provider.full_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {service.provider.verification_status === 'verified' && (
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center ring-2 ring-white">
-                        <Shield className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
-                  </div>
+                {/* Service Title & Description - PRIMARY FOCUS */}
+                <div className="mb-4">
+                  <h3 className="font-bold text-gray-900 mb-2 text-xl line-clamp-2 leading-tight">{service.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">{service.description}</p>
+                </div>
+
+                {/* Artisan Info - SECONDARY */}
+                <div className="flex items-center space-x-2 mb-4 pb-4 border-b border-gray-200">
+                  <Avatar className="h-8 w-8 border-2 border-gray-200">
+                    <AvatarImage src={service.provider.avatar_url} />
+                    <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-xs">
+                      {service.provider.full_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900 truncate text-base">{service.provider.full_name}</p>
+                    <div className="flex items-center gap-1">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{service.provider.full_name}</p>
+                      {service.provider.verification_status === 'verified' && (
+                        <Shield className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                      )}
+                    </div>
                     <div className="flex items-center gap-1">
                       <div className="flex items-center">
                         {renderStars(service.provider.rating_average)}
                       </div>
-                      <span className="text-sm font-bold text-gray-900">
+                      <span className="text-xs font-bold text-gray-900">
                         {service.provider.rating_average}
                       </span>
-                      <span className="text-sm text-gray-500">
-                        ({service.provider.total_reviews} reviews)
+                      <span className="text-xs text-gray-500">
+                        ({service.provider.total_reviews})
                       </span>
+                      {service.provider.availability_status === 'online' && (
+                        <>
+                          <span className="text-gray-400">•</span>
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-xs text-green-600 font-medium">Online</span>
+                        </>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {service.provider.completed_projects}+ projects • {service.provider.experience_years}yrs exp
-                    </p>
                   </div>
-                </div>
-
-                {/* Service Title & Description */}
-                <div className="mb-4">
-                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-1 text-lg">{service.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">{service.description}</p>
                 </div>
 
                 {/* Skills Tags */}
@@ -475,7 +475,7 @@ function ServicesContent() {
                         className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
                         onClick={() => setSelectedArtisan(service)}
                       >
-                        View Profile
+                        View Service
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
