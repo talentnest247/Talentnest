@@ -246,14 +246,52 @@ function ServicesContent() {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
+        {/* Info Banner - Explaining the Marketplace */}
+        <Card className="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-0 shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-white">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2">Welcome to TalentNest Marketplace! 🎓</h3>
+                <p className="text-blue-100 text-sm">
+                  <strong className="text-white">Students:</strong> Browse and book skilled artisans for your service needs. 
+                  <span className="mx-2">•</span>
+                  <strong className="text-white">Artisans:</strong> Showcase your skills and get hired by students across campus.
+                </p>
+              </div>
+              <Button variant="outline" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold border-0 shadow-md">
+                Become an Artisan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-blue-900 mb-4">
-            Discover Talented <span className="text-blue-600">Artisans</span>
+          <div className="inline-block mb-4">
+            <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 text-sm font-semibold shadow-lg">
+              TalentNest Service Marketplace
+            </Badge>
+          </div>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Find Skilled <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Artisans & Service Providers</span>
           </h1>
-          <p className="text-xl text-blue-700 max-w-3xl mx-auto">
-            Connect with skilled student artisans in the UNILORIN community. Find quality services with transparent reviews and easy communication.
+          <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+            Connect with verified student artisans offering quality services across UNILORIN campus. From fashion design to tech repairs - find the perfect match for your needs.
           </p>
+          <div className="flex items-center justify-center gap-8 mt-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              <span className="font-medium">Verified Artisans</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              <span className="font-medium">Real Reviews</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" />
+              <span className="font-medium">Direct Chat</span>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -301,106 +339,143 @@ function ServicesContent() {
           </CardContent>
         </Card>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Results Count */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-gray-700 font-medium">
+            <span className="text-blue-600 font-bold">{services.length}</span> service providers found
+          </p>
+          <Badge variant="outline" className="text-sm">
+            Showing verified artisans
+          </Badge>
+        </div>
+
+        {/* Services Grid - Professional Marketplace Design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
-            <Card key={service.id} className="group hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-sm border-blue-100 overflow-hidden">
-              {/* Service Image */}
-              <div className="relative h-48 overflow-hidden">
+            <Card key={service.id} className="group hover:shadow-2xl transition-all duration-300 bg-white border-2 border-gray-200 hover:border-blue-400 overflow-hidden">
+              {/* Service Image with Overlay */}
+              <div className="relative h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
                 <Image
                   src={service.images?.[0] || "/placeholder.svg"}
                   alt={service.title}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                
+                {/* Top Right Actions */}
                 <div className="absolute top-3 right-3 flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-white/90 border-white/20 hover:bg-white"
+                    className="bg-white hover:bg-white shadow-lg border-0"
                     onClick={() => toggleFavorite(service.id)}
                   >
                     <Heart
                       className={`w-4 h-4 ${
                         favoriteServices.includes(service.id)
                           ? "fill-red-500 text-red-500"
-                          : "text-gray-600"
+                          : "text-gray-700"
                       }`}
                     />
                   </Button>
                 </div>
+                
+                {/* Bottom Left Category Badge */}
                 <div className="absolute bottom-3 left-3">
-                  <Badge className="bg-blue-600 text-white">
-                    {service.category.name}
+                  <Badge className="bg-blue-600 text-white font-semibold px-3 py-1 shadow-lg">
+                    {service.category.icon} {service.category.name}
                   </Badge>
                 </div>
+
+                {/* Online Status Badge */}
+                {service.provider.availability_status === 'online' && (
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-green-500 text-white font-semibold px-3 py-1 shadow-lg">
+                      <span className="w-2 h-2 bg-white rounded-full inline-block mr-2"></span>
+                      Online
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <CardContent className="p-6">
-                {/* Provider Info */}
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10 border-2 border-blue-200">
+                {/* Artisan/Provider Info Header */}
+                <div className="flex items-start space-x-3 mb-4 pb-4 border-b border-gray-200">
+                  <div className="relative flex-shrink-0">
+                    <Avatar className="h-12 w-12 border-3 border-white shadow-lg ring-2 ring-blue-200">
                       <AvatarImage src={service.provider.avatar_url} />
-                      <AvatarFallback className="bg-blue-100 text-blue-700">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-lg">
                         {service.provider.full_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     {service.provider.verification_status === 'verified' && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                        <Shield className="w-3 h-3 text-white" />
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center ring-2 ring-white">
+                        <Shield className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
-                    <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                      service.provider.availability_status === 'online' ? 'bg-green-500' :
-                      service.provider.availability_status === 'busy' ? 'bg-yellow-500' :
-                      'bg-gray-400'
-                    }`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-blue-900 truncate">{service.provider.full_name}</p>
-                    <div className="flex items-center space-x-2">
+                    <p className="font-bold text-gray-900 truncate text-base">{service.provider.full_name}</p>
+                    <div className="flex items-center gap-1">
                       <div className="flex items-center">
                         {renderStars(service.provider.rating_average)}
-                        <span className="ml-1 text-sm text-gray-600">
-                          {service.provider.rating_average} ({service.provider.total_reviews})
-                        </span>
                       </div>
+                      <span className="text-sm font-bold text-gray-900">
+                        {service.provider.rating_average}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({service.provider.total_reviews} reviews)
+                      </span>
                     </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {service.provider.completed_projects}+ projects • {service.provider.experience_years}yrs exp
+                    </p>
                   </div>
                 </div>
 
-                {/* Service Details */}
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{service.title}</h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
+                {/* Service Title & Description */}
+                <div className="mb-4">
+                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-1 text-lg">{service.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">{service.description}</p>
+                </div>
 
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1 mb-4">
+                {/* Skills Tags */}
+                <div className="flex flex-wrap gap-2 mb-4">
                   {service.tags?.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs border-blue-200 text-blue-700">
+                    <Badge key={index} variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50 font-medium px-2 py-1">
                       {tag}
                     </Badge>
                   ))}
+                  {service.tags && service.tags.length > 3 && (
+                    <Badge variant="outline" className="text-xs border-gray-300 text-gray-600 font-medium">
+                      +{service.tags.length - 3}
+                    </Badge>
+                  )}
                 </div>
 
-                {/* Price and Actions */}
-                <div className="flex items-center justify-between">
+                {/* Price and Action Button */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                   <div>
-                    <span className="text-2xl font-bold text-blue-600">
-                      ₦{service.base_price?.toLocaleString()}
-                    </span>
-                    {service.price_type === 'hourly' && (
-                      <span className="text-sm text-gray-500">/hour</span>
-                    )}
+                    <p className="text-xs text-gray-500 mb-1">Starting from</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-blue-600">
+                        ₦{service.base_price?.toLocaleString()}
+                      </span>
+                      {service.price_type === 'hourly' && (
+                        <span className="text-sm text-gray-500 font-medium">/hour</span>
+                      )}
+                    </div>
                   </div>
                   
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button 
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
                         onClick={() => setSelectedArtisan(service)}
                       >
-                        View Details
+                        View Profile
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
@@ -735,11 +810,32 @@ function ServicesContent() {
           ))}
         </div>
 
+        {/* Loading State */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-blue-600">Loading services...</p>
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg text-blue-600 font-semibold">Finding the best artisans for you...</p>
           </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && services.length === 0 && (
+          <Card className="py-20 text-center bg-white border-2 border-dashed border-gray-300">
+            <CardContent>
+              <div className="max-w-md mx-auto">
+                <div className="mb-6">
+                  <Search className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">No Services Found</h3>
+                  <p className="text-gray-600">
+                    We couldn&apos;t find any artisans matching your search criteria. Try adjusting your filters or check back later.
+                  </p>
+                </div>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Clear Filters
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </main>
 
