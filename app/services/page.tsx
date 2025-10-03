@@ -84,8 +84,14 @@ function ServicesContent() {
   const [selectedArtisan, setSelectedArtisan] = useState<Service | null>(null)
   const [chatMessage, setChatMessage] = useState("")
   const [favoriteServices, setFavoriteServices] = useState<string[]>([])
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     // Mock data for demonstration
     const mockServices: Service[] = [
       {
@@ -228,6 +234,11 @@ function ServicesContent() {
         }`}
       />
     ))
+  }
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return null
   }
 
   return (
