@@ -53,6 +53,11 @@ function ProfileContent() {
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   // Comprehensive form data
   const [formData, setFormData] = useState<FormData>({
@@ -179,6 +184,10 @@ function ProfileContent() {
     { action: "Joined Advanced Textiles Class", time: "3 days ago", icon: GraduationCap },
     { action: "Updated Profile Information", time: "1 week ago", icon: User }
   ]
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">

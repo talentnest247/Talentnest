@@ -134,15 +134,24 @@ interface LearningSession {
 
 export default function StudentDashboardPage() {
   const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
 
-  // Role-based routing
-  if (user?.role === 'artisan') {
-    window.location.href = '/providers/dashboard'
-    return null
-  }
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  if (user?.role === 'admin') {
-    window.location.href = '/admin/dashboard'
+  // Role-based routing - only on client side
+  useEffect(() => {
+    if (mounted && user) {
+      if (user.role === 'artisan') {
+        window.location.href = '/providers/dashboard'
+      } else if (user.role === 'admin') {
+        window.location.href = '/admin/dashboard'
+      }
+    }
+  }, [user, mounted])
+
+  if (!mounted) {
     return null
   }
 
@@ -166,10 +175,17 @@ function StudentDashboardContent() {
   const [reviewDialog, setReviewDialog] = useState<{ open: boolean; booking?: StudentBooking }>({ open: false })
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewComment, setReviewComment] = useState("")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    fetchStudentData()
+    setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      fetchStudentData()
+    }
+  }, [mounted])
 
   const fetchStudentData = async () => {
     try {

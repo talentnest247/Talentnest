@@ -96,13 +96,20 @@ function MessagesContent() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [showServiceInfo, setShowServiceInfo] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    fetchConversations()
-    // Set up real-time messaging subscription
-    // subscribeToMessages()
-    // subscribeToOnlineStatus()
+    setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      fetchConversations()
+      // Set up real-time messaging subscription
+      // subscribeToMessages()
+      // subscribeToOnlineStatus()
+    }
+  }, [mounted])
 
   useEffect(() => {
     if (selectedConversation) {

@@ -272,12 +272,12 @@ function ServicesContent() {
                 </div>
               </div>
               
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory || undefined} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full lg:w-48 border-blue-200">
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   <SelectItem value="fashion">Fashion & Tailoring</SelectItem>
                   <SelectItem value="tech">Technology</SelectItem>
                   <SelectItem value="beauty">Beauty & Wellness</SelectItem>
@@ -403,41 +403,41 @@ function ServicesContent() {
                         View Details
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl text-blue-900">
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+                      <DialogHeader className="border-b border-gray-200 pb-4">
+                        <DialogTitle className="text-2xl font-bold text-blue-900">
                           {selectedArtisan?.title}
                         </DialogTitle>
                       </DialogHeader>
 
                       {selectedArtisan && (
-                        <Tabs defaultValue="overview" className="w-full">
-                          <TabsList className="grid w-full grid-cols-4 bg-blue-50">
-                            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                        <Tabs defaultValue="overview" className="w-full mt-4">
+                          <TabsList className="grid w-full grid-cols-4 bg-blue-100 p-1 rounded-lg">
+                            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md font-semibold transition-all">
                               Overview
                             </TabsTrigger>
-                            <TabsTrigger value="portfolio" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                            <TabsTrigger value="portfolio" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md font-semibold transition-all">
                               Portfolio
                             </TabsTrigger>
-                            <TabsTrigger value="reviews" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                            <TabsTrigger value="reviews" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md font-semibold transition-all">
                               Reviews ({selectedArtisan.provider.total_reviews})
                             </TabsTrigger>
-                            <TabsTrigger value="contact" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                            <TabsTrigger value="contact" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md font-semibold transition-all">
                               Contact
                             </TabsTrigger>
                           </TabsList>
 
                           {/* Overview Tab */}
-                          <TabsContent value="overview" className="space-y-6">
+                          <TabsContent value="overview" className="space-y-6 mt-6">
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                               {/* Artisan Profile */}
                               <div className="lg:col-span-2 space-y-6">
-                                <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                                <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-300 shadow-md">
                                   <CardContent className="p-6">
                                     <div className="flex items-start space-x-4">
                                       <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
                                         <AvatarImage src={selectedArtisan.provider.avatar_url} />
-                                        <AvatarFallback className="bg-blue-600 text-white text-xl">
+                                        <AvatarFallback className="bg-blue-600 text-white text-xl font-bold">
                                           {selectedArtisan.provider.full_name.charAt(0)}
                                         </AvatarFallback>
                                       </Avatar>
@@ -445,40 +445,40 @@ function ServicesContent() {
                                         <h3 className="text-xl font-bold text-blue-900 mb-1">
                                           {selectedArtisan.provider.full_name}
                                         </h3>
-                                        <p className="text-blue-700 mb-2">{selectedArtisan.category.name} Specialist</p>
-                                        <div className="flex items-center space-x-4 text-sm text-blue-600">
+                                        <p className="text-blue-700 font-medium mb-2">{selectedArtisan.category.name} Specialist</p>
+                                        <div className="flex items-center flex-wrap gap-3 text-sm text-blue-600 font-medium">
                                           <div className="flex items-center">
                                             {renderStars(selectedArtisan.provider.rating_average)}
-                                            <span className="ml-1">{selectedArtisan.provider.rating_average}</span>
+                                            <span className="ml-1 font-bold">{selectedArtisan.provider.rating_average}</span>
                                           </div>
                                           <span>•</span>
-                                          <span>{selectedArtisan.provider.completed_projects} projects completed</span>
+                                          <span>{selectedArtisan.provider.completed_projects} projects</span>
                                           <span>•</span>
-                                          <span>{selectedArtisan.provider.experience_years} years experience</span>
+                                          <span>{selectedArtisan.provider.experience_years} yrs exp</span>
                                         </div>
                                       </div>
                                     </div>
                                   </CardContent>
                                 </Card>
 
-                                <Card>
-                                  <CardHeader>
-                                    <CardTitle className="text-blue-900">About This Service</CardTitle>
+                                <Card className="bg-white border-gray-200 shadow-md">
+                                  <CardHeader className="bg-gray-50 border-b">
+                                    <CardTitle className="text-blue-900 font-bold">About This Service</CardTitle>
                                   </CardHeader>
-                                  <CardContent>
-                                    <p className="text-gray-700 mb-4">{selectedArtisan.description}</p>
-                                    <p className="text-gray-700">{selectedArtisan.provider.bio}</p>
+                                  <CardContent className="p-6">
+                                    <p className="text-gray-700 mb-4 leading-relaxed">{selectedArtisan.description}</p>
+                                    <p className="text-gray-700 leading-relaxed">{selectedArtisan.provider.bio}</p>
                                   </CardContent>
                                 </Card>
 
-                                <Card>
-                                  <CardHeader>
-                                    <CardTitle className="text-blue-900">Skills & Expertise</CardTitle>
+                                <Card className="bg-white border-gray-200 shadow-md">
+                                  <CardHeader className="bg-gray-50 border-b">
+                                    <CardTitle className="text-blue-900 font-bold">Skills & Expertise</CardTitle>
                                   </CardHeader>
-                                  <CardContent>
+                                  <CardContent className="p-6">
                                     <div className="flex flex-wrap gap-2">
                                       {selectedArtisan.provider.skills?.map((skill, index) => (
-                                        <Badge key={index} className="bg-blue-100 text-blue-800">
+                                        <Badge key={index} className="bg-blue-600 text-white px-3 py-1 text-sm font-medium">
                                           {skill}
                                         </Badge>
                                       ))}
@@ -489,50 +489,50 @@ function ServicesContent() {
 
                               {/* Sidebar */}
                               <div className="space-y-6">
-                                <Card className="bg-white border-blue-200">
-                                  <CardHeader>
-                                    <CardTitle className="text-blue-900">Service Details</CardTitle>
+                                <Card className="bg-white border-blue-300 shadow-lg">
+                                  <CardHeader className="bg-blue-50 border-b border-blue-200">
+                                    <CardTitle className="text-blue-900 font-bold">Service Details</CardTitle>
                                   </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Starting Price:</span>
-                                      <span className="font-bold text-blue-600">
+                                  <CardContent className="space-y-4 p-6 bg-white">
+                                    <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                      <span className="text-gray-700 font-medium">Starting Price:</span>
+                                      <span className="font-bold text-blue-600 text-lg">
                                         ₦{selectedArtisan.base_price?.toLocaleString()}
                                       </span>
                                     </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Delivery Time:</span>
-                                      <span className="font-medium">{selectedArtisan.delivery_time} days</span>
+                                    <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                      <span className="text-gray-700 font-medium">Delivery Time:</span>
+                                      <span className="font-semibold text-gray-900">{selectedArtisan.delivery_time} days</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Response Time:</span>
-                                      <span className="font-medium text-green-600">
+                                    <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                      <span className="text-gray-700 font-medium">Response Time:</span>
+                                      <span className="font-semibold text-green-600">
                                         {selectedArtisan.provider.response_time}
                                       </span>
                                     </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Location:</span>
-                                      <span className="font-medium">
+                                    <div className="flex justify-between items-center py-3">
+                                      <span className="text-gray-700 font-medium">Location:</span>
+                                      <span className="font-semibold text-gray-900 text-right">
                                         {selectedArtisan.provider.location_on_campus}
                                       </span>
                                     </div>
                                   </CardContent>
                                 </Card>
 
-                                <Card className="bg-green-50 border-green-200">
-                                  <CardContent className="p-4">
+                                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-md">
+                                  <CardContent className="p-6">
                                     <div className="text-center">
-                                      <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+                                      <div className={`w-5 h-5 rounded-full mx-auto mb-3 shadow-lg ${
                                         selectedArtisan.provider.availability_status === 'online' ? 'bg-green-500' :
                                         selectedArtisan.provider.availability_status === 'busy' ? 'bg-yellow-500' :
                                         'bg-gray-400'
                                       }`} />
-                                      <p className="font-medium text-green-800">
+                                      <p className="font-bold text-green-900 text-lg mb-1">
                                         {selectedArtisan.provider.availability_status === 'online' ? 'Online Now' :
                                          selectedArtisan.provider.availability_status === 'busy' ? 'Busy' :
                                          'Offline'}
                                       </p>
-                                      <p className="text-sm text-green-600">
+                                      <p className="text-sm text-green-700 font-medium">
                                         {selectedArtisan.provider.response_time}
                                       </p>
                                     </div>
@@ -543,81 +543,88 @@ function ServicesContent() {
                           </TabsContent>
 
                           {/* Portfolio Tab */}
-                          <TabsContent value="portfolio" className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {selectedArtisan.images?.map((image, index) => (
-                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                                  <Image
-                                    src={image}
-                                    alt={`Portfolio ${index + 1}`}
-                                    fill
-                                    className="object-cover hover:scale-105 transition-transform duration-300"
-                                  />
+                          <TabsContent value="portfolio" className="space-y-6 mt-6">
+                            <Card className="bg-white border-gray-200 shadow-md">
+                              <CardHeader className="bg-gray-50 border-b">
+                                <CardTitle className="text-blue-900 font-bold">Portfolio Gallery</CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {selectedArtisan.images?.map((image, index) => (
+                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 shadow-md bg-white">
+                                      <Image
+                                        src={image}
+                                        alt={`Portfolio ${index + 1}`}
+                                        fill
+                                        className="object-cover hover:scale-110 transition-transform duration-300"
+                                      />
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
+                              </CardContent>
+                            </Card>
                           </TabsContent>
 
                           {/* Reviews Tab */}
-                          <TabsContent value="reviews" className="space-y-6">
+                          <TabsContent value="reviews" className="space-y-6 mt-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                              <Card className="bg-blue-50 border-blue-200">
+                              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg">
                                 <CardContent className="p-6 text-center">
-                                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                                  <div className="text-4xl font-bold text-blue-600 mb-2">
                                     {selectedArtisan.provider.rating_average}
                                   </div>
                                   <div className="flex justify-center mb-2">
                                     {renderStars(selectedArtisan.provider.rating_average)}
                                   </div>
-                                  <p className="text-blue-700">Average Rating</p>
+                                  <p className="text-blue-800 font-semibold">Average Rating</p>
                                 </CardContent>
                               </Card>
                               
-                              <Card className="bg-green-50 border-green-200">
+                              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg">
                                 <CardContent className="p-6 text-center">
-                                  <div className="text-3xl font-bold text-green-600 mb-2">
+                                  <div className="text-4xl font-bold text-green-600 mb-2">
                                     {selectedArtisan.provider.total_reviews}
                                   </div>
-                                  <p className="text-green-700">Total Reviews</p>
+                                  <p className="text-green-800 font-semibold">Total Reviews</p>
                                 </CardContent>
                               </Card>
                               
-                              <Card className="bg-purple-50 border-purple-200">
+                              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg">
                                 <CardContent className="p-6 text-center">
-                                  <div className="text-3xl font-bold text-purple-600 mb-2">
+                                  <div className="text-4xl font-bold text-purple-600 mb-2">
                                     {selectedArtisan.provider.completed_projects}
                                   </div>
-                                  <p className="text-purple-700">Projects Completed</p>
+                                  <p className="text-purple-800 font-semibold">Projects Completed</p>
                                 </CardContent>
                               </Card>
                             </div>
 
                             <div className="space-y-4">
                               {selectedArtisan.reviews?.map((review) => (
-                                <Card key={review.id} className="border-blue-100">
+                                <Card key={review.id} className="bg-white border-gray-200 shadow-md hover:shadow-lg transition-shadow">
                                   <CardContent className="p-6">
                                     <div className="flex items-start space-x-4">
-                                      <Avatar className="h-10 w-10">
+                                      <Avatar className="h-12 w-12 border-2 border-blue-200">
                                         <AvatarImage src={review.user_avatar} />
-                                        <AvatarFallback className="bg-blue-100 text-blue-700">
+                                        <AvatarFallback className="bg-blue-600 text-white font-bold">
                                           {review.user_name.charAt(0)}
                                         </AvatarFallback>
                                       </Avatar>
                                       <div className="flex-1">
                                         <div className="flex items-center justify-between mb-2">
-                                          <h4 className="font-medium text-blue-900">{review.user_name}</h4>
-                                          <span className="text-sm text-gray-500">
+                                          <h4 className="font-bold text-blue-900">{review.user_name}</h4>
+                                          <span className="text-sm text-gray-600 font-medium">
                                             {new Date(review.created_at).toLocaleDateString()}
                                           </span>
                                         </div>
-                                        <div className="flex items-center mb-2">
+                                        <div className="flex items-center mb-3">
                                           {renderStars(review.rating)}
                                         </div>
-                                        <p className="text-gray-700">{review.comment}</p>
+                                        <p className="text-gray-800 leading-relaxed">{review.comment}</p>
                                         {review.images && (
-                                          <div className="flex space-x-2 mt-3">
+                                          <div className="flex space-x-2 mt-4">
                                             {review.images.map((img, idx) => (
-                                              <div key={idx} className="w-16 h-16 relative rounded overflow-hidden">
+                                              <div key={idx} className="w-20 h-20 relative rounded-lg overflow-hidden border-2 border-gray-200 bg-white shadow-sm">
                                                 <Image src={img} alt={`Review ${idx}`} fill className="object-cover" />
                                               </div>
                                             ))}
@@ -632,53 +639,59 @@ function ServicesContent() {
                           </TabsContent>
 
                           {/* Contact Tab */}
-                          <TabsContent value="contact" className="space-y-6">
+                          <TabsContent value="contact" className="space-y-6 mt-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                               {/* Contact Information */}
-                              <Card className="bg-blue-50 border-blue-200">
-                                <CardHeader>
-                                  <CardTitle className="text-blue-900">Contact Information</CardTitle>
+                              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg">
+                                <CardHeader className="bg-blue-100 border-b border-blue-200">
+                                  <CardTitle className="text-blue-900 font-bold">Contact Information</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                  <div className="flex items-center space-x-3">
-                                    <Mail className="w-5 h-5 text-blue-600" />
+                                <CardContent className="space-y-5 p-6 bg-white">
+                                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                                    <div className="bg-blue-600 p-3 rounded-full">
+                                      <Mail className="w-5 h-5 text-white" />
+                                    </div>
                                     <div>
-                                      <p className="font-medium text-blue-900">Email</p>
-                                      <p className="text-blue-700">{selectedArtisan.provider.email}</p>
+                                      <p className="font-bold text-gray-900 text-sm">Email</p>
+                                      <p className="text-blue-700 font-medium">{selectedArtisan.provider.email}</p>
                                     </div>
                                   </div>
                                   
-                                  <div className="flex items-center space-x-3">
-                                    <Phone className="w-5 h-5 text-blue-600" />
+                                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                                    <div className="bg-blue-600 p-3 rounded-full">
+                                      <Phone className="w-5 h-5 text-white" />
+                                    </div>
                                     <div>
-                                      <p className="font-medium text-blue-900">Phone</p>
-                                      <p className="text-blue-700">{selectedArtisan.provider.phone}</p>
+                                      <p className="font-bold text-gray-900 text-sm">Phone</p>
+                                      <p className="text-blue-700 font-medium">{selectedArtisan.provider.phone}</p>
                                     </div>
                                   </div>
                                   
-                                  <div className="flex items-center space-x-3">
-                                    <MapPin className="w-5 h-5 text-blue-600" />
+                                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                                    <div className="bg-blue-600 p-3 rounded-full">
+                                      <MapPin className="w-5 h-5 text-white" />
+                                    </div>
                                     <div>
-                                      <p className="font-medium text-blue-900">Campus Location</p>
-                                      <p className="text-blue-700">{selectedArtisan.provider.location_on_campus}</p>
+                                      <p className="font-bold text-gray-900 text-sm">Campus Location</p>
+                                      <p className="text-blue-700 font-medium">{selectedArtisan.provider.location_on_campus}</p>
                                     </div>
                                   </div>
 
                                   <div className="pt-4 space-y-3">
                                     <Button 
-                                      className="w-full bg-green-600 hover:bg-green-700"
+                                      className="w-full bg-green-600 hover:bg-green-700 shadow-md font-bold text-base py-6"
                                       onClick={() => selectedArtisan.provider.whatsapp && openWhatsApp(selectedArtisan.provider.whatsapp)}
                                     >
-                                      <MessageCircle className="w-4 h-4 mr-2" />
+                                      <MessageCircle className="w-5 h-5 mr-2" />
                                       Chat on WhatsApp
                                     </Button>
                                     
                                     <Button 
                                       variant="outline" 
-                                      className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                                      className="w-full border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-bold text-base py-6 shadow-md"
                                       onClick={() => selectedArtisan.provider.phone && window.open(`tel:${selectedArtisan.provider.phone}`)}
                                     >
-                                      <Phone className="w-4 h-4 mr-2" />
+                                      <Phone className="w-5 h-5 mr-2" />
                                       Call Now
                                     </Button>
                                   </div>
@@ -686,11 +699,11 @@ function ServicesContent() {
                               </Card>
 
                               {/* Send Message */}
-                              <Card>
-                                <CardHeader>
-                                  <CardTitle className="text-blue-900">Send a Message</CardTitle>
+                              <Card className="bg-white border-gray-200 shadow-lg">
+                                <CardHeader className="bg-gray-50 border-b">
+                                  <CardTitle className="text-blue-900 font-bold">Send a Message</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-4 p-6 bg-white">
                                   <Textarea
                                     placeholder="Write your message here..."
                                     value={chatMessage}
