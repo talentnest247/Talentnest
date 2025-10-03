@@ -52,7 +52,7 @@ export function Header() {
                 className="rounded-full w-8 h-8 sm:w-10 sm:h-10"
               />
               <div className="flex flex-col">
-                <span className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight">UniLorin Portal</span>
+                <span className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight">TalentNest</span>
                 <span className="hidden sm:block text-[10px] md:text-xs text-slate-600 font-medium leading-tight">University of Ilorin Services Platform</span>
               </div>
             </Link>
@@ -93,13 +93,6 @@ export function Header() {
                     className="hidden md:flex bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-500 text-xs md:text-sm px-2 md:px-4 h-8 md:h-10"
                   >
                     Get Started
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => router.push("/admin/login")} 
-                    className="hidden sm:flex text-blue-700 border-blue-300 hover:bg-blue-50 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8 md:h-9"
-                  >
-                    Admin
                   </Button>
                 </>
               ) : (
@@ -178,7 +171,7 @@ export function Header() {
                             className="rounded-full w-7 h-7 sm:w-8 sm:h-8"
                           />
                           <div>
-                            <h2 className="text-base sm:text-lg font-bold text-blue-700">UniLorin Portal</h2>
+                            <h2 className="text-base sm:text-lg font-bold text-blue-700">TalentNest</h2>
                             <p className="text-[10px] sm:text-xs text-slate-600">UNILORIN Services Platform</p>
                           </div>
                         </div>
@@ -228,13 +221,6 @@ export function Header() {
                         <div className="space-y-2 sm:space-y-3 pt-4 sm:pt-6 border-t border-gray-200/50">
                           <Button variant="outline" onClick={() => { router.push("/login"); setIsOpen(false); }} className="w-full justify-start text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800 h-10 sm:h-11 text-sm sm:text-base"><User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />Sign in</Button>
                           <Button onClick={() => { router.push("/register"); setIsOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-500 h-10 sm:h-11 text-sm sm:text-base">Get started</Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={() => { router.push("/admin/login"); setIsOpen(false); }} 
-                            className="w-full text-blue-700 border-blue-300 hover:bg-blue-50 h-9 sm:h-10 text-xs sm:text-sm"
-                          >
-                            Admin Login
-                          </Button>
                         </div>
                       )}
                     </div>
