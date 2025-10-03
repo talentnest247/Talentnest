@@ -57,7 +57,7 @@ export function HeroSection() {
           <div className="space-y-8 text-center lg:text-left">
             {/* Badge */}
             <div className={`inline-flex transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white px-4 py-2 text-sm font-medium shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Badge className="bg-gradient-to-r from-blue-600 to-blue-600 text-white px-4 py-2 text-sm font-medium shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Sparkles className="h-4 w-4 mr-2" />
                 University of Ilorin - Portal
               </Badge>
@@ -66,12 +66,12 @@ export function HeroSection() {
             {/* Main Heading */}
             <div className={`space-y-4 transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-                <span className="bg-gradient-to-r from-blue-700 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  Find Services,
+                <span className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Your Campus
                 </span>
                 <br />
                 <span className="text-slate-900 dark:text-white">
-                  Build Your Future
+                  Marketplace Hub
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
@@ -83,7 +83,7 @@ export function HeroSection() {
             <div className={`space-y-3 transition-all duration-1000 delay-400 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               {features.map((feature, index) => (
                 <div key={index} className={`flex items-center space-x-3 text-slate-800 dark:text-slate-100 transition-all duration-500 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}>
-                  <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-blue-500 flex-shrink-0" />
                   <span className="text-base font-medium text-slate-800 dark:text-slate-100">{feature}</span>
                 </div>
               ))}
@@ -94,7 +94,7 @@ export function HeroSection() {
               <Button 
                 asChild
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
                 <Link href="/services" className="flex items-center space-x-2">
                   <span className="text-white">Explore Services</span>
@@ -161,7 +161,7 @@ export function HeroSection() {
                 <Card className="absolute bottom-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-0 shadow-lg">
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-3">
-                      <Award className="h-5 w-5 text-emerald-500" />
+                      <Award className="h-5 w-5 text-blue-500" />
                       <div>
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">150+ Services</p>
                         <p className="text-xs text-slate-600 dark:text-slate-400">Learn & Teach</p>
@@ -173,7 +173,7 @@ export function HeroSection() {
               
               {/* Decorative Elements */}
               <div className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20"></div>
-              <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full opacity-20"></div>
+              <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full opacity-20"></div>
             </div>
           </div>
         </div>

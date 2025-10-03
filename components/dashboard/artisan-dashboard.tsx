@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ReviewSystem } from "@/components/reviews/review-system"
+import { supabase } from "@/lib/supabase"
 import type { AuthUser } from "@/lib/auth-utils"
 import { 
   MessageSquare, 
@@ -24,6 +25,28 @@ interface ArtisanDashboardProps {
   user: AuthUser
 }
 
+interface Inquiry {
+  id: string
+  studentName: string
+  service: string
+  message: string
+  time: string
+  status: string
+}
+
+interface Review {
+  id: string
+  studentName: string
+  studentAvatar: string
+  rating: number
+  title: string
+  comment: string
+  date: string
+  verified: boolean
+  helpful: number
+  serviceName: string
+}
+
 export function ArtisanDashboard({ user }: ArtisanDashboardProps) {
   const [stats, setStats] = useState({
     totalViews: 0,
@@ -35,80 +58,125 @@ export function ArtisanDashboard({ user }: ArtisanDashboardProps) {
     responseRate: 0,
     verificationStatus: 'pending' as 'pending' | 'verified' | 'rejected'
   })
-
-  const recentInquiries = [
-    {
-      id: '1',
-      studentName: 'Amina Hassan',
-      service: 'Fashion Design',
-      message: 'Hi, I need help with designing a traditional Agbada...',
-      time: '2 hours ago',
-      status: 'new'
-    },
-    {
-      id: '2', 
-      studentName: 'Ibrahim Musa',
-      service: 'Tailoring',
-      message: 'Can you help with alterations for my graduation suit?',
-      time: '5 hours ago',
-      status: 'replied'
-    }
-  ]
-
-  const portfolioStats = {
-    totalImages: 8,
-    portfolioViews: 156,
-    lastUpdated: '2 days ago'
-  }
+  
+  const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [portfolioStats, setPortfolioStats] = useState({
+    totalImages: 0,
+    portfolioViews: 0,
+    lastUpdated: 'Never'
+  })
 
   useEffect(() => {
     const loadArtisanData = async () => {
       try {
-        // Mock artisan-specific data
+        // Fetch real artisan data from Supabase
+        const { data: profileData, error: profileError } = await supabase
+          .from('verified_artisans')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (profileError) {
+          console.error("Error fetching artisan profile:", profileError)
+          setStats({
+            totalViews: 0,
+            activeInquiries: 0,
+            averageRating: 0,
+            totalReviews: 0,
+            monthlyEarnings: 0,
+            completedProjects: 0,
+            responseRate: 0,
+            verificationStatus: 'pending'
+          })
+          return
+        }
+
+        // Fetch real inquiries
+        const { data: inquiryData } = await supabase
+          .from('inquiries')
+          .select('*')
+          .eq('artisan_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        // Fetch real reviews
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('artisan_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        // Fetch portfolio items count
+        const { data: portfolioCount } = await supabase
+          .from('portfolio')
+          .select('id', { count: 'exact' })
+          .eq('provider_id', user.id)
+
+        // Update portfolio stats
+        setPortfolioStats(prev => ({
+          ...prev,
+          totalImages: portfolioCount?.length || 0
+        }))
+
+        // Update stats with real data
         setStats({
-          totalViews: 1247,
-          activeInquiries: 5,
-          averageRating: 4.8,
-          totalReviews: 23,
-          monthlyEarnings: 85000,
-          completedProjects: 18,
-          responseRate: 95,
-          verificationStatus: 'verified'
+          totalViews: profileData?.total_views || 0,
+          activeInquiries: inquiryData?.length || 0,
+          averageRating: reviewData && reviewData.length > 0 ? 
+            reviewData.reduce((sum, review) => sum + review.rating, 0) / reviewData.length : 0,
+          totalReviews: reviewData?.length || 0,
+          monthlyEarnings: 0, // Will be calculated from completed projects
+          completedProjects: profileData?.completed_projects || 0,
+          responseRate: profileData?.response_rate || 0,
+          verificationStatus: profileData?.verification_status || 'pending'
         })
+
+        // Set real inquiries or empty array
+        setRecentInquiries(inquiryData?.map(inquiry => ({
+          id: inquiry.id,
+          studentName: inquiry.student_name || 'Anonymous',
+          service: inquiry.service_type || 'General Service',
+          message: inquiry.message || '',
+          time: new Date(inquiry.created_at).toLocaleDateString(),
+          status: inquiry.status || 'new'
+        })) || [])
+
+        // Set real reviews or empty array
+        setReviews(reviewData?.map(review => ({
+          id: review.id,
+          studentName: review.student_name || 'Anonymous',
+          studentAvatar: '/placeholder.svg',
+          rating: review.rating || 0,
+          title: review.title || 'Review',
+          comment: review.comment || '',
+          date: new Date(review.created_at).toLocaleDateString(),
+          verified: review.verified || false,
+          helpful: review.helpful_count || 0,
+          serviceName: review.service_name || 'Service'
+        })) || [])
+
       } catch (error) {
         console.error("Error loading artisan data:", error)
+        // Set empty state on error
+        setStats({
+          totalViews: 0,
+          activeInquiries: 0,
+          averageRating: 0,
+          totalReviews: 0,
+          monthlyEarnings: 0,
+          completedProjects: 0,
+          responseRate: 0,
+          verificationStatus: 'pending'
+        })
+        setRecentInquiries([])
+        setReviews([])
       }
     }
 
     loadArtisanData()
-  }, [])
-
-  const mockReviews = [
-    {
-      id: '1',
-      studentName: 'Fatima Abdullahi',
-      studentAvatar: '/placeholder.svg',
-      rating: 5,
-      title: 'Amazing work!',
-      comment: 'The traditional Agbada design was exactly what I wanted. Great attention to detail.',
-      date: '3 days ago',
-      verified: true,
-      helpful: 4,
-      serviceName: 'Fashion Design Service'
-    },
-    {
-      id: '2',
-      studentName: 'Ahmed Suleiman', 
-      studentAvatar: '/placeholder.svg',
-      rating: 5,
-      title: 'Professional service',
-      comment: 'Quick response and excellent tailoring skills. Highly recommended!',
-      date: '1 week ago',
-      verified: true,
-      helpful: 2,
-      serviceName: 'Tailoring Service'
-    }
-  ]
+  }, [user.id])
 
   return (
     <div className="space-y-6 bg-white min-h-screen p-6">
@@ -311,7 +379,7 @@ export function ArtisanDashboard({ user }: ArtisanDashboardProps) {
       {/* Reviews Section */}
       <ReviewSystem
         artisanId={user.id}
-        reviews={mockReviews}
+        reviews={reviews}
         canReview={false}
         userHasReviewed={false}
       />

@@ -12,12 +12,36 @@ export default function LoginPage() {
     router.push("/")
   }
 
+  // Development helper to clear cached sessions
+  const clearSession = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      // Clear any client-side storage
+      localStorage.clear()
+      sessionStorage.clear()
+      // Force page reload to clear any cached state
+      window.location.reload()
+    } catch (error) {
+      console.error('Error clearing session:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
-      <main className="flex-1 flex items-center justify-center p-4 bg-white">
+      <main className="flex-1 flex items-center justify-center p-4 bg-white relative">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50"></div>
+        
+        {/* Development Helper - Clear Session Button */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={clearSession}
+            className="absolute bottom-6 right-6 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors shadow-lg z-10"
+          >
+            Clear Session
+          </button>
+        )}
         
         {/* Content */}
         <div className="relative w-full max-w-md space-y-8">

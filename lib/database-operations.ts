@@ -105,20 +105,66 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 // Provider operations
 export async function getAllProviders(): Promise<Provider[]> {
   try {
-    // First check if database is available
-    const isConnected = await checkDatabaseConnection()
-    if (!isConnected) {
-      console.log('Using mock data for providers')
-      return mockProviders
+    // Try to fetch real data from Supabase first
+    const { data: providers, error } = await supabase
+      .from('verified_artisans')
+      .select('*')
+
+    if (!error && providers && providers.length > 0) {
+      // Transform Supabase data to match Provider interface
+      const transformedProviders: Provider[] = providers.map(artisan => ({
+        // User fields
+        id: artisan.id,
+        email: artisan.email || '',
+        password: '', // Never expose password
+        firstName: artisan.first_name || 'Unknown',
+        lastName: artisan.last_name || 'User',
+        fullName: artisan.full_name || 'Unknown Artisan',
+        phone: artisan.phone || '',
+        role: 'artisan' as const,
+        profileImage: artisan.profile_image || '/placeholder.svg',
+        createdAt: new Date(artisan.created_at),
+        updatedAt: new Date(artisan.updated_at),
+        
+        // Provider-specific fields
+        businessName: artisan.business_name || artisan.full_name || 'Unknown Business',
+        description: artisan.bio || 'Professional service provider',
+        bio: artisan.bio || 'Professional service provider',
+        specialization: artisan.specializations ? artisan.specializations.split(',') : ['General Service'],
+        experience: artisan.experience_years || 0,
+        location: artisan.location || 'UNILORIN',
+        rating: artisan.average_rating || 0,
+        totalReviews: artisan.total_reviews || 0,
+        verified: artisan.verification_status === 'verified',
+        verificationStatus: artisan.verification_status || 'pending',
+        verificationEvidence: artisan.verification_evidence ? artisan.verification_evidence.split(',') : [],
+        certificates: artisan.certificates ? artisan.certificates.split(',') : [],
+        portfolio: [], // Will be fetched separately if needed
+        availability: {
+          isAvailable: artisan.is_available || true,
+          availableForWork: artisan.available_for_work || true,
+          availableForLearning: artisan.available_for_learning || false,
+          responseTime: artisan.response_time || 'Usually responds within 24 hours'
+        },
+        pricing: {
+          serviceRate: artisan.service_rate || undefined,
+          learningRate: artisan.learning_rate || undefined,
+          currency: 'NGN'
+        },
+        whatsappNumber: artisan.whatsapp || artisan.phone || ''
+      }))
+      
+      console.log(`Fetched ${transformedProviders.length} real providers from database`)
+      return transformedProviders
     }
 
-    // For now, return mock data while we transition to the new database schema
-    // TODO: Implement proper database queries once schema is deployed
-    console.log('Database connected, but using mock data during transition')
+    // Fallback to mock data if no real data available
+    console.log('No real providers found, using mock data')
     return mockProviders
   } catch (error) {
     console.error('Error fetching providers:', error)
     // Fallback to mock data
+    console.log('Database error, using mock data as fallback')
     return mockProviders
   }
 }
@@ -126,19 +172,31 @@ export async function getAllProviders(): Promise<Provider[]> {
 // Category operations
 export async function getAllCategories(): Promise<Category[]> {
   try {
-    // First check if database is available
-    const isConnected = await checkDatabaseConnection()
-    if (!isConnected) {
-      console.log('Using mock data for categories')
-      return mockCategories
+    // Try to fetch real data from Supabase first
+    const { data: categories, error } = await supabase
+      .from('categories')
+      .select('*')
+
+    if (!error && categories && categories.length > 0) {
+      // Transform Supabase data to match Category interface
+      const transformedCategories: Category[] = categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        description: category.description || '',
+        icon: category.icon || '🔧',
+        providerCount: category.provider_count || 0
+      }))
+      
+      console.log(`Fetched ${transformedCategories.length} real categories from database`)
+      return transformedCategories
     }
 
-    // For now, return mock data while we transition to the new database schema
-    // TODO: Implement proper database queries once schema is deployed
-    console.log('Database connected, but using mock data during transition')
+    // Fallback to mock data if no real data available
+    console.log('No real categories found, using mock data')
     return mockCategories
   } catch (error) {
     console.error('Error fetching categories:', error)
+    console.log('Database error, using mock data as fallback')
     return mockCategories
   }
 }

@@ -17,8 +17,28 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
 
   if (isAuthRoute && token) {
-    // Simple token check - just verify it exists and has proper format
+    // Validate token format but don't redirect if it contains old invalid IDs
     if (token.startsWith('session_') || token.includes('.')) {
+      // Check if token might contain old admin ID that causes database errors
+      try {
+        // Try to decode token to check for old IDs
+        const payload = token.split('.')[1]
+        if (payload) {
+          const decoded = JSON.parse(atob(payload))
+          // If token contains old admin-001 ID, clear it and don't redirect
+          if (decoded.id === 'admin-001') {
+            const clearResponse = NextResponse.next()
+            clearResponse.cookies.delete('auth-token')
+            return clearResponse
+          }
+        }
+      } catch {
+        // If token is malformed, clear it
+        const clearResponse = NextResponse.next()
+        clearResponse.cookies.delete('auth-token')
+        return clearResponse
+      }
+      
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
   }

@@ -88,77 +88,77 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-600">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 md:py-8 lg:py-12">
         <div className="max-w-lg mx-auto">
           {/* Admin Login Card */}
           <Card className="shadow-2xl border-0 overflow-hidden bg-white/95 backdrop-blur-sm">
             {/* Header */}
-            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-8">
-              <div className="text-center space-y-4">
-                <div className="mx-auto w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-                  <Shield className="w-10 h-10 text-white" />
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-6 md:py-8">
+              <div className="text-center space-y-3 md:space-y-4">
+                <div className="mx-auto w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-full flex items-center justify-center">
+                  <Shield className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
-                <div>
-                  <CardTitle className="text-2xl font-bold">
+                <div className="px-4 md:px-0">
+                  <CardTitle className="text-xl md:text-2xl font-bold">
                     Admin Access Portal
                   </CardTitle>
-                  <CardDescription className="text-blue-100 text-base mt-2">
+                  <CardDescription className="text-blue-100 text-sm md:text-base mt-2">
                     TalentNest Administration Panel
                   </CardDescription>
                 </div>
                 
                 {/* Security Badge */}
-                <div className="flex items-center justify-center gap-2 bg-white/10 rounded-full px-4 py-2 mx-auto w-fit">
-                  <Lock className="w-4 h-4 text-blue-200" />
-                  <span className="text-blue-200 text-sm">Secure Admin Login</span>
+                <div className="flex items-center justify-center gap-2 bg-white/10 rounded-full px-3 py-1.5 md:px-4 md:py-2 mx-auto w-fit">
+                  <Lock className="w-3 h-3 md:w-4 md:h-4 text-blue-200" />
+                  <span className="text-blue-200 text-xs md:text-sm">Secure Admin Login</span>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="p-8">
+            <CardContent className="p-4 sm:p-6 md:p-8">
               {/* Logo */}
-              <div className="text-center mb-6">
+              <div className="text-center mb-4 md:mb-6">
                 <Image
                   src="/images/unilorin-logo.png"
                   alt="UniLorin Logo"
-                  width={60}
-                  height={60}
-                  className="mx-auto mb-3"
+                  width={50}
+                  height={50}
+                  className="mx-auto mb-2 md:mb-3 w-12 h-12 md:w-[60px] md:h-[60px]"
                 />
-                <p className="text-sm text-gray-600">University of Ilorin - TalentNest</p>
+                <p className="text-xs md:text-sm text-gray-600">University of Ilorin - TalentNest</p>
               </div>
 
               {/* Admin Features Preview */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <UserCheck className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                  <p className="text-xs text-blue-700 font-medium">User Management</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 md:mb-6">
+                <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600 mx-auto mb-1 md:mb-2" />
+                  <p className="text-[10px] sm:text-xs text-blue-700 font-medium">User Management</p>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                  <p className="text-xs text-green-700 font-medium">Analytics</p>
+                <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-green-600 mx-auto mb-1 md:mb-2" />
+                  <p className="text-[10px] sm:text-xs text-green-700 font-medium">Analytics</p>
                 </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <Settings className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                  <p className="text-xs text-purple-700 font-medium">System Control</p>
+                <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
+                  <Settings className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-purple-600 mx-auto mb-1 md:mb-2" />
+                  <p className="text-[10px] sm:text-xs text-purple-700 font-medium">System Control</p>
                 </div>
               </div>
 
               {/* Error Alert */}
               {error && (
-                <Alert className="mb-6 border-red-200 bg-red-50">
+                <Alert className="mb-4 md:mb-6 border-red-200 bg-red-50">
                   <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-700">
+                  <AlertDescription className="text-sm text-red-700">
                     {error}
                   </AlertDescription>
                 </Alert>
               )}
 
               {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 {/* Admin Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="block text-sm font-medium text-blue-900">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="email" className="block text-xs sm:text-sm font-medium text-blue-900">
                     Admin Email Address <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -169,14 +169,14 @@ export default function AdminLoginPage() {
                     placeholder="talentnest247@gmail.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="border-blue-200 focus:border-blue-500 bg-white"
+                    className="border-blue-200 focus:border-blue-500 bg-white text-sm md:text-base h-10 md:h-11"
                     required
                   />
                 </div>
 
                 {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="block text-sm font-medium text-blue-900">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="password" className="block text-xs sm:text-sm font-medium text-blue-900">
                     Admin Password <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
@@ -188,26 +188,27 @@ export default function AdminLoginPage() {
                       placeholder="Enter your admin password"
                       value={formData.password}
                       onChange={(e) => handleInputChange("password", e.target.value)}
-                      className="pr-12 border-blue-200 focus:border-blue-500 bg-white"
+                      className="pr-10 md:pr-12 border-blue-200 focus:border-blue-500 bg-white text-sm md:text-base h-10 md:h-11"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600"
+                      className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4 md:w-5 md:h-5" />
                       )}
                     </button>
                   </div>
                 </div>
 
                 {/* Admin Access Code */}
-                <div className="space-y-2">
-                  <Label htmlFor="adminCode" className="block text-sm font-medium text-blue-900">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="adminCode" className="block text-xs sm:text-sm font-medium text-blue-900">
                     Admin Access Code <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
@@ -218,22 +219,23 @@ export default function AdminLoginPage() {
                       placeholder="Enter admin access code"
                       value={formData.adminCode}
                       onChange={(e) => handleInputChange("adminCode", e.target.value)}
-                      className="pr-12 border-blue-200 focus:border-blue-500 bg-white"
+                      className="pr-10 md:pr-12 border-blue-200 focus:border-blue-500 bg-white text-sm md:text-base h-10 md:h-11"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowAdminCode(!showAdminCode)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600"
+                      className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600"
+                      aria-label={showAdminCode ? "Hide admin code" : "Show admin code"}
                     >
                       {showAdminCode ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4 md:w-5 md:h-5" />
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-[10px] sm:text-xs text-gray-600">
                     Contact system administrator for access code
                   </p>
                 </div>
@@ -242,29 +244,29 @@ export default function AdminLoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 md:py-3 px-4 md:px-6 rounded-lg text-sm md:text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-10 md:h-12"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Authenticating...
+                      <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />
+                      <span className="text-sm md:text-base">Authenticating...</span>
                     </>
                   ) : (
                     <>
-                      <Shield className="mr-2 h-5 w-5" />
-                      Access Admin Panel
+                      <Shield className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                      <span className="text-sm md:text-base">Access Admin Panel</span>
                     </>
                   )}
                 </Button>
               </form>
 
               {/* Security Notice */}
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-yellow-800">
+              <div className="mt-4 md:mt-6 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-2 md:gap-3">
+                  <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs md:text-sm text-yellow-800">
                     <p className="font-medium mb-1">Security Notice</p>
-                    <ul className="space-y-1 text-xs">
+                    <ul className="space-y-0.5 md:space-y-1 text-[10px] sm:text-xs">
                       <li>• All admin actions are logged and monitored</li>
                       <li>• Unauthorized access attempts will be reported</li>
                       <li>• Use strong passwords and keep credentials secure</li>
@@ -274,8 +276,8 @@ export default function AdminLoginPage() {
               </div>
 
               {/* Back to Regular Login */}
-              <div className="text-center mt-6 pt-6 border-t border-gray-200">
-                <p className="text-gray-600 text-sm">
+              <div className="text-center mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200">
+                <p className="text-gray-600 text-xs sm:text-sm">
                   Not an admin?{" "}
                   <Link
                     href="/login"
@@ -289,13 +291,13 @@ export default function AdminLoginPage() {
           </Card>
 
           {/* Contact Admin Support */}
-          <Card className="mt-6 bg-white/90 backdrop-blur-sm border-blue-200">
-            <CardContent className="p-6 text-center">
-              <h3 className="font-semibold text-blue-900 mb-2">Need Admin Access?</h3>
-              <p className="text-gray-600 text-sm mb-4">
+          <Card className="mt-4 md:mt-6 bg-white/90 backdrop-blur-sm border-blue-200">
+            <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+              <h3 className="font-semibold text-blue-900 mb-2 text-sm md:text-base">Need Admin Access?</h3>
+              <p className="text-gray-600 text-xs sm:text-sm mb-3 md:mb-4">
                 Contact the TalentNest system administrator for admin credentials and access codes.
               </p>
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-1.5 md:space-y-2 text-xs sm:text-sm text-gray-600">
                 <p>📧 Email: admin@talentnest.unilorin.edu.ng</p>
                 <p>📞 Phone: +234 XXX XXX XXXX</p>
               </div>
