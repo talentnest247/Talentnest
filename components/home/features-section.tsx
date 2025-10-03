@@ -109,7 +109,7 @@ export function FeaturesSection() {
         <div className={`text-center space-y-6 mb-16 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <Badge className="bg-gradient-to-r from-blue-600 to-blue-600 text-white px-4 py-2 border-0 hover:shadow-lg transition-all duration-300 hover:scale-105">
             <Sparkles className="h-4 w-4 mr-2" />
-            Why Choose UNILORIN Hub
+            Why Choose TalentNest
           </Badge>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-600 dark:text-white">
             <span className="bg-gradient-to-r from-blue-700 to-blue-600 bg-clip-text text-transparent">

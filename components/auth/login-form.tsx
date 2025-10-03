@@ -58,7 +58,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     <Card className="w-full max-w-md mx-auto bg-white border-blue-200 shadow-lg">
       <CardHeader className="space-y-4 text-center bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-lg border-b border-blue-200">
         <CardTitle className="text-2xl font-bold text-blue-900">Welcome Back</CardTitle>
-        <CardDescription className="text-blue-700">Sign in to your UniLorin Portal account</CardDescription>
+        <CardDescription className="text-blue-700">Sign in to your TalentNest account</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6 p-6 bg-white">

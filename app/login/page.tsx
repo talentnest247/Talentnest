@@ -56,7 +56,7 @@ export default function LoginPage() {
               />
             </div>
             <h1 className="text-3xl font-bold text-blue-900 mb-2">
-              UniLorin Portal
+              TalentNest
             </h1>
             <p className="text-blue-700 font-medium">University of Ilorin Services Platform</p>
             <p className="text-blue-600 mt-2">Sign in to your account</p>

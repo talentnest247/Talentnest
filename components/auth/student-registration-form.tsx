@@ -117,7 +117,7 @@ export default function StudentRegistrationForm() {
         </div>
         <CardTitle className="text-2xl font-bold">Student Registration</CardTitle>
         <CardDescription className="text-center text-muted-foreground">
-          Join the UniLorin Portal community as a University of Ilorin student
+          Join the TalentNest community as a University of Ilorin student
         </CardDescription>
       </CardHeader>
       

@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, Users, Star, CheckCircle2 } from "lucide-react"
 export function CTASection() {
 
   return (
-    <section id="cta-section" className="relative py-24 bg-gradient-to-b from-white via-white to-gray-50 overflow-hidden">
+    <section id="cta-section" className="relative py-24 bg-gradient-to-b from-slate-100 via-blue-50 to-slate-100 overflow-hidden">
       {/* Gradient Edges for Smooth Transition */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Top edge - subtle blue fade from features section */}
