@@ -193,7 +193,7 @@ function ServicesContent() {
     // Set mock data
     setServices(mockServices)
     setLoading(false)
-  }, [])
+  }, [mounted])
 
   const openWhatsApp = (phoneNumber: string, message?: string) => {
     const baseMessage = message || `Hi! I'm interested in your services on TalentNest.`
