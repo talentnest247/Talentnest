@@ -23,7 +23,8 @@ import {
   Download,
   ExternalLink,
   Search,
-  Filter
+  Filter,
+  Trash2
 } from "lucide-react"
 import type { VerificationRequest, AdminUser, PlatformStats } from "@/lib/types"
 
@@ -237,6 +238,45 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
     setSelectedRequest(null)
   }
 
+  const handleDelete = async (requestId: string, reason: string) => {
+    try {
+      const request = verificationRequests.find(req => req.id === requestId)
+      if (!request) return
+
+      // Confirm deletion
+      if (!confirm(`Are you sure you want to permanently delete ${request.providerName}? This action cannot be undone.`)) {
+        return
+      }
+
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: request.providerId,
+          reason: reason || 'User deleted by admin.'
+        })
+      })
+
+      if (response.ok) {
+        // Remove from list
+        setVerificationRequests(prev => 
+          prev.filter(req => req.id !== requestId)
+        )
+        alert('User deleted successfully')
+      } else {
+        const error = await response.json()
+        alert(`Failed to delete user: ${error.error}`)
+        console.error('Failed to delete user')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Error deleting user. Please try again.')
+    }
+    setSelectedRequest(null)
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -419,6 +459,7 @@ export function VerificationDashboard({ admin }: VerificationDashboardProps) {
                             request={selectedRequest}
                             onApprove={handleApprove}
                             onReject={handleReject}
+                            onDelete={handleDelete}
                           />
                         )}
                       </DialogContent>
@@ -438,17 +479,28 @@ interface VerificationRequestDetailProps {
   request: VerificationRequest
   onApprove: (requestId: string) => void
   onReject: (requestId: string, reason: string) => void
+  onDelete: (requestId: string, reason: string) => void
 }
 
-function VerificationRequestDetail({ request, onApprove, onReject }: VerificationRequestDetailProps) {
+function VerificationRequestDetail({ request, onApprove, onReject, onDelete }: VerificationRequestDetailProps) {
   const [rejectReason, setRejectReason] = useState("")
   const [isRejecting, setIsRejecting] = useState(false)
+  const [deleteReason, setDeleteReason] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleReject = () => {
     if (rejectReason.trim()) {
       onReject(request.id, rejectReason)
       setIsRejecting(false)
       setRejectReason("")
+    }
+  }
+
+  const handleDelete = () => {
+    if (deleteReason.trim()) {
+      onDelete(request.id, deleteReason)
+      setIsDeleting(false)
+      setDeleteReason("")
     }
   }
 
@@ -752,57 +804,107 @@ function VerificationRequestDetail({ request, onApprove, onReject }: Verificatio
       )}
 
       {/* Action Buttons */}
-      {request.status === "pending" && (
-        <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
-          {isRejecting ? (
-            <div className="space-y-4 flex-1">
-              <Textarea
-                placeholder="Please provide a reason for rejection..."
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <div className="flex gap-2">
+      <div className="flex flex-col gap-4 pt-4 border-t">
+        {request.status === "pending" && (
+          <>
+            {isRejecting ? (
+              <div className="space-y-4">
+                <Textarea
+                  placeholder="Please provide a reason for rejection..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleReject}
+                    disabled={!rejectReason.trim()}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Confirm Rejection
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsRejecting(false)
+                      setRejectReason("")
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button 
+                  variant="default" 
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => onApprove(request.id)}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approve Request
+                </Button>
                 <Button 
                   variant="destructive" 
-                  onClick={handleReject}
-                  disabled={!rejectReason.trim()}
+                  onClick={() => setIsRejecting(true)}
                 >
                   <XCircle className="h-4 w-4 mr-2" />
-                  Confirm Rejection
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsRejecting(false)
-                    setRejectReason("")
-                  }}
-                >
-                  Cancel
+                  Reject Request
                 </Button>
               </div>
+            )}
+          </>
+        )}
+
+        {/* Delete button - available for all statuses */}
+        {isDeleting ? (
+          <div className="space-y-4 p-4 border-2 border-red-300 rounded-lg bg-red-50">
+            <div className="flex items-center gap-2 text-red-700 font-semibold">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Permanently Delete User</span>
             </div>
-          ) : (
-            <>
-              <Button 
-                variant="default" 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => onApprove(request.id)}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approve Request
-              </Button>
+            <p className="text-sm text-red-600">
+              This will permanently delete {request.providerName} and all associated data including services, bookings, reviews, and messages. This action cannot be undone.
+            </p>
+            <Textarea
+              placeholder="Please provide a reason for deletion (required)..."
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              className="min-h-[100px] border-red-300"
+            />
+            <div className="flex gap-2">
               <Button 
                 variant="destructive" 
-                onClick={() => setIsRejecting(true)}
+                onClick={handleDelete}
+                disabled={!deleteReason.trim()}
+                className="bg-red-600 hover:bg-red-700"
               >
-                <XCircle className="h-4 w-4 mr-2" />
-                Reject Request
+                <Trash2 className="h-4 w-4 mr-2" />
+                Permanently Delete User
               </Button>
-            </>
-          )}
-        </div>
-      )}
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsDeleting(false)
+                  setDeleteReason("")
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button 
+            variant="outline"
+            className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+            onClick={() => setIsDeleting(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete User Permanently
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
