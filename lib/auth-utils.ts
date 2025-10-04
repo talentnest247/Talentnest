@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "./supabase"
 import { mockAPI } from "./mock-data"
+import { getUserTableName } from "./database-detector"
 const JWT_SECRET = process.env.JWT_SECRET || "unilorin-artisan-platform-jwt-secret-key-minimum-32-chars-2024"
 
 export interface AuthUser {
@@ -332,15 +333,16 @@ export const authUtils = {
       }
 
       try {
-        // Query the users table
+        // Auto-detect which table to use
+        const tableName = await getUserTableName()
         const { data, error } = await supabaseAdmin
-          .from('users')
+          .from(tableName)
           .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
           .eq('id', id)
           .single()
         
         if (error) {
-          console.error("Supabase error fetching user by id:", error)
+          console.error(`Supabase error fetching user by id from ${tableName}:`, error)
           // Fallback to mock data if Supabase fails
           console.warn("Falling back to mock data due to database error")
           const mockUser = await mockAPI.getUserById(id)
@@ -432,8 +434,11 @@ export const authUtils = {
 
       const normalizedEmail = String(email).trim().toLowerCase()
       console.log("Searching for user with email:", normalizedEmail)
+      
+      // Auto-detect which table to use
+      const tableName = await getUserTableName()
       const { data, error } = await supabaseAdmin
-        .from('users')
+        .from(tableName)
         .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
         .eq('email', normalizedEmail)
         .single()
