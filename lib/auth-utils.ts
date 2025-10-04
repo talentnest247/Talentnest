@@ -337,7 +337,7 @@ export const authUtils = {
         const tableName = await getUserTableName()
         const { data, error } = await supabaseAdmin
           .from(tableName)
-          .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
+          .select('id, email, full_name, first_name, last_name, role, phone, avatar_url, bio')
           .eq('id', id)
           .single()
         
@@ -369,15 +369,14 @@ export const authUtils = {
         return {
           id: data.id,
           email: data.email,
-          fullName: data.full_name,
+          fullName: data.full_name || `${data.first_name} ${data.last_name}`.trim(),
           firstName: data.first_name,
           lastName: data.last_name,
           userType: data.role,
           role: data.role,
-          studentId: data.student_id ?? undefined,
-          department: data.department ?? undefined,
-          level: data.level ? parseInt(data.level) : undefined,
           phone: data.phone ?? undefined,
+          avatar_url: data.avatar_url ?? undefined,
+          bio: data.bio ?? undefined,
         }
       } catch (supabaseError) {
         console.error("Supabase connection error:", supabaseError)

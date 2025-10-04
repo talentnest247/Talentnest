@@ -22,10 +22,9 @@ export async function GET(request: NextRequest) {
         last_name,
         full_name,
         role,
-        student_id,
-        department,
         phone,
-        profile_image,
+        avatar_url,
+        bio,
         created_at,
         updated_at
       `)
