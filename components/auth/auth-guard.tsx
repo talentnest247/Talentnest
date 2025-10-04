@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/auth-context"
 import type React from "react"
 
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { Loader2 } from "lucide-react"
 
 interface AuthGuardProps {
@@ -16,18 +16,24 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAuth = true, redirectTo = "/login", allowedRoles }: AuthGuardProps) {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
+  const hasRedirectedRef = useRef(false)
 
   useEffect(() => {
-    if (!isLoading) {
-      if (requireAuth && !isAuthenticated) {
-        router.push(redirectTo)
-        return
-      }
+    // Prevent multiple redirects
+    if (hasRedirectedRef.current || isLoading) {
+      return
+    }
 
-      if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-        router.push("/unauthorized")
-        return
-      }
+    if (requireAuth && !isAuthenticated) {
+      hasRedirectedRef.current = true
+      router.push(redirectTo)
+      return
+    }
+
+    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+      hasRedirectedRef.current = true
+      router.push("/unauthorized")
+      return
     }
   }, [isAuthenticated, isLoading, requireAuth, redirectTo, allowedRoles, user, router])
 

@@ -652,6 +652,8 @@ export const authUtils = {
         email_confirm: true,
         user_metadata: {
           full_name: user.fullName,
+          firstName: user.firstName,
+          lastName: user.lastName,
           first_name: user.firstName,
           last_name: user.lastName,
           phone: user.phone,
@@ -679,8 +681,40 @@ export const authUtils = {
         return null
       }
 
-      // Profile will be created automatically by trigger
-      console.log("User created successfully:", authData.user.id)
+      console.log("User created in auth.users:", authData.user.id)
+
+      // CRITICAL: Manually ensure user exists in public.users
+      // This is a safety net in case the trigger doesn't fire
+      const tableName = await getUserTableName()
+      try {
+        const { error: insertError } = await supabaseAdmin
+          .from(tableName)
+          .insert([{
+            id: authData.user.id,
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            full_name: user.fullName,
+            phone: user.phone,
+            role: user.role,
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single()
+
+        if (insertError) {
+          // If it's a duplicate key error, that's OK (trigger already created it)
+          if (insertError.code !== '23505') {
+            console.error("Error creating user in public.users:", insertError)
+          } else {
+            console.log("User already exists in public.users (trigger worked)")
+          }
+        } else {
+          console.log("User created in public.users:", authData.user.id)
+        }
+      } catch (err) {
+        console.error("Error ensuring user in public.users:", err)
+      }
       
       // Create student record if role is student
       if (user.role === 'student' && user.studentId) {

@@ -62,7 +62,7 @@ export async function GET() {
         verification_notes,
         created_at,
         updated_at,
-        user:users (
+        user:users!providers_user_id_fkey (
           id,
           email,
           first_name,
