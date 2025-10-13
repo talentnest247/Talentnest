@@ -436,11 +436,38 @@ export const authUtils = {
       
       // Auto-detect which table to use
       const tableName = await getUserTableName()
-      const { data, error } = await supabaseAdmin
-        .from(tableName)
-        .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
-        .eq('email', normalizedEmail)
-        .single()
+      
+      // Try to select all columns, but handle missing columns gracefully
+      let data = null
+      let error = null
+      
+      try {
+        // First try with all columns including student-specific fields
+        const result = await supabaseAdmin
+          .from(tableName)
+          .select('id, email, full_name, first_name, last_name, role, phone, student_id, department, level')
+          .eq('email', normalizedEmail)
+          .single()
+        
+        data = result.data
+        error = result.error
+      } catch (selectError: unknown) {
+        // If student_id column doesn't exist, try without those columns
+        const selectErr = selectError as { code?: string; message?: string }
+        if (selectErr?.code === '42703' || selectErr?.message?.includes('does not exist')) {
+          console.log("Student fields don't exist in table, trying basic select...")
+          const result = await supabaseAdmin
+            .from(tableName)
+            .select('id, email, full_name, first_name, last_name, role, phone')
+            .eq('email', normalizedEmail)
+            .single()
+          
+          data = result.data
+          error = result.error
+        } else {
+          error = selectErr
+        }
+      }
       
       if (error) {
         // PostgREST returns PGRST116 when no rows match a .single() query.
@@ -561,9 +588,9 @@ export const authUtils = {
         lastName: data.last_name,
         userType: data.role,
         role: data.role,
-        studentId: data.student_id ?? undefined,
-        department: data.department ?? undefined,
-        level: data.level ? parseInt(data.level) : undefined,
+        studentId: (data as { student_id?: string }).student_id ?? undefined,
+        department: (data as { department?: string }).department ?? undefined,
+        level: (data as { level?: number | string }).level ? parseInt(String((data as { level?: number | string }).level)) : undefined,
         phone: data.phone ?? undefined,
         password: '', // Password not stored in users table
       }
