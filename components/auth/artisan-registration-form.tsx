@@ -273,15 +273,25 @@ export default function ArtisanRegistrationForm() {
         portfolio: portfolioUrls,
       }
 
+      console.log("Submitting registration with data:", {
+        ...userData,
+        certificates: `${certificateUrls.length} files`,
+        workSamples: `${workSampleUrls.length} files`,
+        portfolio: `${portfolioUrls.length} files`,
+      })
+
       const success = await register(userData)
       if (success) {
+        console.log("Registration successful, redirecting...")
         router.push('/auth/sign-up-success')
       } else {
-        setGeneralError("Registration failed. Please check your information and try again.")
+        console.error("Registration failed from register function")
+        setGeneralError("Registration failed. Please check your information and try again. If the problem persists, contact support.")
       }
     } catch (error) {
       console.error("Registration error:", error)
-      setGeneralError("An unexpected error occurred. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred"
+      setGeneralError(`Error: ${errorMessage}. Please try again or contact support if the issue persists.`)
     }
   }
 

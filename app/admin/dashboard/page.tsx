@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { 
   Users, 
@@ -14,13 +15,13 @@ import {
   Clock, 
   CheckCircle, 
   XCircle, 
-  Trash2,
-  MessageSquare,
-  AlertCircle,
-  TrendingUp,
-  Shield
+  Shield,
+  Loader2,
+  Eye,
+  ThumbsUp,
+  ThumbsDown,
+  Trash2
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
 
 interface Stats {
   totalUsers: number
@@ -32,25 +33,29 @@ interface Stats {
 
 interface Provider {
   id: string
+  user_id: string
   business_name: string
   description: string
+  bio: string | null
   specialization: string[]
-  experience_years: number
-  hourly_rate: number
+  experience: number
   location: string
-  skills_offered: string[]
-  verification_status: string
+  verification_status: 'pending' | 'approved' | 'rejected'
+  verification_evidence: string[]
+  certificates: string[]
   created_at: string
-  user: {
+  user?: {
     email: string
     full_name: string
     phone: string
+    first_name: string
+    last_name: string
   }
 }
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalProviders: 0,
@@ -58,442 +63,430 @@ export default function AdminDashboard() {
     approvedProviders: 0,
     rejectedProviders: 0
   })
-  const [pendingProviders, setPendingProviders] = useState<Provider[]>([])
-  const [approvedProviders, setApprovedProviders] = useState<Provider[]>([])
-  const [rejectedProviders, setRejectedProviders] = useState<Provider[]>([])
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<string>('')
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [showDialog, setShowDialog] = useState(false)
+  const [dialogAction, setDialogAction] = useState<'approve' | 'reject' | null>(null)
+  const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      router.push('/login')
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/unauthorized')
       return
     }
 
-    if (user) {
+    if (user && user.role === 'admin') {
       fetchData()
     }
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const fetchData = async () => {
     try {
+      setLoading(true)
+      
+      // Fetch stats
       const statsRes = await fetch('/api/admin/stats')
       if (statsRes.ok) {
         const statsData = await statsRes.json()
         setStats(statsData)
       }
 
-      const providersRes = await fetch('/api/admin/users?type=provider')
+      // Fetch all providers
+      const providersRes = await fetch('/api/providers')
       if (providersRes.ok) {
-        const providersData = await providersRes.json()
-        
-        setPendingProviders(providersData.filter((p: Provider) => p.verification_status === 'pending'))
-        setApprovedProviders(providersData.filter((p: Provider) => p.verification_status === 'approved'))
-        setRejectedProviders(providersData.filter((p: Provider) => p.verification_status === 'rejected'))
+        const data = await providersRes.json()
+        setProviders(data.providers || [])
       }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive"
-      })
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleAction = async (providerId: string, action: 'approve' | 'reject', adminNotes?: string) => {
+  const handleAction = async (providerId: string, action: 'approve' | 'reject') => {
     setActionLoading(true)
     try {
-      const res = await fetch('/api/admin/verification', {
+      const response = await fetch('/api/admin/verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          providerId, 
+        body: JSON.stringify({
+          providerId,
           action,
-          adminNotes: adminNotes || feedback || undefined
+          feedback: feedback || undefined
         })
       })
 
-      if (res.ok) {
-        toast({
-          title: "Success",
-          description: `Provider ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
-        })
-        setFeedback('')
+      if (response.ok) {
+        await fetchData()
+        setShowDialog(false)
         setSelectedProvider(null)
-        fetchData()
-      } else {
-        throw new Error('Action failed')
+        setFeedback('')
       }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: `Failed to ${action} provider`,
-        variant: "destructive"
-      })
+    } catch (error) {
+      console.error('Error:', error)
     } finally {
       setActionLoading(false)
     }
   }
 
   const handleDelete = async (providerId: string) => {
-    if (!confirm('Are you sure you want to permanently delete this provider?')) {
-      return
-    }
+    if (!confirm('Are you sure you want to delete this provider? This action cannot be undone.')) return
 
-    setActionLoading(true)
     try {
-      const res = await fetch(`/api/admin/providers/${providerId}`, {
+      const response = await fetch(`/api/admin/providers/${providerId}`, {
         method: 'DELETE'
       })
 
-      if (res.ok) {
-        toast({
-          title: "Success",
-          description: "Provider deleted successfully",
-        })
-        fetchData()
-      } else {
-        throw new Error('Delete failed')
+      if (response.ok) {
+        await fetchData()
       }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to delete provider",
-        variant: "destructive"
-      })
-    } finally {
-      setActionLoading(false)
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
-  const renderProviderCard = (provider: Provider, showActions: boolean = true) => (
-    <Card key={provider.id} className="relative">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-xl">{provider.business_name}</CardTitle>
-            <CardDescription>{provider.user.full_name}</CardDescription>
-          </div>
-          <Badge variant={
-            provider.verification_status === 'approved' ? 'default' :
-            provider.verification_status === 'rejected' ? 'destructive' : 'secondary'
-          }>
-            {provider.verification_status}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2 text-sm">
-          <p><strong>Email:</strong> {provider.user.email}</p>
-          <p><strong>Phone:</strong> {provider.user.phone || 'Not provided'}</p>
-          <p><strong>Location:</strong> {provider.location || 'Not specified'}</p>
-          <p><strong>Experience:</strong> {provider.experience_years || 0} years</p>
-          <p><strong>Rate:</strong> ₦{provider.hourly_rate || 0}/hour</p>
-        </div>
+  const openDialog = (provider: Provider, action: 'approve' | 'reject') => {
+    setSelectedProvider(provider)
+    setDialogAction(action)
+    setShowDialog(true)
+  }
 
-        {provider.description && (
-          <div>
-            <strong className="text-sm">Description:</strong>
-            <p className="text-sm text-muted-foreground mt-1">{provider.description}</p>
-          </div>
-        )}
+  const pendingProviders = providers.filter(p => p.verification_status === 'pending')
+  const approvedProviders = providers.filter(p => p.verification_status === 'approved')
+  const rejectedProviders = providers.filter(p => p.verification_status === 'rejected')
 
-        {provider.specialization && provider.specialization.length > 0 && (
-          <div>
-            <strong className="text-sm">Specializations:</strong>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {provider.specialization.map((spec, idx) => (
-                <Badge key={idx} variant="outline">{spec}</Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {provider.skills_offered && provider.skills_offered.length > 0 && (
-          <div>
-            <strong className="text-sm">Skills:</strong>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {provider.skills_offered.map((skill, idx) => (
-                <Badge key={idx} variant="secondary">{skill}</Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <p className="text-xs text-muted-foreground">
-          Registered: {new Date(provider.created_at).toLocaleDateString()}
-        </p>
-
-        {showActions && (
-          <div className="space-y-3 pt-4 border-t">
-            {selectedProvider === provider.id ? (
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Add feedback or notes (optional)..."
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedProvider(null)
-                      setFeedback('')
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={() => handleAction(provider.id, 'approve', feedback)}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Confirm Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleAction(provider.id, 'reject', feedback)}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Confirm Reject
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                {provider.verification_status === 'pending' && (
-                  <>
-                    <Button
-                      size="sm"
-                      onClick={() => setSelectedProvider(provider.id)}
-                      className="flex-1"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Review
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleAction(provider.id, 'approve')}
-                      disabled={actionLoading}
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Quick Approve
-                    </Button>
-                  </>
-                )}
-                {provider.verification_status === 'rejected' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAction(provider.id, 'approve')}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve
-                  </Button>
-                )}
-                {provider.verification_status === 'approved' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAction(provider.id, 'reject')}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Revoke
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDelete(provider.id)}
-                  disabled={actionLoading}
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-
-  if (!user) {
+  if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading dashboard...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
       </div>
     )
   }
 
   return (
-    <main className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                <p className="text-purple-100">Manage TalentNest Platform</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-purple-100">Welcome back,</p>
+              <p className="font-semibold">{user?.fullName || user?.email}</p>
+            </div>
+          </div>
         </div>
-        <p className="text-muted-foreground">Manage artisan registrations and verifications</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <Card className="border-t-4 border-t-blue-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
+                <Users className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-t-4 border-t-purple-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Providers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-900">{stats.totalProviders}</div>
+                <UserCheck className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-t-4 border-t-yellow-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Pending</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-900">{stats.pendingVerifications}</div>
+                <Clock className="w-8 h-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-t-4 border-t-green-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Approved</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-900">{stats.approvedProviders}</div>
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-t-4 border-t-red-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Rejected</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-900">{stats.rejectedProviders}</div>
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Providers Tabs */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="text-xl">Provider Verifications</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">All registered users</p>
-          </CardContent>
-        </Card>
+            <Tabs defaultValue="pending" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending" className="gap-2">
+                  <Clock className="w-4 h-4" />
+                  Pending ({pendingProviders.length})
+                </TabsTrigger>
+                <TabsTrigger value="approved" className="gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Approved ({approvedProviders.length})
+                </TabsTrigger>
+                <TabsTrigger value="rejected" className="gap-2">
+                  <XCircle className="w-4 h-4" />
+                  Rejected ({rejectedProviders.length})
+                </TabsTrigger>
+              </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Artisans</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProviders}</div>
-            <p className="text-xs text-muted-foreground">All artisan accounts</p>
-          </CardContent>
-        </Card>
+              {/* Pending Tab */}
+              <TabsContent value="pending" className="space-y-4 mt-6">
+                {pendingProviders.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No pending verifications</p>
+                  </div>
+                ) : (
+                  pendingProviders.map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      onApprove={() => openDialog(provider, 'approve')}
+                      onReject={() => openDialog(provider, 'reject')}
+                      onDelete={() => handleDelete(provider.id)}
+                    />
+                  ))
+                )}
+              </TabsContent>
 
-        <Card className="border-orange-200 bg-orange-50/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.pendingVerifications}</div>
-            <p className="text-xs text-muted-foreground">Awaiting review</p>
-          </CardContent>
-        </Card>
+              {/* Approved Tab */}
+              <TabsContent value="approved" className="space-y-4 mt-6">
+                {approvedProviders.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No approved providers yet</p>
+                  </div>
+                ) : (
+                  approvedProviders.map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      onDelete={() => handleDelete(provider.id)}
+                      isApproved
+                    />
+                  ))
+                )}
+              </TabsContent>
 
-        <Card className="border-green-200 bg-green-50/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approvedProviders}</div>
-            <p className="text-xs text-muted-foreground">Active artisans</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-200 bg-red-50/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.rejectedProviders}</div>
-            <p className="text-xs text-muted-foreground">Declined</p>
+              {/* Rejected Tab */}
+              <TabsContent value="rejected" className="space-y-4 mt-6">
+                {rejectedProviders.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <XCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No rejected providers</p>
+                  </div>
+                ) : (
+                  rejectedProviders.map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      onDelete={() => handleDelete(provider.id)}
+                      isRejected
+                    />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="pending" className="relative">
-            Pending Review
-            {pendingProviders.length > 0 && (
-              <Badge className="ml-2 h-5 w-5 flex items-center justify-center p-0" variant="destructive">
-                {pendingProviders.length}
+      {/* Action Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {dialogAction === 'approve' ? 'Approve Provider' : 'Reject Provider'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedProvider?.business_name} - {selectedProvider?.user?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Feedback (Optional)</label>
+              <Textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder={
+                  dialogAction === 'approve'
+                    ? 'Welcome message or additional notes...'
+                    : 'Reason for rejection...'
+                }
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedProvider && handleAction(selectedProvider.id, dialogAction!)}
+              disabled={actionLoading}
+              className={dialogAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+            >
+              {actionLoading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+              ) : (
+                <>{dialogAction === 'approve' ? 'Approve' : 'Reject'}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// Provider Card Component
+function ProviderCard({
+  provider,
+  onApprove,
+  onReject,
+  onDelete,
+  isApproved,
+  isRejected
+}: {
+  provider: Provider
+  onApprove?: () => void
+  onReject?: () => void
+  onDelete: () => void
+  isApproved?: boolean
+  isRejected?: boolean
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <Card className={`${isApproved ? 'border-green-200 bg-green-50/30' : isRejected ? 'border-red-200 bg-red-50/30' : 'border-yellow-200 bg-yellow-50/30'}`}>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-lg font-semibold">{provider.business_name}</h3>
+              <Badge variant={isApproved ? 'default' : isRejected ? 'destructive' : 'secondary'}>
+                {provider.verification_status}
               </Badge>
+            </div>
+            <div className="space-y-1 text-sm text-gray-600">
+              <p><strong>Owner:</strong> {provider.user?.full_name || 'N/A'}</p>
+              <p><strong>Email:</strong> {provider.user?.email}</p>
+              <p><strong>Phone:</strong> {provider.user?.phone}</p>
+              <p><strong>Specialization:</strong> {provider.specialization.join(', ')}</p>
+              <p><strong>Experience:</strong> {provider.experience} years</p>
+              <p><strong>Location:</strong> {provider.location}</p>
+            </div>
+
+            {expanded && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm"><strong>Description:</strong> {provider.description || provider.bio}</p>
+                {provider.verification_evidence.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Documents ({provider.verification_evidence.length}):</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {provider.verification_evidence.map((url, idx) => (
+                        <a
+                          key={idx}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Eye className="w-3 h-3" /> Document {idx + 1}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            Approved ({approvedProviders.length})
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejected ({rejectedProviders.length})
-          </TabsTrigger>
-        </TabsList>
+          </div>
 
-        <TabsContent value="pending" className="space-y-4">
-          {pendingProviders.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">All Caught Up!</h3>
-                <p className="text-muted-foreground text-center">
-                  No pending artisan registrations to review
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <AlertCircle className="h-4 w-4" />
-                <p>{pendingProviders.length} artisan{pendingProviders.length !== 1 ? 's' : ''} waiting for review</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {pendingProviders.map(provider => renderProviderCard(provider))}
-              </div>
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="approved" className="space-y-4">
-          {approvedProviders.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <UserCheck className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Approved Artisans</h3>
-                <p className="text-muted-foreground">Approved artisans will appear here</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {approvedProviders.map(provider => renderProviderCard(provider))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="rejected" className="space-y-4">
-          {rejectedProviders.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <XCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Rejected Artisans</h3>
-                <p className="text-muted-foreground">Rejected artisans will appear here</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {rejectedProviders.map(provider => renderProviderCard(provider))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <Button onClick={() => router.push('/marketplace')} variant="outline" size="lg">
-          <TrendingUp className="w-5 h-5 mr-2" />
-          View Marketplace
-        </Button>
-        <Button onClick={() => router.push('/admin/users')} variant="outline" size="lg">
-          <Users className="w-5 h-5 mr-2" />
-          Manage All Users
-        </Button>
-      </div>
-    </main>
+          <div className="flex flex-col gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Less' : 'Details'}
+            </Button>
+            
+            {!isApproved && !isRejected && onApprove && onReject && (
+              <>
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={onApprove}
+                >
+                  <ThumbsUp className="w-4 h-4 mr-1" /> Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={onReject}
+                >
+                  <ThumbsDown className="w-4 h-4 mr-1" /> Reject
+                </Button>
+              </>
+            )}
+            
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-red-600 hover:text-red-700"
+              onClick={onDelete}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

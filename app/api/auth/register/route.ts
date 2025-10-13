@@ -15,9 +15,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!["student", "artisan"].includes(role)) {
+    // Accept both 'provider' and 'artisan' - normalize to 'artisan' for database
+    const normalizedRole = role === "provider" ? "artisan" : role;
+    
+    if (!["student", "artisan"].includes(normalizedRole)) {
       return NextResponse.json(
-        { error: "Invalid role. Must be 'student' or 'artisan'" },
+        { error: "Invalid role. Must be 'student', 'artisan', or 'provider'" },
         { status: 400 }
       );
     }
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log("Creating user:", { email, role, firstName, lastName })
+    console.log("Creating user:", { email, role: normalizedRole, firstName, lastName })
     
     // Create user using Supabase Auth
     const fullName = `${firstName} ${lastName}`
@@ -48,10 +51,10 @@ export async function POST(request: NextRequest) {
       lastName,
       fullName,
       phone,
-      role,
-      studentId: role === "student" ? userData.studentId || null : null,
-      department: role === "student" ? userData.department || null : null,
-      level: role === "student" ? userData.level || null : null,
+      role: normalizedRole,
+      studentId: normalizedRole === "student" ? userData.studentId || null : null,
+      department: normalizedRole === "student" ? userData.department || null : null,
+      level: normalizedRole === "student" ? userData.level || null : null,
     })
     } catch (err: unknown) {
       const e = err as Error & { code?: string }
@@ -72,6 +75,62 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("User created successfully:", newUser.id)
+
+    // If artisan/provider, create provider profile in providers table
+    if (normalizedRole === "artisan") {
+      try {
+        const { createClient } = await import("@supabase/supabase-js")
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        // Combine all uploaded documents
+        const allDocuments = [
+          ...(userData.certificates || []),
+          ...(userData.workSamples || []),
+          ...(userData.portfolio || [])
+        ]
+
+        const providerData = {
+          user_id: newUser.id,
+          business_name: userData.businessName || `${fullName}'s Services`,
+          description: userData.bio || "Professional service provider",
+          bio: userData.bio || null,
+          specialization: userData.specialization ? [userData.specialization] : [],
+          experience: userData.experience || 0,
+          location: userData.location || "",
+          verification_status: "pending",
+          verification_evidence: allDocuments,
+          certificates: userData.certificates || [],
+          rating: 0,
+          total_reviews: 0,
+          verified: false,
+          availability_is_available: true,
+          availability_available_for_work: true,
+          availability_available_for_learning: false,
+          availability_response_time: "Usually responds within 24 hours",
+          pricing_currency: "NGN",
+          pricing_base_rate: null,
+          pricing_learning_rate: null,
+          whatsapp_number: userData.phone || null,
+        }
+
+        const { data, error } = await supabase
+          .from("providers")
+          .insert([providerData])
+          .select()
+
+        if (error) {
+          console.error("Failed to create provider profile:", error)
+        } else {
+          console.log("Provider profile created successfully:", data)
+        }
+      } catch (error) {
+        console.error("Error creating provider profile:", error)
+        // Don't fail the registration if provider profile creation fails
+      }
+    }
 
     // Generate JWT token
     const token = await authUtils.generateToken(newUser)

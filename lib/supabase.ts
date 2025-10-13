@@ -169,11 +169,11 @@ export async function createProvider(providerData: CreateProviderData) {
   try {
     const client = getClient()
     const { data, error } = await client
-      .from('artisans')
+      .from('providers')
       .insert(providerData)
       .select(`
         *,
-        user:profiles(*)
+        user:users!providers_user_id_fkey(*)
       `)
       .single()
     
@@ -193,13 +193,11 @@ export async function getProviders(filters?: {
 }) {
   try {
     const client = getClient()
+    
+    // First, get providers data
     let query = client
-      .from('artisans')
-      .select(`
-        *,
-        user:profiles(first_name, last_name, profile_image, student_id, email, phone, full_name)
-      `)
-      .eq('availability_is_available', true)
+      .from('providers')
+      .select('*')
     
     if (filters?.specialization) {
       query = query.contains('specialization', [filters.specialization])
@@ -217,10 +215,35 @@ export async function getProviders(filters?: {
       query = query.limit(filters.limit)
     }
     
-    const { data, error } = await query.order('rating', { ascending: false })
+    const { data: providers, error } = await query.order('rating', { ascending: false })
     
     if (error) throw new Error(handleSupabaseError(error))
-    return data || []
+    
+    // If no providers, return empty array
+    if (!providers || providers.length === 0) {
+      return []
+    }
+    
+    // Get user IDs
+    const userIds = providers.map(p => p.user_id).filter(Boolean)
+    
+    // Fetch user data separately
+    const { data: users, error: userError } = await client
+      .from('users')
+      .select('id, first_name, last_name, profile_image, student_id, email, phone, full_name')
+      .in('id', userIds)
+    
+    if (userError) {
+      console.error('Error fetching user data:', userError)
+    }
+    
+    // Merge user data with provider data
+    const providersWithUsers = providers.map(provider => ({
+      ...provider,
+      user: users?.find(u => u.id === provider.user_id) || null
+    }))
+    
+    return providersWithUsers
   } catch (error) {
     console.error('Error getting providers:', error)
     throw error
@@ -230,18 +253,37 @@ export async function getProviders(filters?: {
 export async function getProviderById(id: string) {
   try {
     const client = getClient()
-    const { data, error } = await client
-      .from('artisans')
-      .select(`
-        *,
-        user:profiles(*),
-        skills(*)
-      `)
+    
+    // Get provider data
+    const { data: provider, error } = await client
+      .from('providers')
+      .select('*')
       .eq('id', id)
       .single()
     
     if (error) throw new Error(handleSupabaseError(error))
-    return data
+    
+    if (!provider) {
+      throw new Error('Provider not found')
+    }
+    
+    // Get user data separately
+    if (provider.user_id) {
+      const { data: user, error: userError } = await client
+        .from('users')
+        .select('*')
+        .eq('id', provider.user_id)
+        .single()
+      
+      if (!userError && user) {
+        return {
+          ...provider,
+          user
+        }
+      }
+    }
+    
+    return provider
   } catch (error) {
     console.error('Error getting provider by ID:', error)
     throw error
