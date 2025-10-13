@@ -6,6 +6,7 @@ type ProviderFilters = {
   location?: string
   verified?: boolean
   limit?: number
+  include_all_statuses?: boolean
 }
 
 export async function GET(req: Request) {
@@ -15,12 +16,14 @@ export async function GET(req: Request) {
     const specialization = url.searchParams.get('specialization') || undefined
     const verifiedParam = url.searchParams.get('verified')
     const limit = url.searchParams.get('limit') ? Number(url.searchParams.get('limit')) : undefined
+    const includeAllStatuses = url.searchParams.get('include_all_statuses') === 'true'
 
     const filters: ProviderFilters = {}
     if (specialization) filters.specialization = specialization
     if (location) filters.location = location
     if (verifiedParam !== null) filters.verified = verifiedParam === 'true'
     if (limit) filters.limit = limit
+    if (includeAllStatuses) filters.include_all_statuses = true
 
     const providers = await getProviders(filters)
     return NextResponse.json({ providers })

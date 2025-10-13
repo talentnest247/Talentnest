@@ -93,8 +93,8 @@ export default function AdminDashboard() {
         setStats(statsData)
       }
 
-      // Fetch all providers
-      const providersRes = await fetch('/api/providers')
+      // Fetch all providers (admin needs to see ALL statuses: pending, approved, rejected)
+      const providersRes = await fetch('/api/providers?include_all_statuses=true')
       if (providersRes.ok) {
         const data = await providersRes.json()
         setProviders(data.providers || [])
@@ -216,15 +216,22 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-t-4 border-t-yellow-500">
+          <Card className="border-t-4 border-t-yellow-500 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/admin/verification')}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Pending</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Pending Approval</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="text-3xl font-bold text-gray-900">{stats.pendingVerifications}</div>
                 <Clock className="w-8 h-8 text-yellow-500" />
               </div>
+              {stats.pendingVerifications > 0 && (
+                <div className="mt-2">
+                  <Button size="sm" variant="outline" className="w-full text-xs">
+                    Review Now →
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 

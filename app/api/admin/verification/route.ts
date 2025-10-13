@@ -7,45 +7,64 @@ const supabase = createClient(
 );
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('providers')
-    .select(`
-      id, 
-      business_name, 
-      description, 
-      bio,
-      specialization,
-      experience,
-      location,
-      verification_status,
-      verified,
-      verification_evidence,
-      certificates,
-      whatsapp_number,
-      availability_available_for_learning,
-      availability_available_for_work,
-      pricing_base_rate,
-      pricing_learning_rate,
-      pricing_currency,
-      rating,
-      total_reviews,
-      created_at, 
-      user:users!providers_user_id_fkey(
-        id,
-        email, 
-        full_name,
-        phone,
-        student_id,
-        department,
-        level,
-        avatar_url
-      )
-    `)
-    .eq('verification_status', 'pending')
-    .order('created_at', { ascending: false });
+  try {
+    console.log('[Admin Verification API] Fetching pending providers...');
+    
+    const { data, error } = await supabase
+      .from('providers')
+      .select(`
+        id, 
+        business_name, 
+        description, 
+        bio,
+        specialization,
+        experience,
+        location,
+        verification_status,
+        verified,
+        verification_evidence,
+        certificates,
+        whatsapp_number,
+        availability_available_for_learning,
+        availability_available_for_work,
+        pricing_base_rate,
+        pricing_learning_rate,
+        pricing_currency,
+        rating,
+        total_reviews,
+        created_at, 
+        user:users!providers_user_id_fkey(
+          id,
+          email, 
+          full_name,
+          phone,
+          student_id,
+          department,
+          level,
+          avatar_url
+        )
+      `)
+      .eq('verification_status', 'pending')
+      .order('created_at', { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data || []);
+    if (error) {
+      console.error('[Admin Verification API] Database error:', error);
+      return NextResponse.json({ 
+        error: error.message,
+        details: error,
+        hint: 'Check RLS policies and service role key'
+      }, { status: 500 });
+    }
+    
+    console.log(`[Admin Verification API] Found ${data?.length || 0} pending providers`);
+    return NextResponse.json(data || []);
+  } catch (err) {
+    console.error('[Admin Verification API] Unexpected error:', err);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: err instanceof Error ? err.message : String(err)
+    }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
