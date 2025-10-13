@@ -190,6 +190,8 @@ export async function getProviders(filters?: {
   location?: string
   verified?: boolean
   limit?: number
+  verification_status?: 'pending' | 'approved' | 'rejected'
+  include_all_statuses?: boolean // For admin dashboard
 }) {
   try {
     const client = getClient()
@@ -198,6 +200,14 @@ export async function getProviders(filters?: {
     let query = client
       .from('providers')
       .select('*')
+    
+    // CRITICAL: By default, ONLY show approved providers (marketplace requirement)
+    // Admin can override this with include_all_statuses flag
+    if (!filters?.include_all_statuses) {
+      query = query.eq('verification_status', filters?.verification_status || 'approved')
+    } else if (filters?.verification_status) {
+      query = query.eq('verification_status', filters.verification_status)
+    }
     
     if (filters?.specialization) {
       query = query.contains('specialization', [filters.specialization])
