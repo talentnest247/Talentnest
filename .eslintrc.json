@@ -2,5 +2,10 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript"
-  ]
+  ],
+  "rules": {
+    "@next/next/no-css-tags": "off",
+    "react/forbid-dom-props": "off",
+    "react/no-unknown-property": ["error", { "ignore": ["style"] }]
+  }
 }

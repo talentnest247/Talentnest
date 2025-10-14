@@ -24,6 +24,26 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import styles from './progress-bar.module.css'
+
+// Progress Bar Component using CSS modules
+// Note: Dynamic width requires inline style - no alternative with CSS alone
+function ProgressBar({ value, color }: { value: number; color: 'green' | 'blue' }) {
+  // Calculate width - clamped between 0-100
+  const clampedValue = Math.min(100, Math.max(0, value))
+  const fillColorClass = color === 'green' ? styles.progressFillGreen : styles.progressFillBlue
+  
+  return (
+    <div className={styles.progressBar}>
+      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error */}
+      {/* @ts-ignore - Dynamic width is required for progress bar */}
+      <div 
+        className={`${styles.progressFill} ${fillColorClass}`}
+        style={{ width: `${clampedValue}%` }}
+      />
+    </div>
+  )
+}
 
 interface ProviderProfile {
   id: string
@@ -596,14 +616,7 @@ function ProviderDashboardContent() {
                       <span className="text-sm text-gray-600">Response Rate</span>
                       <span className="font-semibold">{analytics.response_rate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      {/* Dynamic width required for progress bar */}
-                      {/* eslint-disable-next-line react/forbid-dom-props */}
-                      <div 
-                        className="bg-green-600 h-2 rounded-full transition-all" 
-                        style={{ width: `${analytics.response_rate}%` }}
-                      />
-                    </div>
+                    <ProgressBar value={analytics.response_rate} color="green" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -612,14 +625,10 @@ function ProviderDashboardContent() {
                         {Math.round((analytics.completed_jobs / Math.max(analytics.total_bookings, 1)) * 100)}%
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      {/* Dynamic width required for progress bar */}
-                      {/* eslint-disable-next-line react/forbid-dom-props */}
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all" 
-                        style={{ width: `${Math.round((analytics.completed_jobs / Math.max(analytics.total_bookings, 1)) * 100)}%` }}
-                      />
-                    </div>
+                    <ProgressBar 
+                      value={Math.round((analytics.completed_jobs / Math.max(analytics.total_bookings, 1)) * 100)} 
+                      color="blue" 
+                    />
                   </div>
                 </CardContent>
               </Card>

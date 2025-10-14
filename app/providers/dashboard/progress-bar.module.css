@@ -1,0 +1,21 @@
+.progressBar {
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.progressFillGreen {
+  background-color: #16a34a;
+}
+
+.progressFillBlue {
+  background-color: #2563eb;
+}
