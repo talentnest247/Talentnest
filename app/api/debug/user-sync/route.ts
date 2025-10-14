@@ -6,6 +6,14 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
+    // Check if supabaseAdmin is available
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Supabase admin client not initialized" },
+        { status: 500 }
+      )
+    }
+
     // Check auth.users
     const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers()
     

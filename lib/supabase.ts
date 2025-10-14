@@ -24,26 +24,32 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-export const supabaseAdmin = createClient(
-  supabaseUrl, 
-  supabaseServiceKey || supabaseAnonKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(
+      supabaseUrl, 
+      supabaseServiceKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+  : null
 
 // Log configuration status
 if (typeof window === 'undefined') {
   const hasRealUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
   const hasRealKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
   
   if (!hasRealUrl || !hasRealKey) {
     console.warn('[supabase] Using placeholder values - configure .env.local for real database access')
   } else {
     console.log('[supabase] Configured with real database')
+    if (!hasServiceKey) {
+      console.warn('[supabase] WARNING: SUPABASE_SERVICE_ROLE_KEY not set - admin operations may fail')
+    }
   }
 }
 
@@ -194,7 +200,12 @@ export async function getProviders(filters?: {
   include_all_statuses?: boolean // For admin dashboard
 }) {
   try {
-    const client = getClient()
+    // Use admin client for server-side to bypass RLS
+    const client = typeof window === 'undefined' ? supabaseAdmin : supabase
+    
+    if (!client) {
+      throw new Error('Supabase client not initialized')
+    }
     
     // First, get providers data
     let query = client
@@ -227,17 +238,27 @@ export async function getProviders(filters?: {
     
     const { data: providers, error } = await query.order('rating', { ascending: false })
     
-    if (error) throw new Error(handleSupabaseError(error))
+    if (error) {
+      console.error('Error fetching providers:', error)
+      throw new Error(handleSupabaseError(error))
+    }
     
     // If no providers, return empty array
     if (!providers || providers.length === 0) {
+      console.log('No providers found with filters:', filters)
       return []
     }
+    
+    console.log(`Found ${providers.length} providers`)
     
     // Get user IDs
     const userIds = providers.map(p => p.user_id).filter(Boolean)
     
-    // Fetch user data separately
+    // Fetch user data separately - skip if no user IDs
+    if (userIds.length === 0) {
+      return providers
+    }
+    
     const { data: users, error: userError } = await client
       .from('users')
       .select('id, first_name, last_name, profile_image, student_id, email, phone, full_name')
@@ -245,6 +266,8 @@ export async function getProviders(filters?: {
     
     if (userError) {
       console.error('Error fetching user data:', userError)
+      // Return providers without user data if fetch fails
+      return providers
     }
     
     // Merge user data with provider data

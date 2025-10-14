@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-css-tags */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,13 +14,12 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import {
-  AlertCircle, Award, Bell, BookOpen, Briefcase, Calendar, Camera, CheckCircle, Clock,
-  DollarSign, Download, Edit, Eye, FileText, Image as ImageIcon, Loader2, Mail,
-  MessageSquare, Phone, Plus, Settings, Shield, Star, Trash2, Upload, User,
-  Users, Video, XCircle, Zap, MapPin, TrendingUp, Heart, Share2
+  AlertCircle, Briefcase, Calendar, CheckCircle, Clock,
+  DollarSign, Edit, Eye, Image as ImageIcon, Loader2,
+  MessageSquare, Plus, Settings, Shield, Star, Trash2, Upload,
+  XCircle, MapPin
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
@@ -122,17 +122,12 @@ function ProviderDashboardContent() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const [uploadDialog, setUploadDialog] = useState(false)
-  const [editProfileDialog, setEditProfileDialog] = useState(false)
   
   // Form states
   const [portfolioTitle, setPortfolioTitle] = useState("")
   const [portfolioDescription, setPortfolioDescription] = useState("")
   const [portfolioFile, setPortfolioFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-
-  useEffect(() => {
-    fetchProviderData()
-  }, [])
 
   const fetchProviderData = async () => {
     try {
@@ -178,6 +173,11 @@ function ProviderDashboardContent() {
     }
   }
 
+  useEffect(() => {
+    fetchProviderData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleToggleAvailability = async (type: 'work' | 'learning') => {
     try {
       const field = type === 'work' ? 'availability_available_for_work' : 'availability_available_for_learning'
@@ -196,7 +196,7 @@ function ProviderDashboardContent() {
           description: `${type === 'work' ? 'Work' : 'Learning'} availability updated`
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update availability",
@@ -241,7 +241,7 @@ function ProviderDashboardContent() {
           description: "Portfolio item uploaded successfully"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to upload portfolio item",
@@ -267,7 +267,7 @@ function ProviderDashboardContent() {
           description: "Portfolio item removed"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete portfolio item",
@@ -321,7 +321,7 @@ function ProviderDashboardContent() {
                   </Badge>
                 )}
               </div>
-              <p className="text-gray-600">{user?.full_name || user?.email}</p>
+              <p className="text-gray-600">{user?.fullName || user?.email}</p>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -336,7 +336,7 @@ function ProviderDashboardContent() {
             </div>
           </div>
 
-          <Button onClick={() => setEditProfileDialog(true)} variant="outline">
+          <Button variant="outline">
             <Edit className="w-4 h-4 mr-2" />
             Edit Profile
           </Button>
@@ -349,7 +349,7 @@ function ProviderDashboardContent() {
             <div className="flex-1">
               <h3 className="font-semibold text-yellow-900">Verification Pending</h3>
               <p className="text-sm text-yellow-700 mt-1">
-                Your application is under review. You'll be notified once approved. While waiting, you can set up your profile and portfolio.
+                Your application is under review. You&apos;ll be notified once approved. While waiting, you can set up your profile and portfolio.
               </p>
             </div>
           </div>
@@ -371,7 +371,7 @@ function ProviderDashboardContent() {
           <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-green-900">You're Live! 🎉</h3>
+              <h3 className="font-semibold text-green-900">You&apos;re Live! 🎉</h3>
               <p className="text-sm text-green-700 mt-1">
                 Your profile is approved and visible to students on the marketplace.
               </p>
@@ -541,6 +541,7 @@ function ProviderDashboardContent() {
                     <div className="grid grid-cols-3 gap-3">
                       {portfolio.slice(0, 6).map((item) => (
                         <div key={item.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group cursor-pointer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
                             <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -596,6 +597,8 @@ function ProviderDashboardContent() {
                       <span className="font-semibold">{analytics.response_rate}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
+                      {/* Dynamic width required for progress bar */}
+                      {/* eslint-disable-next-line react/forbid-dom-props */}
                       <div 
                         className="bg-green-600 h-2 rounded-full transition-all" 
                         style={{ width: `${analytics.response_rate}%` }}
@@ -610,6 +613,8 @@ function ProviderDashboardContent() {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
+                      {/* Dynamic width required for progress bar */}
+                      {/* eslint-disable-next-line react/forbid-dom-props */}
                       <div 
                         className="bg-blue-600 h-2 rounded-full transition-all" 
                         style={{ width: `${Math.round((analytics.completed_jobs / Math.max(analytics.total_bookings, 1)) * 100)}%` }}
@@ -682,6 +687,7 @@ function ProviderDashboardContent() {
               {portfolio.map((item) => (
                 <Card key={item.id} className="overflow-hidden group">
                   <div className="aspect-video bg-gray-100 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
@@ -803,7 +809,7 @@ function ProviderDashboardContent() {
               <CardContent className="text-center py-16">
                 <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-xl font-semibold mb-2">No Messages</h3>
-                <p className="text-gray-600">You'll see messages from students here</p>
+                <p className="text-gray-600">You&apos;ll see messages from students here</p>
               </CardContent>
             </Card>
           ) : (
@@ -890,7 +896,7 @@ function ProviderDashboardContent() {
                   ))}
                 </div>
               </div>
-              <Button onClick={() => setEditProfileDialog(true)}>
+              <Button>
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Profile
               </Button>
