@@ -323,10 +323,10 @@ function ProviderDashboardContent() {
               
               <Button
                 onClick={() => setShowCreateService(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Service
+                <Plus className="h-5 w-5 mr-2 font-bold" />
+                <span className="font-bold">Add Service</span>
               </Button>
             </div>
           </div>
@@ -431,10 +431,10 @@ function ProviderDashboardContent() {
                   <Button
                     onClick={() => setShowCreateService(true)}
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition-all duration-200"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Service
+                    <Plus className="h-4 w-4 mr-2 font-bold" />
+                    <span className="font-bold">Add Service</span>
                   </Button>
                 </CardTitle>
               </CardHeader>
@@ -446,7 +446,7 @@ function ProviderDashboardContent() {
                     <p className="text-gray-500 mb-4">Start by creating your first service offering</p>
                     <Button
                       onClick={() => setShowCreateService(true)}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Service
