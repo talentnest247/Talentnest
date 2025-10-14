@@ -27,6 +27,7 @@ interface PendingProvider {
   rating: number;
   total_reviews: number;
   created_at: string;
+  updated_at: string;
   user: {
     id: string;
     email: string;

@@ -22,6 +22,8 @@ export async function GET() {
         location,
         verification_status,
         verified,
+        verification_evidence,
+        certificates,
         whatsapp_number,
         availability_available_for_learning,
         availability_available_for_work,
@@ -37,6 +39,9 @@ export async function GET() {
           email, 
           full_name,
           phone,
+          student_id,
+          department,
+          level,
           avatar_url
         )
       `)
@@ -89,8 +94,14 @@ export async function POST(request: Request) {
   
   const updateData: Record<string, string | boolean> = { 
     verification_status: status,
+    verification_date: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
+
+  // Add admin notes if provided
+  if (adminNotes) {
+    updateData.verification_admin_notes = adminNotes;
+  }
   
   // Auto-assign verified badge when approving
   if (action === 'approve') {

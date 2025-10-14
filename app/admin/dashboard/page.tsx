@@ -17,7 +17,6 @@ import {
   XCircle, 
   Shield,
   Loader2,
-  Eye,
   ThumbsUp,
   ThumbsDown,
   Trash2
@@ -41,9 +40,12 @@ interface Provider {
   experience: number
   location: string
   verification_status: 'pending' | 'approved' | 'rejected'
+  verified: boolean
   verification_evidence: string[]
   certificates: string[]
+  whatsapp_number: string | null
   created_at: string
+  updated_at: string
   user?: {
     email: string
     full_name: string
@@ -433,6 +435,15 @@ function ProviderCard({
             {expanded && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm"><strong>Description:</strong> {provider.description || provider.bio}</p>
+                {provider.whatsapp_number && (
+                  <p className="text-sm"><strong>WhatsApp:</strong> {provider.whatsapp_number}</p>
+                )}
+                {provider.verified && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Verified Provider</span>
+                  </div>
+                )}
                 {provider.verification_evidence.length > 0 && (
                   <div>
                     <p className="text-sm font-semibold mb-2">Documents ({provider.verification_evidence.length}):</p>
@@ -445,12 +456,15 @@ function ProviderCard({
                           rel="noopener noreferrer"
                           className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                         >
-                          <Eye className="w-3 h-3" /> Document {idx + 1}
+                          📎 Document {idx + 1}
                         </a>
                       ))}
                     </div>
                   </div>
                 )}
+                <p className="text-xs text-gray-500">
+                  <strong>Created:</strong> {new Date(provider.created_at).toLocaleDateString()}
+                </p>
               </div>
             )}
           </div>
