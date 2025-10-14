@@ -22,8 +22,6 @@ export async function GET() {
         location,
         verification_status,
         verified,
-        verification_evidence,
-        certificates,
         whatsapp_number,
         availability_available_for_learning,
         availability_available_for_work,
@@ -32,15 +30,13 @@ export async function GET() {
         pricing_currency,
         rating,
         total_reviews,
-        created_at, 
+        created_at,
+        updated_at,
         user:users!providers_user_id_fkey(
           id,
           email, 
           full_name,
           phone,
-          student_id,
-          department,
-          level,
           avatar_url
         )
       `)
@@ -92,15 +88,11 @@ export async function POST(request: Request) {
   const status = action === 'approve' ? 'approved' : 'rejected';
   
   const updateData: Record<string, string | boolean> = { 
-    verification_status: status, 
-    verification_date: new Date().toISOString()
+    verification_status: status,
+    updated_at: new Date().toISOString()
   };
-
-  if (adminNotes) {
-    updateData.verification_admin_notes = adminNotes;
-  }
   
-  // Auto-assign verified badge when approving (can be toggled later)
+  // Auto-assign verified badge when approving
   if (action === 'approve') {
     updateData.verified = true;
   }
@@ -110,6 +102,11 @@ export async function POST(request: Request) {
     .update(updateData)
     .eq('id', providerId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[Admin Verification API] Update error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  
+  console.log(`[Admin Verification API] Provider ${providerId} ${status}`);
   return NextResponse.json({ success: true });
 }
